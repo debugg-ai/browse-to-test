@@ -8,6 +8,7 @@ and utilities that can be imported by test scripts.
 
 from playwright.async_api import Page
 import sys
+typing
 
 # Custom exception classes
 

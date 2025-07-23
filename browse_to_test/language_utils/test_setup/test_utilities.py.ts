@@ -5,16 +5,7 @@
  * and utilities that can be imported by test scripts.
  */
 
-const { Page } = require('@playwright/test')
-
-// Custom assertion helpers
-
-// Assert that an element is visible on the page
-export async function assertElementVisible(page, selector) {
-    const element = page.locator(selector).first();
-    await element.waitFor({ state: 'visible', timeout: 10000 });
-}
-
+import { Page } from '@playwright/test'
 
 // Custom exception classes
 
@@ -30,7 +21,11 @@ export class TestActionError extends Error {
 // Framework-specific utilities
 
 // Safe action execution with error handling for Playwright
-export async function safeAction(page, actionFunc, stepInfo = '') {
+export async function safeAction<T>(
+    page: Page, 
+    actionFunc: () => Promise<T>, 
+    stepInfo: string = ''
+): Promise<T> {
     try {
         return await actionFunc();
     } catch (error) {
@@ -46,7 +41,36 @@ export async function safeAction(page, actionFunc, stepInfo = '') {
 
 
 // Robust element location and interaction for Playwright
-// try_locate_and_act not implemented for javascript + playwright
+export async function tryLocateAndAct(
+    page: Page, 
+    selector: string, 
+    actionType: string, 
+    text?: string, 
+    stepInfo: string = ''
+): Promise<void> {
+    console.log(`Attempting ${actionType} using selector: ${selector} (${stepInfo})`);
+    
+    try {
+        const locator = page.locator(selector).first();
+        
+        if (actionType === 'click') {
+            await locator.click({ timeout: 10000 });
+        } else if (actionType === 'fill' && text !== undefined) {
+            await locator.fill(text, { timeout: 10000 });
+        } else {
+            throw new Error(`Unknown action type: ${actionType}`);
+        }
+        
+        console.log(`  ✓ ${actionType} successful`);
+        await page.waitForTimeout(500);
+        
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMsg = `Element interaction failed: ${errorMessage} (${stepInfo})`;
+        console.error(`  ✗ ${errorMsg}`);
+        throw new TestActionError(errorMsg);
+    }
+}
 
 
 // Helper functions for test actions

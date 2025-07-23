@@ -52,46 +52,53 @@ automation_data = [
     # ... more steps
 ]
 
-# Convert to Playwright test script
-playwright_script = btt.convert_to_test_script(
-    automation_data=automation_data,
-    output_framework="playwright",
-    ai_provider="openai"
-)
-
-print(playwright_script)
+# Convert to Playwright test script - one line!
+script = btt.convert(automation_data, framework="playwright", ai_provider="openai")
+print(script)
 ```
 
-### Advanced Usage
+### Advanced Usage with ConfigBuilder
 
 ```python
 import browse_to_test as btt
 
-# Create custom configuration
-config = btt.Config(
-    ai=btt.AIConfig(
-        provider="openai",
-        model="gpt-4",
-        temperature=0.1,
-    ),
-    output=btt.OutputConfig(
-        framework="playwright", 
-        language="python",
-        include_assertions=True,
-        include_error_handling=True,
-        sensitive_data_keys=["username", "password"],
-    ),
-    processing=btt.ProcessingConfig(
-        analyze_actions_with_ai=True,
-        optimize_selectors=True,
-    )
-)
+# Build custom configuration with fluent interface
+config = btt.ConfigBuilder() \
+    .framework("playwright") \
+    .ai_provider("openai", model="gpt-4") \
+    .language("python") \
+    .include_assertions(True) \
+    .include_error_handling(True) \
+    .sensitive_data_keys(["username", "password"]) \
+    .enable_context_collection() \
+    .thorough_mode() \
+    .build()
 
-# Create orchestrator
-orchestrator = btt.TestScriptOrchestrator(config)
+# Create converter with custom config
+converter = btt.TestConverter(config)
+script = converter.convert(automation_data)
+```
 
-# Generate test script with full AI analysis
-test_script = orchestrator.generate_test_script(automation_data)
+### Incremental Live Generation
+
+```python
+import browse_to_test as btt
+
+# Start incremental session
+config = btt.ConfigBuilder().framework("playwright").build()
+session = btt.IncrementalSession(config)
+
+# Start session
+result = session.start("https://example.com")
+
+# Add steps as they happen
+for step_data in automation_steps:
+    result = session.add_step(step_data)
+    print(f"Current script:\n{result.current_script}")
+
+# Finalize when done
+final = session.finalize()
+print(f"Complete test script:\n{final.current_script}")
 ```
 
 ### Context-Aware Generation

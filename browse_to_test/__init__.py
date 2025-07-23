@@ -4,202 +4,160 @@ Browse-to-Test: AI-Powered Browser Automation to Test Script Converter
 A Python library that uses AI to convert browser automation data into test scripts
 for various testing frameworks (Playwright, Selenium, etc.).
 
-Now includes incremental live update functionality for real-time test generation.
+## Simple Usage:
+```python
+import browse_to_test as btt
+
+# Convert automation data to test script
+script = btt.convert(automation_data, framework="playwright", ai_provider="openai")
+```
+
+## Advanced Usage:
+```python
+import browse_to_test as btt
+
+# Create custom configuration
+config = btt.ConfigBuilder().framework("playwright").ai_provider("openai").build()
+converter = btt.TestConverter(config)
+script = converter.convert(automation_data)
+```
 """
 
-from .core.orchestrator import TestScriptOrchestrator
-from .core.incremental_orchestrator import IncrementalTestScriptOrchestrator, ScriptState, IncrementalUpdateResult
-from .core.config import Config, AIConfig, OutputConfig, ProcessingConfig, SharedSetupConfig
-from .core.shared_setup_manager import SharedSetupManager, SetupUtility
-from .core.language_templates import LanguageTemplateManager, LanguageTemplate
-from .plugins.registry import PluginRegistry
-from .ai.factory import AIProviderFactory
+from .core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
+from .core.converter import TestConverter
+from .core.session import IncrementalSession, SessionResult
 
 __version__ = "0.2.0"
 __author__ = "Browse-to-Test Contributors"
 
-# Main API exports
+# Simple API - the main entry points most users need
 __all__ = [
-    # Original batch processing
-    "TestScriptOrchestrator",
-    "Config", 
-    "AIConfig",
-    "OutputConfig",
-    "ProcessingConfig",
-    "PluginRegistry",
-    "AIProviderFactory",
-    "convert_to_test_script",
-    "list_available_plugins",
-    "list_available_ai_providers",
+    # Simple conversion function
+    "convert",
     
-    # New incremental processing
-    "IncrementalTestScriptOrchestrator",
-    "ScriptState",
-    "IncrementalUpdateResult",
-    "start_incremental_session",
-    "add_incremental_step",
-    "finalize_incremental_session",
+    # Configuration
+    "Config",
+    "ConfigBuilder",
+    "AIConfig",  # For backward compatibility
+    "OutputConfig",  # For backward compatibility
+    "ProcessingConfig",  # For backward compatibility
     
-    # Shared setup system
-    "SharedSetupConfig",
-    "SharedSetupManager", 
-    "SetupUtility",
+    # Main classes
+    "TestConverter", 
+    "IncrementalSession",
+    "SessionResult",
     
-    # Multi-language support
-    "LanguageTemplateManager",
-    "LanguageTemplate",
+    # Utilities
+    "list_frameworks",
+    "list_ai_providers",
 ]
 
-def convert_to_test_script(
-    automation_data: list[dict],
-    output_framework: str = "playwright",
+
+def convert(
+    automation_data,
+    framework: str = "playwright",
     ai_provider: str = "openai",
-    config: dict = None
+    language: str = "python",
+    **kwargs
 ) -> str:
     """
     Convert browser automation data to test script.
     
-    This is the main convenience function for simple usage.
+    This is the simplest way to use the library.
     
     Args:
         automation_data: List of browser automation step dictionaries
-        output_framework: Target test framework ('playwright', 'selenium', etc.)
-        ai_provider: AI provider to use ('openai', 'anthropic', etc.)
-        config: Optional configuration dictionary
+        framework: Target test framework ('playwright', 'selenium', etc.)
+        ai_provider: AI provider to use ('openai', 'anthropic', etc.)  
+        language: Target language ('python', 'typescript', etc.)
+        **kwargs: Additional configuration options
         
     Returns:
         Generated test script as string
         
     Example:
         >>> automation_data = [{"model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]}}]
-        >>> script = convert_to_test_script(automation_data, "playwright", "openai")
+        >>> script = convert(automation_data, framework="playwright", ai_provider="openai")
         >>> print(script)
     """
-    from .core.config import Config
+    config = ConfigBuilder() \
+        .framework(framework) \
+        .ai_provider(ai_provider) \
+        .language(language) \
+        .from_kwargs(**kwargs) \
+        .build()
     
-    # Create configuration
-    config_obj = Config.from_dict(config or {})
-    config_obj.output.framework = output_framework
-    config_obj.ai.provider = ai_provider
-    
-    # Create orchestrator and generate script
-    orchestrator = TestScriptOrchestrator(config_obj)
-    return orchestrator.generate_test_script(automation_data)
+    converter = TestConverter(config)
+    return converter.convert(automation_data)
 
 
-def start_incremental_session(
-    output_framework: str = "playwright",
-    target_url: str = None,
-    config: dict = None,
-    context_hints: dict = None
-) -> tuple[IncrementalTestScriptOrchestrator, IncrementalUpdateResult]:
-    """
-    Start an incremental test script generation session.
-    
-    This begins the live update workflow where test steps can be added incrementally.
-    
-    Args:
-        output_framework: Target test framework ('playwright', 'selenium', etc.)
-        target_url: URL being tested
-        config: Optional configuration dictionary
-        context_hints: Optional context hints for the test
-        
-    Returns:
-        Tuple of (orchestrator, setup_result)
-        
-    Example:
-        >>> orchestrator, setup = start_incremental_session("playwright", "https://example.com")
-        >>> if setup.success:
-        ...     step_result = orchestrator.add_step(step_data)
-        ...     final_result = orchestrator.finalize_session()
-    """
-    from .core.config import Config
-    
-    # Create configuration
-    config_obj = Config.from_dict(config or {})
-    config_obj.output.framework = output_framework
-    
-    # Create incremental orchestrator
-    orchestrator = IncrementalTestScriptOrchestrator(config_obj)
-    
-    # Start session
-    setup_result = orchestrator.start_incremental_session(
-        target_url=target_url,
-        context_hints=context_hints
-    )
-    
-    return orchestrator, setup_result
-
-
-def add_incremental_step(
-    orchestrator: IncrementalTestScriptOrchestrator,
-    step_data: dict,
-    analyze_step: bool = True
-) -> IncrementalUpdateResult:
-    """
-    Add a step to an active incremental session.
-    
-    Args:
-        orchestrator: Active incremental orchestrator
-        step_data: Step data dictionary
-        analyze_step: Whether to perform AI analysis
-        
-    Returns:
-        Result of adding the step
-        
-    Example:
-        >>> result = add_incremental_step(orchestrator, step_data)
-        >>> if result.success:
-        ...     print(f"Added {result.new_lines_added} lines")
-    """
-    return orchestrator.add_step(step_data, analyze_step=analyze_step)
-
-
-def finalize_incremental_session(
-    orchestrator: IncrementalTestScriptOrchestrator,
-    final_validation: bool = True,
-    optimize_script: bool = True
-) -> IncrementalUpdateResult:
-    """
-    Finalize an incremental test script generation session.
-    
-    Args:
-        orchestrator: Active incremental orchestrator
-        final_validation: Whether to perform final validation
-        optimize_script: Whether to apply optimizations
-        
-    Returns:
-        Final result with complete test script
-        
-    Example:
-        >>> final = finalize_incremental_session(orchestrator)
-        >>> if final.success:
-        ...     with open("test.py", "w") as f:
-        ...         f.write(final.updated_script)
-    """
-    return orchestrator.finalize_session(
-        final_validation=final_validation,
-        optimize_script=optimize_script
-    )
-
-
-def list_available_plugins() -> list[str]:
-    """
-    List all available output plugins.
-    
-    Returns:
-        List of plugin names
-    """
+def list_frameworks() -> list[str]:
+    """List all available test frameworks."""
+    from .plugins.registry import PluginRegistry
     registry = PluginRegistry()
     return registry.list_available_plugins()
 
 
-def list_available_ai_providers() -> list[str]:
-    """
-    List all available AI providers.
-    
-    Returns:
-        List of provider names
-    """
+def list_ai_providers() -> list[str]:
+    """List all available AI providers."""
+    from .ai.factory import AIProviderFactory
     factory = AIProviderFactory()
-    return factory.list_available_providers() 
+    return factory.list_available_providers()
+
+
+# Backward compatibility - keep old API available but mark as deprecated
+import warnings
+from typing import Union
+from pathlib import Path
+
+def convert_to_test_script(*args, **kwargs):
+    """Deprecated: Use convert() instead."""
+    warnings.warn(
+        "convert_to_test_script() is deprecated. Use convert() instead.", 
+        DeprecationWarning, 
+        stacklevel=2
+    )
+    return convert(*args, **kwargs)
+
+def start_incremental_session(
+    framework: str = "playwright",
+    target_url: str = None,
+    config: dict = None,
+    context_hints: dict = None
+):
+    """Deprecated: Use IncrementalSession() instead."""
+    warnings.warn(
+        "start_incremental_session() is deprecated. Use IncrementalSession() instead.", 
+        DeprecationWarning, 
+        stacklevel=2
+    )
+    session_config = ConfigBuilder().framework(framework).from_dict(config or {}).build()
+    session = IncrementalSession(session_config)
+    result = session.start(target_url=target_url, context_hints=context_hints)
+    return session, result
+
+# Export deprecated functions for backward compatibility
+__all__.extend([
+    "convert_to_test_script", 
+    "start_incremental_session",
+    "list_available_plugins",
+    "list_available_ai_providers"
+])
+
+def list_available_plugins():
+    """Deprecated: Use list_frameworks() instead.""" 
+    warnings.warn(
+        "list_available_plugins() is deprecated. Use list_frameworks() instead.", 
+        DeprecationWarning, 
+        stacklevel=2
+    )
+    return list_frameworks()
+
+def list_available_ai_providers():
+    """Deprecated: Use list_ai_providers() instead."""
+    warnings.warn(
+        "list_available_ai_providers() is deprecated. Use list_ai_providers() instead.", 
+        DeprecationWarning, 
+        stacklevel=2
+    )
+    return list_ai_providers() 

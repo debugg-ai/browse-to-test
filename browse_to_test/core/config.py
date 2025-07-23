@@ -107,7 +107,7 @@ class OutputConfig:
     
     def __post_init__(self):
         """Validate configuration after initialization."""
-        if self.language not in self.SUPPORTED_LANGUAGES:
+        if self.language and self.language not in self.SUPPORTED_LANGUAGES:
             raise ValueError(f"Unsupported language: {self.language}. Supported: {list(self.SUPPORTED_LANGUAGES.keys())}")
     
     @property
@@ -524,3 +524,136 @@ class Config:
     def __repr__(self) -> str:
         """String representation of config."""
         return f"Config(provider={self.ai.provider}, framework={self.output.framework}, context={self.processing.collect_system_context})" 
+
+
+class ConfigBuilder:
+    """
+    Builder pattern for creating Config objects with a fluent interface.
+    
+    This provides a much simpler way to create configurations:
+    
+    Example:
+        >>> config = ConfigBuilder() \\
+        ...     .framework("playwright") \\
+        ...     .ai_provider("openai") \\
+        ...     .language("python") \\
+        ...     .enable_context_collection() \\
+        ...     .build()
+    """
+    
+    def __init__(self):
+        """Initialize builder with default config."""
+        self._config = Config()
+    
+    def framework(self, framework: str) -> 'ConfigBuilder':
+        """Set the output framework."""
+        self._config.output.framework = framework
+        return self
+    
+    def ai_provider(self, provider: str, model: str = None, api_key: str = None) -> 'ConfigBuilder':
+        """Set AI provider configuration."""
+        self._config.ai.provider = provider
+        if model:
+            self._config.ai.model = model
+        if api_key:
+            self._config.ai.api_key = api_key
+        return self
+    
+    def language(self, language: str) -> 'ConfigBuilder':
+        """Set the target language."""
+        self._config.output.language = language
+        return self
+    
+    def enable_context_collection(self, enabled: bool = True) -> 'ConfigBuilder':
+        """Enable or disable context collection."""
+        self._config.processing.collect_system_context = enabled
+        return self
+    
+    def enable_ai_analysis(self, enabled: bool = True) -> 'ConfigBuilder':
+        """Enable or disable AI analysis."""
+        self._config.processing.analyze_actions_with_ai = enabled
+        return self
+    
+    def include_assertions(self, include: bool = True) -> 'ConfigBuilder':
+        """Include assertions in generated tests."""
+        self._config.output.include_assertions = include
+        return self
+    
+    def include_error_handling(self, include: bool = True) -> 'ConfigBuilder':
+        """Include error handling in generated tests."""
+        self._config.output.include_error_handling = include
+        return self
+    
+    def debug(self, enabled: bool = True) -> 'ConfigBuilder':
+        """Enable debug mode."""
+        self._config.debug = enabled
+        return self
+    
+    def temperature(self, temp: float) -> 'ConfigBuilder':
+        """Set AI temperature."""
+        self._config.ai.temperature = temp
+        return self
+    
+    def timeout(self, timeout_ms: int) -> 'ConfigBuilder':
+        """Set test timeout in milliseconds."""
+        self._config.output.test_timeout = timeout_ms
+        return self
+    
+    def sensitive_data_keys(self, keys: List[str]) -> 'ConfigBuilder':
+        """Set keys that contain sensitive data."""
+        self._config.output.sensitive_data_keys = keys
+        return self
+    
+    def project_root(self, path: str) -> 'ConfigBuilder':
+        """Set project root directory."""
+        self._config.project_root = path
+        return self
+    
+    def fast_mode(self) -> 'ConfigBuilder':
+        """Configure for fast processing (less thorough)."""
+        self._config.optimize_for_speed()
+        return self
+    
+    def thorough_mode(self) -> 'ConfigBuilder':
+        """Configure for thorough processing (slower but more accurate)."""
+        self._config.optimize_for_accuracy()
+        return self
+    
+    def from_dict(self, config_dict: Dict[str, Any]) -> 'ConfigBuilder':
+        """Update configuration from dictionary."""
+        if config_dict:
+            self._config.update_from_dict(config_dict)
+        return self
+    
+    def from_kwargs(self, **kwargs) -> 'ConfigBuilder':
+        """Update configuration from keyword arguments."""
+        # Map common kwargs to config settings
+        if 'api_key' in kwargs:
+            self._config.ai.api_key = kwargs['api_key']
+        if 'model' in kwargs:
+            self._config.ai.model = kwargs['model']
+        if 'temperature' in kwargs:
+            self._config.ai.temperature = kwargs['temperature']
+        if 'timeout' in kwargs:
+            self._config.output.test_timeout = kwargs['timeout']
+        if 'include_assertions' in kwargs:
+            self._config.output.include_assertions = kwargs['include_assertions']
+        if 'include_error_handling' in kwargs:
+            self._config.output.include_error_handling = kwargs['include_error_handling']
+        if 'debug' in kwargs:
+            self._config.debug = kwargs['debug']
+        if 'project_root' in kwargs:
+            self._config.project_root = kwargs['project_root']
+        if 'context_collection' in kwargs:
+            self._config.processing.collect_system_context = kwargs['context_collection']
+        
+        return self
+    
+    def build(self) -> Config:
+        """Build and return the final configuration."""
+        # Validate configuration before returning
+        errors = self._config.validate()
+        if errors:
+            raise ValueError(f"Configuration validation failed: {'; '.join(errors)}")
+        
+        return self._config
