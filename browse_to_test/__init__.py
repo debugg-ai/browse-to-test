@@ -23,6 +23,7 @@ script = converter.convert(automation_data)
 ```
 """
 
+from typing import List
 from .core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
 from .core.converter import TestConverter
 from .core.session import IncrementalSession, SessionResult
@@ -91,14 +92,14 @@ def convert(
     return converter.convert(automation_data)
 
 
-def list_frameworks() -> list[str]:
+def list_frameworks() -> List[str]:
     """List all available test frameworks."""
     from .plugins.registry import PluginRegistry
     registry = PluginRegistry()
     return registry.list_available_plugins()
 
 
-def list_ai_providers() -> list[str]:
+def list_ai_providers() -> List[str]:
     """List all available AI providers."""
     from .ai.factory import AIProviderFactory
     factory = AIProviderFactory()

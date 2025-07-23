@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from browser_use.browser.browser import BrowserConfig
 from browser_use.browser import BrowserProfile
@@ -130,7 +130,7 @@ class PlaywrightScriptGenerator:
         )
         return options_str
 
-    def _get_imports_and_helpers(self) -> list[str]:
+    def _get_imports_and_helpers(self) -> List[str]:
         """Generates necessary import statements (excluding helper functions)."""
         # Return only the standard imports needed by the main script body
         return [
@@ -149,7 +149,7 @@ class PlaywrightScriptGenerator:
             # Helper function definitions are no longer here
         ]
 
-    def _get_sensitive_data_definitions(self) -> list[str]:
+    def _get_sensitive_data_definitions(self) -> List[str]:
         """Generates the SENSITIVE_DATA dictionary definition."""
         if not self.sensitive_data_keys:
             return ["SENSITIVE_DATA = {}", ""]
@@ -219,7 +219,7 @@ class PlaywrightScriptGenerator:
         return default_timeout
 
     # --- Action Mapping Methods ---
-    def _map_go_to_url(self, params: dict, step_info_str: str, **kwargs) -> list[str]:
+    def _map_go_to_url(self, params: dict, step_info_str: str, **kwargs) -> List[str]:
         url = params.get("url")
         goto_timeout = self._get_goto_timeout()
         script_lines = []
@@ -243,7 +243,7 @@ class PlaywrightScriptGenerator:
             )
         return script_lines
 
-    def _map_wait(self, params: dict, step_info_str: str, **kwargs) -> list[str]:
+    def _map_wait(self, params: dict, step_info_str: str, **kwargs) -> List[str]:
         seconds = params.get("seconds", 3)
         try:
             wait_seconds = int(seconds)
@@ -261,7 +261,7 @@ class PlaywrightScriptGenerator:
         action_index_in_step: int,
         step_info_str: str,
         **kwargs,
-    ) -> list[str]:
+    ) -> List[str]:
         index = params.get("index")
         text = params.get("text", "")
         selector = self._get_selector_for_action(history_item, action_index_in_step)
@@ -289,7 +289,7 @@ class PlaywrightScriptGenerator:
         step_info_str: str,
         action_type: str,
         **kwargs,
-    ) -> list[str]:
+    ) -> List[str]:
         if action_type == "click_element_by_index":
             logger.warning(
                 f"Mapping legacy 'click_element_by_index' to 'click_element' ({step_info_str})"
@@ -309,7 +309,7 @@ class PlaywrightScriptGenerator:
             )
         return script_lines
 
-    def _map_scroll_down(self, params: dict, step_info_str: str, **kwargs) -> list[str]:
+    def _map_scroll_down(self, params: dict, step_info_str: str, **kwargs) -> List[str]:
         amount = params.get("amount")
         script_lines = []
         if amount and isinstance(amount, int):
@@ -329,7 +329,7 @@ class PlaywrightScriptGenerator:
         script_lines.append("            await page.wait_for_timeout(500)")
         return script_lines
 
-    def _map_scroll_up(self, params: dict, step_info_str: str, **kwargs) -> list[str]:
+    def _map_scroll_up(self, params: dict, step_info_str: str, **kwargs) -> List[str]:
         amount = params.get("amount")
         script_lines = []
         if amount and isinstance(amount, int):
