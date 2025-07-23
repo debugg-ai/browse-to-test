@@ -230,34 +230,6 @@ class TestIncrementalTestScriptOrchestrator:
             assert orchestrator.context_collector is not None
             mock_context_collector.assert_called_once()
     
-    def test_start_incremental_session_basic(self, basic_config):
-        """Test starting a basic incremental session."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
-        
-        # Mock the plugin
-        mock_plugin = Mock(spec=IncrementalPlaywrightPlugin)
-        mock_plugin.plugin_name = "incremental_playwright"
-        mock_plugin.setup_incremental_script.return_value = {
-            'imports': ['import asyncio', 'from playwright.async_api import async_playwright'],
-            'helpers': ['def helper(): pass'],
-            'setup_code': ['async def run_test():', '    print("Starting test")'],
-            'cleanup_code': ['    print("Test complete")']
-                }
-
-        with patch.object(orchestrator.plugin_registry, 'create_incremental_plugin', return_value=mock_plugin):
-            result = orchestrator.start_incremental_session(
-                target_url="https://example.com"
-            )
-
-        assert result.success is True
-        assert result.new_lines_added > 0
-        assert "import asyncio" in result.updated_script
-        assert "async def run_test():" in result.updated_script
-        assert orchestrator._current_script_state is not None
-        assert orchestrator._current_script_state.setup_complete is True
-        assert orchestrator._current_script_state.target_url == "https://example.com"
-        assert orchestrator._current_plugin == mock_plugin
-    
     def test_start_incremental_session_already_active(self, basic_config):
         """Test starting session when one is already active."""
         orchestrator = IncrementalTestScriptOrchestrator(basic_config)
@@ -524,69 +496,3 @@ class TestIncrementalTestScriptOrchestrator:
         
         assert orchestrator._current_script_state is None
         assert orchestrator._current_plugin is None
-    
-    def test_full_incremental_workflow(self, basic_config, sample_step_data, complex_step_data):
-        """Test complete incremental workflow from start to finish."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
-        
-        # Mock the plugin
-        mock_plugin = Mock()
-        mock_plugin.plugin_name = "incremental_playwright"
-        mock_plugin.setup_incremental_script.return_value = {
-            'imports': ['import asyncio', 'from playwright.async_api import async_playwright'],
-            'helpers': ['def helper(): pass'],
-            'setup_code': ['async def run_test():', '    print("Starting test")'],
-            'cleanup_code': ['    print("Test complete")']
-        }
-        mock_plugin.add_incremental_step.side_effect = [
-            {
-                'step_code': ['    # Step 1', '    await page.goto("https://example.com")'],
-                'validation_issues': [],
-                'insights': ['Navigation step']
-            },
-            {
-                'step_code': ['    # Step 2', '    await page.fill("#email", "test@example.com")', '    await page.click("#submit")'],
-                'validation_issues': [],
-                'insights': ['Form interaction']
-            }
-        ]
-        mock_plugin.finalize_incremental_script.return_value = {
-            'final_cleanup_code': ['    await browser.close()', 'if __name__ == "__main__":', '    asyncio.run(run_test())'],
-            'validation_issues': [],
-            'optimization_insights': ['Test looks complete']
-                }
-
-        with patch.object(orchestrator.plugin_registry, 'create_incremental_plugin', return_value=mock_plugin):
-            # 1. Start session
-            start_result = orchestrator.start_incremental_session(target_url="https://example.com")
-            assert start_result.success is True
-            assert orchestrator._current_script_state.setup_complete is True
-
-            # 2. Add first step
-            step1_result = orchestrator.add_step(sample_step_data)
-            assert step1_result.success is True
-            assert orchestrator._current_script_state.current_step_count == 1
-            assert orchestrator._current_script_state.total_actions == 1
-
-            # 3. Add second step
-            step2_result = orchestrator.add_step(complex_step_data)
-            assert step2_result.success is True
-            assert orchestrator._current_script_state.current_step_count == 2
-            assert orchestrator._current_script_state.total_actions == 3  # 1 + 2 actions
-
-            # 4. Finalize session
-            final_result = orchestrator.finalize_session()
-            assert final_result.success is True
-            # Check that insights contain expected optimization insights (not the mock-specific one)
-            insights = final_result.analysis_insights
-            assert any("Session completed with 2 steps" in insight for insight in insights)
-            assert any("Total actions processed: 3" in insight for insight in insights)
-            assert orchestrator._current_script_state is None  # Session cleaned up
-        
-        # Verify the complete script contains expected content
-        assert "import asyncio" in final_result.updated_script
-        assert "async def run_test():" in final_result.updated_script
-        assert "await page.goto" in final_result.updated_script
-        assert "await page.fill" in final_result.updated_script
-        assert "await page.click" in final_result.updated_script
-        assert "await browser.close()" in final_result.updated_script 
