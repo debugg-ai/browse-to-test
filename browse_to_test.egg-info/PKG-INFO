@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: browse-to-test
 Version: 0.1.0
 Summary: AI-powered browser automation to test script converter
@@ -23,13 +23,42 @@ Classifier: Programming Language :: Python :: 3.12
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: python-dotenv>=0.19.0
 Provides-Extra: openai
+Requires-Dist: openai>=1.0.0; extra == "openai"
 Provides-Extra: anthropic
+Requires-Dist: anthropic>=0.7.0; extra == "anthropic"
 Provides-Extra: azure
+Requires-Dist: openai>=1.0.0; extra == "azure"
 Provides-Extra: playwright
+Requires-Dist: playwright>=1.30.0; extra == "playwright"
 Provides-Extra: selenium
+Requires-Dist: selenium>=4.0.0; extra == "selenium"
 Provides-Extra: all
+Requires-Dist: openai>=1.0.0; extra == "all"
+Requires-Dist: anthropic>=0.7.0; extra == "all"
+Requires-Dist: playwright>=1.30.0; extra == "all"
+Requires-Dist: selenium>=4.0.0; extra == "all"
+Requires-Dist: PyYAML>=5.4.0; extra == "all"
 Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=4.0.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: isort>=5.10.0; extra == "dev"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: project-url
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 # Browse-to-Test
 

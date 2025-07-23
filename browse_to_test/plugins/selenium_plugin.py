@@ -36,7 +36,7 @@ class SeleniumPlugin(OutputPlugin):
     @property
     def supported_languages(self) -> List[str]:
         """Return supported languages."""
-        return ["python"]
+        return ["python", "typescript", "javascript", "csharp", "java"]
     
     def validate_config(self) -> List[str]:
         """Validate the plugin configuration."""
@@ -63,7 +63,9 @@ class SeleniumPlugin(OutputPlugin):
     def generate_test_script(
         self, 
         parsed_data: ParsedAutomationData,
-        analysis_results: Optional[Dict[str, Any]] = None
+        analysis_results: Optional[Dict[str, Any]] = None,
+        system_context: Optional[Any] = None,
+        context_hints: Optional[Dict[str, Any]] = None
     ) -> GeneratedTestScript:
         """Generate Selenium test script from parsed data."""
         try:

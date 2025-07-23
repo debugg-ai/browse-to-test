@@ -1,0 +1,57 @@
+{
+  "history": [
+    {
+      "model_output": {
+        "current_state": {
+          "evaluation_previous_goal": "Failed - The page at the target URL is blocked due to host restrictions preventing access to the onboarding page. No interaction or verification could be performed.",
+          "memory": "Attempted to access the onboarding page at the ngrok URL but encountered a host blocking error. No progress made towards verifying the modal replacement for the alert.",
+          "next_goal": "Cannot proceed with the current host restriction error. Need to report tunneling error and stop."
+        },
+        "action": [
+          {
+            "done": {
+              "text": "TUNNELING ERROR",
+              "success": false
+            }
+          }
+        ]
+      },
+      "result": [
+        {
+          "is_done": true,
+          "success": false,
+          "extracted_content": "TUNNELING ERROR",
+          "include_in_memory": false
+        }
+      ],
+      "state": {
+        "tabs": [
+          {
+            "page_id": 0,
+            "url": "about:blank",
+            "title": "",
+            "parent_page_id": null
+          },
+          {
+            "page_id": 1,
+            "url": "https://d0be9c6d-9789-45ec-b1ad-41b16b7eba98.ngrok.debugg.ai/",
+            "title": "",
+            "parent_page_id": null
+          }
+        ],
+        "screenshot": null,
+        "interacted_element": [
+          null
+        ],
+        "url": "https://d0be9c6d-9789-45ec-b1ad-41b16b7eba98.ngrok.debugg.ai/",
+        "title": ""
+      },
+      "metadata": {
+        "step_start_time": 1751288650.1295552,
+        "step_end_time": 1751288658.7051382,
+        "input_tokens": 4079,
+        "step_number": 2
+      }
+    }
+  ]
+}

@@ -1,17 +1,11 @@
 import asyncio
-import json
 import os
 import sys
-from pathlib import Path
-import urllib.parse
-from playwright.async_api import async_playwright, Page, BrowserContext
+from playwright.async_api import async_playwright, Page
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv(override=True)
-
-import traceback
-from datetime import datetime
 
 SENSITIVE_DATA = {}
 
@@ -85,7 +79,7 @@ async def run_test():
             print('Browser context created for incremental test')
             
             # Initial navigation (setup phase)
-            print(f'Navigating to: https://example.com/login')
+            print('Navigating to: https://example.com/login')
             await page.goto('https://example.com/login')
             await page.wait_for_load_state('networkidle')
             
@@ -93,7 +87,7 @@ async def run_test():
 
             # Step 1
             # Step metadata: {'description': 'Navigate to login page', 'elapsed_time': 1.2}
-            print(f'Navigating to: https://example.com/login (Step 1, Action 1)')
+            print('Navigating to: https://example.com/login (Step 1, Action 1)')
             await page.goto('https://example.com/login', timeout=30000)
             await page.wait_for_load_state('load')
             await page.wait_for_timeout(1000)
@@ -104,32 +98,32 @@ async def run_test():
 
             # Step 2
             # Step metadata: {'description': 'Enter username', 'elapsed_time': 0.8}
-            print(f'Entering text in field (Step 2, Action 1)')
+            print('Entering text in field (Step 2, Action 1)')
             await try_locate_and_act(page, "input[data-testid='username-input']", 'fill', 'user@example.com', 'Step 2, Action 1')
 
             # Step completed in 0.80s
 
             # Step 3
             # Step metadata: {'description': 'Enter password', 'elapsed_time': 0.6}
-            print(f'Entering text in field (Step 3, Action 1)')
+            print('Entering text in field (Step 3, Action 1)')
             await try_locate_and_act(page, "input[data-testid='password-input']", 'fill', 'mypassword123', 'Step 3, Action 1')
 
             # Step completed in 0.60s
 
             # Step 4
             # Step metadata: {'description': 'Click login button', 'elapsed_time': 0.4}
-            print(f'Clicking element (Step 4, Action 1)')
+            print('Clicking element (Step 4, Action 1)')
             await try_locate_and_act(page, "button[data-testid='login-button']", 'click', step_info='Step 4, Action 1')
 
             # Step completed in 0.40s
 
             # Step 5
             # Step metadata: {'description': 'Wait for login and complete', 'elapsed_time': 2.1}
-            print(f'Waiting for 2 seconds (Step 5, Action 1)')
+            print('Waiting for 2 seconds (Step 5, Action 1)')
             await asyncio.sleep(2)
             print('--- Test marked as Done (Step 5, Action 2) ---')
-            print(f'Success: True')
-            print(f'Message: Login completed successfully')
+            print('Success: True')
+            print('Message: Login completed successfully')
 
             # Step completed in 2.10s
 
@@ -138,20 +132,19 @@ async def run_test():
             elapsed_time = asyncio.get_event_loop().time() - start_time
             print(f'Total test execution time: {elapsed_time:.2f} seconds')
 
-        except Exception as e:
-            print(f'Incremental test failed: {e}', file=sys.stderr)
-            if self.config.include_screenshots:
-                try:
-                    timestamp = int(asyncio.get_event_loop().time())
-                    screenshot_path = f'incremental_test_failure_{timestamp}.png'
-                    await page.screenshot(path=screenshot_path)
-                    print(f'Failure screenshot saved: {screenshot_path}')
-                except Exception:
-                    pass
-            exit_code = 1
-            raise
+    except Exception as e:
+        print(f'Incremental test failed: {e}', file=sys.stderr)
+        try:
+            timestamp = int(asyncio.get_event_loop().time())
+            screenshot_path = f'incremental_test_failure_{timestamp}.png'
+            await page.screenshot(path=screenshot_path)
+            print(f'Failure screenshot saved: {screenshot_path}')
+        except Exception:
+            pass
+        exit_code = 1
+        raise
 
-        finally:
+    finally:
             # Cleanup resources
             try:
                 await context.close()

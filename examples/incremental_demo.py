@@ -7,8 +7,8 @@ step by step as browser automation data comes in.
 """
 
 import asyncio
-import json
 from typing import List, Dict, Any
+from dotenv import load_dotenv
 
 # Import the new incremental functionality
 from browse_to_test import (
@@ -21,6 +21,7 @@ from browse_to_test import (
     ProcessingConfig
 )
 
+load_dotenv()
 
 def print_separator(title: str):
     """Print a styled separator for demo sections."""
@@ -225,7 +226,7 @@ async def demo_basic_incremental_workflow():
         return
     
     print_update_info(setup_result)
-    print(f"\n📄 Initial script preview:")
+    print("\n📄 Initial script preview:")
     print(setup_result.updated_script[:200] + "...")
     
     # Get sample steps
@@ -247,14 +248,14 @@ async def demo_basic_incremental_workflow():
     # Get current state
     current_state = orchestrator.get_current_state()
     if current_state:
-        print(f"\n📊 Current session state:")
+        print("\n📊 Current session state:")
         print(f"   Steps processed: {current_state['metadata']['step_count']}")
         print(f"   Total actions: {current_state['metadata']['total_actions']}")
         print(f"   Setup complete: {current_state['setup_complete']}")
         print(f"   Finalized: {current_state['finalized']}")
     
     # Finalize the session
-    print(f"\n🏁 Finalizing session...")
+    print("\n🏁 Finalizing session...")
     final_result = finalize_incremental_session(
         orchestrator, 
         final_validation=True, 
@@ -371,7 +372,7 @@ async def demo_callback_system():
         # Finalize
         orchestrator.finalize_session()
         
-        print(f"\n📊 Callback summary:")
+        print("\n📊 Callback summary:")
         print(f"   Total callbacks triggered: {update_count}")
         print(f"   Total lines added: {total_lines_added}")
     else:

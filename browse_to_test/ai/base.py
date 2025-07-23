@@ -350,7 +350,7 @@ Provide specific, actionable recommendations that leverage the project's existin
                     similar_tests.append(test)
             
             if similar_tests:
-                context_info += f"\n\n### Similar Existing Tests\n"
+                context_info += "\n\n### Similar Existing Tests\n"
                 for test in similar_tests[:3]:
                     context_info += f"- {test.file_path}\n"
                     if test.selectors:

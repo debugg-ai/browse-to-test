@@ -11,6 +11,7 @@ from pathlib import Path
 from .base import OutputPlugin, GeneratedTestScript, PluginError
 from ..core.config import OutputConfig
 from ..core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from ..core.language_templates import LanguageTemplateManager
 
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ class PlaywrightPlugin(OutputPlugin):
         """Initialize the Playwright plugin."""
         super().__init__(config)
         self.logger = logging.getLogger(__name__)
+        self.template_manager = LanguageTemplateManager()
     
     @property
     def plugin_name(self) -> str:
@@ -37,7 +39,7 @@ class PlaywrightPlugin(OutputPlugin):
     @property
     def supported_languages(self) -> List[str]:
         """Return supported languages."""
-        return ["python"]
+        return ["python", "typescript", "javascript", "csharp", "java"]
     
     def validate_config(self) -> List[str]:
         """Validate the plugin configuration."""
@@ -68,14 +70,20 @@ class PlaywrightPlugin(OutputPlugin):
     def generate_test_script(
         self, 
         parsed_data: ParsedAutomationData,
-        analysis_results: Optional[Dict[str, Any]] = None
+        analysis_results: Optional[Dict[str, Any]] = None,
+        system_context: Optional[Any] = None,
+        context_hints: Optional[Dict[str, Any]] = None
     ) -> GeneratedTestScript:
         """Generate Playwright test script from parsed data."""
         try:
-            self.logger.debug(f"Generating Playwright script for {len(parsed_data.steps)} steps")
+            self.logger.debug(f"Generating Playwright {self.config.language} script for {len(parsed_data.steps)} steps")
             
-            # Generate script content
-            script_content = self._generate_script_content(parsed_data, analysis_results)
+            # Generate script content based on language
+            if self.config.language == "python":
+                script_content = self._generate_script_content(parsed_data, analysis_results)
+            else:
+                # Use language templates for non-Python languages
+                script_content = self._generate_multi_language_script(parsed_data, analysis_results, system_context, context_hints)
             
             # Format the code
             formatted_content = self._format_code(script_content)
@@ -93,6 +101,7 @@ class PlaywrightPlugin(OutputPlugin):
                     "plugin_version": "2.0.0",
                     "has_assertions": self.config.include_assertions,
                     "has_error_handling": self.config.include_error_handling,
+                    "language": self.config.language,
                 }
             )
             
@@ -141,6 +150,172 @@ class PlaywrightPlugin(OutputPlugin):
         script_lines.extend(self._generate_entry_point())
         
         return "\n".join(script_lines)
+    
+    def _generate_multi_language_script(
+        self, 
+        parsed_data: ParsedAutomationData,
+        analysis_results: Optional[Dict[str, Any]] = None,
+        system_context: Optional[Any] = None,
+        context_hints: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Generate script content for non-Python languages using templates."""
+        language = self.config.language
+        template = self.template_manager.get_template(language)
+        
+        if not template:
+            raise PluginError(f"Language '{language}' not supported", self.plugin_name)
+        
+        script_lines = []
+        
+        # Add language-specific imports
+        if language == "typescript":
+            script_lines.extend([
+                "import { test, expect } from '@playwright/test';",
+                "import { Page } from '@playwright/test';",
+                ""
+            ])
+        elif language == "javascript":
+            script_lines.extend([
+                "const { test, expect } = require('@playwright/test');",
+                ""
+            ])
+        elif language == "csharp":
+            script_lines.extend([
+                "using Microsoft.Playwright;",
+                "using System.Threading.Tasks;",
+                "using System;",
+                "",
+                "namespace PlaywrightTests",
+                "{",
+                ""
+            ])
+        elif language == "java":
+            script_lines.extend([
+                "import com.microsoft.playwright.*;",
+                "import java.util.concurrent.CompletableFuture;",
+                "",
+                "public class PlaywrightTest {",
+                ""
+            ])
+        
+        # Add main test function
+        if language == "typescript":
+            script_lines.extend([
+                "test('login test', async ({ page }: { page: Page }) => {",
+            ])
+        elif language == "javascript":
+            script_lines.extend([
+                "test('login test', async ({ page }) => {",
+            ])
+        elif language == "csharp":
+            script_lines.extend([
+                "    public class LoginTest",
+                "    {",
+                "        public static async Task Main(string[] args)",
+                "        {",
+                "            using var playwright = await Playwright.CreateAsync();",
+                "            await using var browser = await playwright.Chromium.LaunchAsync();",
+                "            var page = await browser.NewPageAsync();",
+                ""
+            ])
+        elif language == "java":
+            script_lines.extend([
+                "    public static void main(String[] args) {",
+                "        CompletableFuture.runAsync(() -> {",
+                "            try (Playwright playwright = Playwright.create()) {",
+                "                Browser browser = playwright.chromium().launch();",
+                "                Page page = browser.newPage();",
+                ""
+            ])
+        
+        # Generate actions for each step
+        for step in parsed_data.steps:
+            for action in step.actions:
+                action_code = self._generate_multi_language_action(action, language)
+                script_lines.extend(action_code)
+        
+        # Add closing braces/statements
+        if language in ["typescript", "javascript"]:
+            script_lines.append("});")
+        elif language == "csharp":
+            script_lines.extend([
+                "",
+                "            await page.CloseAsync();",
+                "            await browser.CloseAsync();",
+                "        }",
+                "    }",
+                "}",
+            ])
+        elif language == "java":
+            script_lines.extend([
+                "",
+                "                page.close();",
+                "                browser.close();",
+                "            } catch (Exception e) {",
+                "                e.printStackTrace();",
+                "            }",
+                "        });",
+                "    }",
+                "}",
+            ])
+        
+        return "\n".join(script_lines)
+    
+    def _generate_multi_language_action(self, action: ParsedAction, language: str) -> List[str]:
+        """Generate action code for different languages."""
+        lines = []
+        
+        if action.action_type == "go_to_url":
+            url = action.parameters.get("url", "")
+            if language == "typescript":
+                lines.append(f"    await page.goto('{url}');")
+            elif language == "javascript":
+                lines.append(f"    await page.goto('{url}');")
+            elif language == "csharp":
+                lines.append(f"            await page.GotoAsync(\"{url}\");")
+            elif language == "java":
+                lines.append(f"                page.navigate(\"{url}\");")
+                
+        elif action.action_type == "input_text":
+            text = action.parameters.get("text", "")
+            selector = action.selector_info.get("css_selector", "") if action.selector_info else ""
+            if language == "typescript":
+                lines.append(f"    await page.fill('{selector}', '{text}');")
+            elif language == "javascript":
+                lines.append(f"    await page.fill('{selector}', '{text}');")
+            elif language == "csharp":
+                lines.append(f"            await page.FillAsync(\"{selector}\", \"{text}\");")
+            elif language == "java":
+                lines.append(f"                page.fill(\"{selector}\", \"{text}\");")
+                
+        elif action.action_type in ["click_element", "click_element_by_index"]:
+            selector = action.selector_info.get("css_selector", "") if action.selector_info else ""
+            if language == "typescript":
+                lines.append(f"    await page.click('{selector}');")
+            elif language == "javascript":
+                lines.append(f"    await page.click('{selector}');")
+            elif language == "csharp":
+                lines.append(f"            await page.ClickAsync(\"{selector}\");")
+            elif language == "java":
+                lines.append(f"                page.click(\"{selector}\");")
+                
+        elif action.action_type == "wait":
+            seconds = action.parameters.get("seconds", 3)
+            wait_ms = int(seconds) * 1000
+            if language == "typescript":
+                lines.append(f"    await page.waitForTimeout({wait_ms});")
+            elif language == "javascript":
+                lines.append(f"    await page.waitForTimeout({wait_ms});")
+            elif language == "csharp":
+                lines.append(f"            await page.WaitForTimeoutAsync({wait_ms});")
+            elif language == "java":
+                lines.append(f"                page.waitForTimeout({wait_ms});")
+        else:
+            # Unsupported action
+            comment_prefix = "//" if language in ["typescript", "javascript", "csharp", "java"] else "#"
+            lines.append(f"    {comment_prefix} Unsupported action: {action.action_type}")
+        
+        return lines
     
     def _generate_imports(self) -> List[str]:
         """Generate import statements."""

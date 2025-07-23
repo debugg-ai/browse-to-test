@@ -25,6 +25,21 @@ class AIConfig:
     extra_params: Dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass 
+class SharedSetupConfig:
+    """Configuration for shared setup generation."""
+    enabled: bool = True
+    setup_dir: str = "browse_to_test/language_utils/test_setup"
+    utilities_file: str = "test_utilities.py"
+    constants_file: str = "test_constants.py" 
+    framework_helpers_file: str = "framework_helpers.py"
+    generate_separate_files: bool = True
+    include_docstrings: bool = True
+    organize_by_category: bool = True
+    auto_generate_imports: bool = True
+    force_regenerate: bool = False
+
+
 @dataclass
 class OutputConfig:
     """Configuration for output generation."""
@@ -42,10 +57,94 @@ class OutputConfig:
     test_timeout: int = 30000
     browser_options: Dict[str, Any] = field(default_factory=dict)
     
+    # Shared setup configuration
+    shared_setup: SharedSetupConfig = field(default_factory=SharedSetupConfig)
+    
+    # Language-specific configuration
+    typescript_config: Dict[str, Any] = field(default_factory=dict)
+    javascript_config: Dict[str, Any] = field(default_factory=dict)
+    csharp_config: Dict[str, Any] = field(default_factory=dict)
+    java_config: Dict[str, Any] = field(default_factory=dict)
+    
+    # Supported languages
+    SUPPORTED_LANGUAGES = {
+        "python": {
+            "extension": ".py", 
+            "comment_prefix": "#",
+            "async_syntax": "async def",
+            "import_syntax": "import {module}",
+            "from_import_syntax": "from {module} import {items}"
+        },
+        "typescript": {
+            "extension": ".ts",
+            "comment_prefix": "//", 
+            "async_syntax": "async function",
+            "import_syntax": "import {{ {items} }} from '{module}'",
+            "from_import_syntax": "import {{ {items} }} from '{module}'"
+        },
+        "javascript": {
+            "extension": ".js",
+            "comment_prefix": "//",
+            "async_syntax": "async function", 
+            "import_syntax": "import {{ {items} }} from '{module}'",
+            "from_import_syntax": "import {{ {items} }} from '{module}'"
+        },
+        "csharp": {
+            "extension": ".cs",
+            "comment_prefix": "//",
+            "async_syntax": "public async Task",
+            "import_syntax": "using {module};",
+            "from_import_syntax": "using {module};"
+        },
+        "java": {
+            "extension": ".java", 
+            "comment_prefix": "//",
+            "async_syntax": "public CompletableFuture<Void>",
+            "import_syntax": "import {module};",
+            "from_import_syntax": "import {module};"
+        }
+    }
+    
+    def __post_init__(self):
+        """Validate configuration after initialization."""
+        if self.language not in self.SUPPORTED_LANGUAGES:
+            raise ValueError(f"Unsupported language: {self.language}. Supported: {list(self.SUPPORTED_LANGUAGES.keys())}")
+    
     @property
     def framework_config(self) -> Dict[str, Any]:
         """Get framework-specific configuration."""
         return self.browser_options
+    
+    @property 
+    def language_config(self) -> Dict[str, Any]:
+        """Get language-specific configuration and syntax."""
+        base_config = self.SUPPORTED_LANGUAGES.get(self.language, {})
+        
+        # Merge with language-specific overrides
+        if self.language == "typescript":
+            base_config.update(self.typescript_config)
+        elif self.language == "javascript":
+            base_config.update(self.javascript_config)
+        elif self.language == "csharp":
+            base_config.update(self.csharp_config)
+        elif self.language == "java":
+            base_config.update(self.java_config)
+            
+        return base_config
+    
+    @property
+    def file_extension(self) -> str:
+        """Get the file extension for the target language."""
+        return self.language_config.get("extension", ".py")
+    
+    @property
+    def comment_prefix(self) -> str:
+        """Get the comment prefix for the target language.""" 
+        return self.language_config.get("comment_prefix", "#")
+    
+    def get_framework_language_combination(self) -> str:
+        """Get a string representing the framework-language combination."""
+        return f"{self.framework}_{self.language}"
 
 
 @dataclass

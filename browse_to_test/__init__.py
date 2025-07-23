@@ -9,7 +9,9 @@ Now includes incremental live update functionality for real-time test generation
 
 from .core.orchestrator import TestScriptOrchestrator
 from .core.incremental_orchestrator import IncrementalTestScriptOrchestrator, ScriptState, IncrementalUpdateResult
-from .core.config import Config, AIConfig, OutputConfig, ProcessingConfig
+from .core.config import Config, AIConfig, OutputConfig, ProcessingConfig, SharedSetupConfig
+from .core.shared_setup_manager import SharedSetupManager, SetupUtility
+from .core.language_templates import LanguageTemplateManager, LanguageTemplate
 from .plugins.registry import PluginRegistry
 from .ai.factory import AIProviderFactory
 
@@ -37,6 +39,15 @@ __all__ = [
     "start_incremental_session",
     "add_incremental_step",
     "finalize_incremental_session",
+    
+    # Shared setup system
+    "SharedSetupConfig",
+    "SharedSetupManager", 
+    "SetupUtility",
+    
+    # Multi-language support
+    "LanguageTemplateManager",
+    "LanguageTemplate",
 ]
 
 def convert_to_test_script(

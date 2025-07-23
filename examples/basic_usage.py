@@ -13,6 +13,10 @@ from pathlib import Path
 # Import the main library
 import browse_to_test as btt
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 def create_sample_automation_data():
     """Create sample browser automation data for demonstration."""
@@ -236,7 +240,7 @@ def advanced_example():
     
     # Get available options
     options = orchestrator.get_available_options()
-    print(f"\nAvailable options:")
+    print("\nAvailable options:")
     print(f"  AI Providers: {', '.join(options['ai_providers'])}")
     print(f"  Output Plugins: {', '.join(options['output_plugins'])}")
     print(f"  Frameworks: {', '.join(options['supported_frameworks'])}")

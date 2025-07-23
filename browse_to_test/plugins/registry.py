@@ -52,17 +52,18 @@ class PluginRegistry:
             logger.warning(f"Incremental Selenium plugin not available: {e}")
         
         # Register other plugins if available
-        try:
-            from .cypress_plugin import CypressPlugin
-            self.register_plugin("cypress", CypressPlugin)
-        except ImportError as e:
-            logger.warning(f"Cypress plugin not available: {e}")
+        # TODO: Implement these plugins when ready
+        # try:
+        #     from .cypress_plugin import CypressPlugin
+        #     self.register_plugin("cypress", CypressPlugin)
+        # except ImportError as e:
+        #     logger.warning(f"Cypress plugin not available: {e}")
         
-        try:
-            from .webdriver_io_plugin import WebDriverIOPlugin
-            self.register_plugin("webdriverio", WebDriverIOPlugin)
-        except ImportError as e:
-            logger.warning(f"WebDriverIO plugin not available: {e}")
+        # try:
+        #     from .webdriver_io_plugin import WebDriverIOPlugin
+        #     self.register_plugin("webdriverio", WebDriverIOPlugin)
+        # except ImportError as e:
+        #     logger.warning(f"WebDriverIO plugin not available: {e}")
     
     def register_plugin(self, name: str, plugin_class: Type[OutputPlugin]):
         """
@@ -73,7 +74,7 @@ class PluginRegistry:
             plugin_class: Class that implements OutputPlugin
         """
         if not issubclass(plugin_class, OutputPlugin):
-            raise ValueError(f"Plugin class must inherit from OutputPlugin")
+            raise ValueError("Plugin class must inherit from OutputPlugin")
         
         self._plugins[name.lower()] = plugin_class
         logger.debug(f"Registered output plugin: {name}")
