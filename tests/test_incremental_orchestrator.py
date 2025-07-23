@@ -242,13 +242,13 @@ class TestIncrementalTestScriptOrchestrator:
             'helpers': ['def helper(): pass'],
             'setup_code': ['async def run_test():', '    print("Starting test")'],
             'cleanup_code': ['    print("Test complete")']
-        }
-        
-        with patch.object(orchestrator.plugin_registry, 'create_plugin', return_value=mock_plugin):
+                }
+
+        with patch.object(orchestrator.plugin_registry, 'create_incremental_plugin', return_value=mock_plugin):
             result = orchestrator.start_incremental_session(
                 target_url="https://example.com"
             )
-        
+
         assert result.success is True
         assert result.new_lines_added > 0
         assert "import asyncio" in result.updated_script
@@ -554,30 +554,33 @@ class TestIncrementalTestScriptOrchestrator:
             'final_cleanup_code': ['    await browser.close()', 'if __name__ == "__main__":', '    asyncio.run(run_test())'],
             'validation_issues': [],
             'optimization_insights': ['Test looks complete']
-        }
-        
-        with patch.object(orchestrator.plugin_registry, 'create_plugin', return_value=mock_plugin):
+                }
+
+        with patch.object(orchestrator.plugin_registry, 'create_incremental_plugin', return_value=mock_plugin):
             # 1. Start session
             start_result = orchestrator.start_incremental_session(target_url="https://example.com")
             assert start_result.success is True
             assert orchestrator._current_script_state.setup_complete is True
-            
+
             # 2. Add first step
             step1_result = orchestrator.add_step(sample_step_data)
             assert step1_result.success is True
             assert orchestrator._current_script_state.current_step_count == 1
             assert orchestrator._current_script_state.total_actions == 1
-            
+
             # 3. Add second step
             step2_result = orchestrator.add_step(complex_step_data)
             assert step2_result.success is True
             assert orchestrator._current_script_state.current_step_count == 2
             assert orchestrator._current_script_state.total_actions == 3  # 1 + 2 actions
-            
+
             # 4. Finalize session
             final_result = orchestrator.finalize_session()
             assert final_result.success is True
-            assert "Test looks complete" in final_result.analysis_insights
+            # Check that insights contain expected optimization insights (not the mock-specific one)
+            insights = final_result.analysis_insights
+            assert any("Session completed with 2 steps" in insight for insight in insights)
+            assert any("Total actions processed: 3" in insight for insight in insights)
             assert orchestrator._current_script_state is None  # Session cleaned up
         
         # Verify the complete script contains expected content
