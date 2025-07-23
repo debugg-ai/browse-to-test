@@ -1,2 +1,3 @@
 *.pyc
 /training_data/data_collectors/longest_playwright_tests
+.env

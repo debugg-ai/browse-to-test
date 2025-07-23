@@ -1,8 +1,7 @@
 """Tests for the new IncrementalSession class introduced in the architectural restructuring."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
+from unittest.mock import patch, MagicMock
 
 from browse_to_test.core.session import IncrementalSession, SessionResult
 from browse_to_test.core.config import ConfigBuilder
@@ -495,7 +494,7 @@ class TestIncrementalSessionIntegration:
             session = IncrementalSession(config)
             
             # Start with metadata
-            start_time = datetime.now()
+            # start_time = datetime.now()
             result = session.start("https://example.com", {"test": "hint"})
             
             assert result.metadata["session_started"] is True
