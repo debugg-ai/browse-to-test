@@ -3,7 +3,7 @@ OpenAI provider implementation.
 """
 
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional, Any
 from ..base import AIProvider, AIResponse, AIProviderError
 
 
@@ -13,6 +13,15 @@ class OpenAIProvider(AIProvider):
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         """Initialize OpenAI provider."""
         super().__init__(api_key=api_key, **kwargs)
+        
+        # Set configuration attributes
+        self.model = kwargs.get('model', 'gpt-4')
+        self.temperature = kwargs.get('temperature', 0.1)
+        self.max_tokens = kwargs.get('max_tokens', 4000)
+        self.timeout = kwargs.get('timeout', 30)
+        self.retry_attempts = kwargs.get('retry_attempts', 3)
+        self.extra_params = {k: v for k, v in kwargs.items() 
+                           if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts', 'api_base_url']}
         
         # Import OpenAI here to avoid dependency issues
         try:
@@ -144,3 +153,42 @@ class OpenAIProvider(AIProvider):
                 provider=self.provider_name,
                 model=self.model
             ) from e 
+    
+    def is_available(self) -> bool:
+        """Check if the OpenAI provider is available."""
+        try:
+            # Check if we have an API key (either provided or in environment)
+            if self.api_key:
+                return True
+            
+            import os
+            return bool(os.getenv("OPENAI_API_KEY"))
+        except Exception:
+            return False
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get information about the current model."""
+        import os
+        return {
+            "name": self.model,
+            "provider": self.provider_name,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "supported_models": self.supported_models,
+            "api_key_available": bool(self.api_key or os.getenv("OPENAI_API_KEY")),
+        }
+    
+    def _make_request_with_retry(self, request_func, **kwargs):
+        """Make request with retry logic."""
+        import time
+        
+        for attempt in range(self.retry_attempts):
+            try:
+                return request_func(**kwargs)
+            except Exception as e:
+                if attempt == self.retry_attempts - 1:
+                    raise
+                
+                # Wait before retrying
+                wait_time = 2 ** attempt  # Exponential backoff
+                time.sleep(wait_time)

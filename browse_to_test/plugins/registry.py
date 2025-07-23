@@ -21,6 +21,7 @@ class PluginRegistry:
     
     def _register_default_plugins(self):
         """Register all available default plugins."""
+        # Register standard plugins
         try:
             from .playwright_plugin import PlaywrightPlugin
             self.register_plugin("playwright", PlaywrightPlugin)
@@ -33,6 +34,24 @@ class PluginRegistry:
         except ImportError as e:
             logger.warning(f"Selenium plugin not available: {e}")
         
+        # Register incremental plugins
+        try:
+            from .incremental_playwright_plugin import IncrementalPlaywrightPlugin
+            self.register_plugin("incremental_playwright", IncrementalPlaywrightPlugin)
+            # Also register as default for playwright when incremental is requested
+            self.register_plugin("playwright_incremental", IncrementalPlaywrightPlugin)
+        except ImportError as e:
+            logger.warning(f"Incremental Playwright plugin not available: {e}")
+        
+        try:
+            from .incremental_selenium_plugin import IncrementalSeleniumPlugin
+            self.register_plugin("incremental_selenium", IncrementalSeleniumPlugin)
+            # Also register as default for selenium when incremental is requested
+            self.register_plugin("selenium_incremental", IncrementalSeleniumPlugin)
+        except ImportError as e:
+            logger.warning(f"Incremental Selenium plugin not available: {e}")
+        
+        # Register other plugins if available
         try:
             from .cypress_plugin import CypressPlugin
             self.register_plugin("cypress", CypressPlugin)
@@ -128,6 +147,83 @@ class PluginRegistry:
                 plugin_name=framework_name
             ) from e
     
+    def create_incremental_plugin(self, config: OutputConfig) -> OutputPlugin:
+        """
+        Create an incremental plugin instance from configuration.
+        
+        This method specifically looks for incremental versions of plugins first.
+        
+        Args:
+            config: Output configuration containing plugin details
+            
+        Returns:
+            Configured incremental plugin instance
+            
+        Raises:
+            PluginError: If incremental plugin is not available
+        """
+        framework_name = config.framework.lower()
+        
+        # Look for incremental version first
+        incremental_names = [
+            f"incremental_{framework_name}",
+            f"{framework_name}_incremental"
+        ]
+        
+        plugin_class = None
+        for name in incremental_names:
+            if name in self._plugins:
+                plugin_class = self._plugins[name]
+                break
+        
+        # Fall back to regular plugin if no incremental version
+        if plugin_class is None and framework_name in self._plugins:
+            plugin_class = self._plugins[framework_name]
+            # Check if regular plugin supports incremental
+            temp_instance = plugin_class(config)
+            if not hasattr(temp_instance, 'supports_incremental') or not temp_instance.supports_incremental():
+                raise PluginError(
+                    f"No incremental plugin available for framework: {config.framework}",
+                    plugin_name=framework_name
+                )
+        
+        if plugin_class is None:
+            available = ', '.join(self._get_supported_frameworks())
+            raise PluginError(
+                f"No incremental plugin found for framework: {config.framework}. "
+                f"Supported frameworks: {available}"
+            )
+        
+        try:
+            # Create plugin instance
+            plugin = plugin_class(config)
+            
+            # Validate incremental support
+            if not plugin.supports_incremental():
+                raise PluginError(
+                    f"Plugin {plugin.plugin_name} does not support incremental mode",
+                    plugin_name=plugin.plugin_name
+                )
+            
+            # Validate the configuration
+            validation_errors = plugin.validate_config()
+            if validation_errors:
+                raise PluginError(
+                    f"Plugin configuration validation failed: {'; '.join(validation_errors)}",
+                    plugin_name=plugin.plugin_name
+                )
+            
+            logger.info(f"Created incremental plugin: {plugin.plugin_name} for {config.framework}/{config.language}")
+            return plugin
+            
+        except Exception as e:
+            if isinstance(e, PluginError):
+                raise
+            raise PluginError(
+                f"Failed to create incremental plugin for {config.framework}: {e}",
+                plugin_name=framework_name
+            ) from e
+    
     def list_available_plugins(self) -> List[str]:
         """
         List all registered plugin names.
@@ -136,6 +232,26 @@ class PluginRegistry:
             List of available plugin names
         """
         return sorted(self._plugins.keys())
+    
+    def list_incremental_plugins(self) -> List[str]:
+        """
+        List plugins that support incremental mode.
+        
+        Returns:
+            List of incremental plugin names
+        """
+        incremental_plugins = []
+        for name, plugin_class in self._plugins.items():
+            try:
+                from ..core.config import OutputConfig
+                temp_config = OutputConfig()
+                temp_instance = plugin_class(temp_config)
+                if hasattr(temp_instance, 'supports_incremental') and temp_instance.supports_incremental():
+                    incremental_plugins.append(name)
+            except Exception:
+                continue
+        
+        return sorted(incremental_plugins)
     
     def get_plugin_info(self, plugin_name: str) -> Dict[str, any]:
         """
@@ -162,28 +278,32 @@ class PluginRegistry:
             from ..core.config import OutputConfig
             temp_config = OutputConfig()
             temp_instance = plugin_class(temp_config)
-            return {
+            
+            info = {
                 "name": temp_instance.plugin_name,
                 "supported_frameworks": temp_instance.supported_frameworks,
                 "supported_languages": temp_instance.supported_languages,
+                "supports_incremental": getattr(temp_instance, 'supports_incremental', lambda: False)(),
                 "class": plugin_class.__name__,
                 "module": plugin_class.__module__,
             }
+            
+            return info
         except Exception as e:
             logger.warning(f"Could not get info for plugin {plugin_name}: {e}")
             return {
                 "name": plugin_name,
                 "supported_frameworks": [],
                 "supported_languages": [],
+                "supports_incremental": False,
                 "class": plugin_class.__name__,
                 "module": plugin_class.__module__,
                 "error": str(e)
             }
     
     def _get_supported_frameworks(self) -> List[str]:
-        """Get list of all supported frameworks across all plugins."""
+        """Get all supported frameworks across all plugins."""
         frameworks = set()
-        
         for plugin_name, plugin_class in self._plugins.items():
             try:
                 from ..core.config import OutputConfig
@@ -193,31 +313,7 @@ class PluginRegistry:
             except Exception:
                 continue
         
-        return sorted(list(frameworks))
-    
-    def get_supported_languages_for_framework(self, framework: str) -> List[str]:
-        """
-        Get supported languages for a specific framework.
-        
-        Args:
-            framework: Framework name
-            
-        Returns:
-            List of supported language names
-        """
-        languages = set()
-        
-        for plugin_name, plugin_class in self._plugins.items():
-            try:
-                from ..core.config import OutputConfig
-                temp_config = OutputConfig()
-                temp_instance = plugin_class(temp_config)
-                if temp_instance.supports_framework(framework):
-                    languages.update(temp_instance.supported_languages)
-            except Exception:
-                continue
-        
-        return sorted(list(languages))
+        return sorted(frameworks)
     
     def validate_framework_language_combination(self, framework: str, language: str) -> bool:
         """

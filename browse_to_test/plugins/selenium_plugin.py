@@ -320,8 +320,8 @@ class SeleniumPlugin(OutputPlugin):
         """Generate actions for a single step."""
         lines = [f"{indent}# Step {step.step_index + 1}"]
         
-        if self.config.add_comments and step.step_metadata:
-            lines.append(f"{indent}# Step metadata: {step.step_metadata}")
+        if self.config.add_comments and step.metadata:
+            lines.append(f"{indent}# Step metadata: {step.metadata}")
         
         for action in step.actions:
             lines.extend(self._generate_action_code(action, step.step_index, indent))

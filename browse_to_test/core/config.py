@@ -36,10 +36,16 @@ class OutputConfig:
     include_error_handling: bool = True
     include_logging: bool = False
     include_screenshots: bool = False
+    add_comments: bool = True
     sensitive_data_keys: List[str] = field(default_factory=list)
     mask_sensitive_data: bool = True
     test_timeout: int = 30000
     browser_options: Dict[str, Any] = field(default_factory=dict)
+    
+    @property
+    def framework_config(self) -> Dict[str, Any]:
+        """Get framework-specific configuration."""
+        return self.browser_options
 
 
 @dataclass

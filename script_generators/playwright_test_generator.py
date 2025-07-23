@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .playwright_script_generator import PlaywrightScriptGenerator
+from playwright_script_generator import PlaywrightScriptGenerator
 
 logger = logging.getLogger(__name__)
 

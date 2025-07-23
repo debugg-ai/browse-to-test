@@ -352,8 +352,8 @@ class PlaywrightPlugin(OutputPlugin):
         """Generate actions for a single step."""
         lines = [f"            # Step {step.step_index + 1}"]
         
-        if self.config.add_comments and step.step_metadata:
-            lines.append(f"            # Step metadata: {step.step_metadata}")
+        if self.config.add_comments and step.metadata:
+            lines.append(f"            # Step metadata: {step.metadata}")
         
         for action in step.actions:
             lines.extend(self._generate_action_code(action, step.step_index))

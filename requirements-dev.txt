@@ -1,0 +1,51 @@
+# Core library requirements
+-r requirements.txt
+
+# Testing framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+pytest-xdist>=3.3.0
+pytest-timeout>=2.1.0
+
+# Code quality and formatting
+black>=23.7.0
+isort>=5.12.0
+flake8>=6.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=23.7.0
+flake8-comprehensions>=3.14.0
+flake8-simplify>=0.20.0
+mypy>=1.5.0
+bandit>=1.7.5
+pydocstyle>=6.3.0
+pyupgrade>=3.10.0
+
+# Pre-commit hooks
+pre-commit>=3.3.0
+
+# Documentation
+sphinx>=7.1.0
+sphinx-rtd-theme>=1.3.0
+
+# Additional testing utilities
+responses>=0.23.0
+freezegun>=1.2.0
+factory-boy>=3.3.0
+faker>=19.3.0
+
+# Optional AI provider dependencies for testing
+openai>=1.0.0
+anthropic>=0.7.0
+
+# Optional testing framework dependencies
+playwright>=1.30.0
+selenium>=4.0.0
+
+# Type stubs
+types-requests>=2.31.0
+types-PyYAML>=6.0.0
+
+# Coverage reporting
+coverage[toml]>=7.2.0 

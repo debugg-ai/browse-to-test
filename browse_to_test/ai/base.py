@@ -9,6 +9,15 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
+class AIProviderError(Exception):
+    """Exception raised by AI providers for errors."""
+    
+    def __init__(self, message: str, provider: Optional[str] = None, model: Optional[str] = None):
+        super().__init__(message)
+        self.provider = provider
+        self.model = model
+
+
 class AnalysisType(Enum):
     """Types of AI analysis that can be performed."""
     CONVERSION = "conversion"
@@ -402,7 +411,8 @@ Provide specific, actionable recommendations that leverage the project's existin
 class AIProvider(ABC):
     """Abstract base class for AI providers."""
     
-    def __init__(self, **kwargs):
+    def __init__(self, api_key: Optional[str] = None, **kwargs):
+        self.api_key = api_key
         self.config = kwargs
         
     @abstractmethod

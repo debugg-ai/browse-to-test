@@ -5,7 +5,7 @@ Abstract base classes for output plugins.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-from ..core.input_parser import ParsedAutomationData
+from ..core.input_parser import ParsedAutomationData, ParsedStep
 from ..core.config import OutputConfig
 
 
@@ -25,7 +25,7 @@ class GeneratedTestScript:
 
 
 class PluginError(Exception):
-    """Exception raised by output plugins."""
+    """Exception raised by plugins during operation."""
     
     def __init__(self, message: str, plugin_name: Optional[str] = None):
         super().__init__(message)
@@ -76,7 +76,9 @@ class OutputPlugin(ABC):
     def generate_test_script(
         self, 
         parsed_data: ParsedAutomationData,
-        analysis_results: Optional[Dict[str, Any]] = None
+        analysis_results: Optional[Dict[str, Any]] = None,
+        system_context: Optional[Any] = None,
+        context_hints: Optional[Dict[str, Any]] = None
     ) -> GeneratedTestScript:
         """
         Generate test script from parsed automation data.
@@ -84,6 +86,8 @@ class OutputPlugin(ABC):
         Args:
             parsed_data: Parsed automation data to convert
             analysis_results: Optional analysis results from ActionAnalyzer
+            system_context: Optional system context information
+            context_hints: Optional context hints for generation
             
         Returns:
             Generated test script with metadata
@@ -103,72 +107,146 @@ class OutputPlugin(ABC):
         """
         pass
     
+    # Incremental support methods (optional)
+    
+    def supports_incremental(self) -> bool:
+        """
+        Check if this plugin supports incremental script generation.
+        
+        Returns:
+            True if incremental methods are implemented, False otherwise
+        """
+        return (
+            hasattr(self, 'setup_incremental_script') and
+            hasattr(self, 'add_incremental_step') and
+            hasattr(self, 'finalize_incremental_script')
+        )
+    
+    def setup_incremental_script(
+        self,
+        target_url: Optional[str] = None,
+        system_context: Optional[Any] = None,
+        context_hints: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, List[str]]:
+        """
+        Set up incremental script generation (setup phase).
+        
+        This should initialize the script structure with imports, helpers,
+        and framework setup code.
+        
+        Args:
+            target_url: URL being tested
+            system_context: System context information
+            context_hints: Additional context hints
+            
+        Returns:
+            Dictionary containing:
+            - 'imports': List of import lines
+            - 'helpers': List of helper function lines
+            - 'setup_code': List of setup/initialization lines
+            - 'cleanup_code': List of cleanup lines
+            
+        Raises:
+            NotImplementedError: If plugin doesn't support incremental mode
+        """
+        raise NotImplementedError(f"Plugin {self.plugin_name} does not support incremental script generation")
+    
+    def add_incremental_step(
+        self,
+        step: ParsedStep,
+        current_state: Any,  # ScriptState from incremental_orchestrator
+        analysis_results: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Add a new step to the incremental script generation.
+        
+        Args:
+            step: Parsed step to add
+            current_state: Current script state
+            analysis_results: Analysis results for this step
+            
+        Returns:
+            Dictionary containing:
+            - 'step_code': List of code lines for this step
+            - 'validation_issues': List of validation issues found
+            - 'insights': List of analysis insights
+            
+        Raises:
+            NotImplementedError: If plugin doesn't support incremental mode
+        """
+        raise NotImplementedError(f"Plugin {self.plugin_name} does not support incremental script generation")
+    
+    def finalize_incremental_script(
+        self,
+        current_state: Any,  # ScriptState from incremental_orchestrator
+        final_validation: bool = True,
+        optimize_script: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Finalize the incremental script generation (finalization phase).
+        
+        Args:
+            current_state: Current script state
+            final_validation: Whether to perform final validation
+            optimize_script: Whether to apply optimizations
+            
+        Returns:
+            Dictionary containing:
+            - 'final_cleanup_code': Updated cleanup code
+            - 'validation_issues': List of validation issues
+            - 'optimization_insights': List of optimization insights
+            
+        Raises:
+            NotImplementedError: If plugin doesn't support incremental mode
+        """
+        raise NotImplementedError(f"Plugin {self.plugin_name} does not support incremental script generation")
+    
+    # Helper methods
+    
     def supports_framework(self, framework: str) -> bool:
-        """Check if plugin supports a specific framework."""
+        """Check if this plugin supports a specific framework."""
         return framework.lower() in [f.lower() for f in self.supported_frameworks]
     
     def supports_language(self, language: str) -> bool:
-        """Check if plugin supports a specific language."""
+        """Check if this plugin supports a specific language."""
         return language.lower() in [l.lower() for l in self.supported_languages]
     
     def supports_config(self, config: OutputConfig) -> bool:
-        """Check if plugin supports the given configuration."""
+        """Check if this plugin supports a given configuration."""
         return (
-            self.supports_framework(config.framework) and 
+            self.supports_framework(config.framework) and
             self.supports_language(config.language)
         )
     
-    def _format_code(self, code: str) -> str:
+    def _format_code(self, content: str) -> str:
         """
-        Format generated code according to configuration.
+        Format generated code (basic implementation).
         
-        Args:
-            code: Raw generated code
-            
-        Returns:
-            Formatted code
+        Subclasses can override this for framework-specific formatting.
         """
-        if not code:
-            return code
-        
-        lines = code.split('\n')
+        # Basic formatting: ensure consistent indentation and line endings
+        lines = content.split('\n')
         formatted_lines = []
         
         for line in lines:
-            # Apply indentation
-            if line.strip():
-                # Count existing indentation
-                existing_indent = len(line) - len(line.lstrip())
-                if existing_indent > 0:
-                    # Replace with configured indentation
-                    indent_level = existing_indent // 4  # Assume 4-space default
-                    new_indent = ' ' * (indent_level * self.config.indent_size)
-                    formatted_line = new_indent + line.lstrip()
-                else:
-                    formatted_line = line
-                
-                # Apply line length limit
-                if len(formatted_line) > self.config.max_line_length:
-                    # Simple line breaking (plugins can override for language-specific rules)
-                    formatted_line = self._break_long_line(formatted_line)
-                
-                formatted_lines.append(formatted_line)
-            else:
-                formatted_lines.append(line)
+            # Remove trailing whitespace
+            line = line.rstrip()
+            formatted_lines.append(line)
         
-        return '\n'.join(formatted_lines)
-    
-    def _break_long_line(self, line: str) -> str:
-        """
-        Break a long line into multiple lines (basic implementation).
+        # Remove excessive blank lines
+        result_lines = []
+        prev_blank = False
         
-        Plugins should override this for language-specific line breaking.
-        """
-        if len(line) <= self.config.max_line_length:
-            return line
+        for line in formatted_lines:
+            is_blank = not line.strip()
+            
+            if is_blank and prev_blank:
+                continue  # Skip consecutive blank lines
+            
+            result_lines.append(line)
+            prev_blank = is_blank
         
-        # Very basic line breaking - just add a comment indicating it's too long
-        return f"{line}  # TODO: Break this long line"
+        return '\n'.join(result_lines)
     
     def _add_header_comment(self, content: str) -> str:
         """Add header comment to generated script."""

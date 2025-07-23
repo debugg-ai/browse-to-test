@@ -172,7 +172,7 @@ class TestScriptOrchestrator:
             return final_script
             
         except Exception as e:
-            if effective_config.strict_mode:
+            if effective_config.processing.strict_mode:
                 raise RuntimeError(f"Test script generation failed: {e}") from e
             else:
                 if effective_config.debug:
@@ -220,7 +220,7 @@ class TestScriptOrchestrator:
             except Exception as e:
                 if self.config.debug:
                     print(f"Failed to generate script for {framework}: {e}")
-                if self.config.strict_mode:
+                if self.config.processing.strict_mode:
                     raise
                 results[framework] = f"# Error generating script for {framework}: {e}"
         

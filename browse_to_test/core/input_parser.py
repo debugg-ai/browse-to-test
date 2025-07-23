@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 from pathlib import Path
 
+from .config import Config
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +29,10 @@ class ParsedAction:
     metadata: Optional[Dict[str, Any]] = None  # Additional metadata
     
     def __post_init__(self):
-        """Ensure parameters and metadata are not None."""
+        """Ensure parameters is not None."""
         if self.parameters is None:
             self.parameters = {}
-        if self.metadata is None:
-            self.metadata = {}
+        # Don't automatically set metadata to {} - let it stay None if not provided
 
 
 @dataclass
@@ -40,15 +41,13 @@ class ParsedStep:
     
     step_index: int
     actions: List[ParsedAction]
-    step_metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
     timing_info: Optional[Dict[str, Any]] = None
     
     def __post_init__(self):
-        """Ensure metadata is not None."""
-        if self.step_metadata is None:
-            self.step_metadata = {}
-        if self.timing_info is None:
-            self.timing_info = {}
+        """Post-initialization processing for ParsedStep."""
+        # Don't automatically set timing_info or metadata to {} - let them stay None if not provided
+        pass
 
 
 @dataclass
@@ -56,13 +55,14 @@ class ParsedAutomationData:
     """Container for all parsed automation data."""
     
     steps: List[ParsedStep]
-    total_actions: int
+    total_actions: int = 0  # Will be calculated in __post_init__
+    sensitive_data_keys: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
     
     def __post_init__(self):
-        """Calculate total actions and ensure metadata is not None."""
-        if self.metadata is None:
-            self.metadata = {}
+        """Calculate total actions from steps if not provided."""
+        if self.sensitive_data_keys is None:
+            self.sensitive_data_keys = []
         
         # Recalculate total actions from steps
         self.total_actions = sum(len(step.actions) for step in self.steps)
@@ -71,15 +71,15 @@ class ParsedAutomationData:
 class InputParser:
     """Parser for browser automation data from various sources."""
     
-    def __init__(self, strict_mode: bool = False):
+    def __init__(self, config):
         """
         Initialize the input parser.
         
         Args:
-            strict_mode: If True, raise exceptions on parsing errors.
-                        If False, log warnings and skip invalid data.
+            config: Configuration object containing parsing settings.
         """
-        self.strict_mode = strict_mode
+        self.config = config
+        self.strict_mode = config.processing.strict_mode
         self.logger = logging.getLogger(__name__)
     
     def parse(self, automation_data: Union[List[Dict], str, Path]) -> ParsedAutomationData:
@@ -98,6 +98,10 @@ class InputParser:
         Raises:
             ValueError: If data format is invalid and strict_mode is True
         """
+        # Handle None input
+        if automation_data is None:
+            raise ValueError("Automation data cannot be None")
+        
         # Handle different input types
         if isinstance(automation_data, (str, Path)):
             automation_data = self._load_from_file_or_string(automation_data)
@@ -114,8 +118,7 @@ class InputParser:
         for step_index, step_data in enumerate(automation_data):
             try:
                 parsed_step = self._parse_step(step_data, step_index)
-                if parsed_step.actions:  # Only add steps with valid actions
-                    parsed_steps.append(parsed_step)
+                parsed_steps.append(parsed_step)  # Include all steps, even empty ones
             except Exception as e:
                 error_msg = f"Error parsing step {step_index}: {e}"
                 if self.strict_mode:
@@ -141,31 +144,59 @@ class InputParser:
     
     def _load_from_file_or_string(self, data: Union[str, Path]) -> List[Dict]:
         """Load automation data from file path or JSON string."""
-        if isinstance(data, Path) or (isinstance(data, str) and Path(data).exists()):
-            # Load from file
-            file_path = Path(data)
-            if not file_path.exists():
-                raise FileNotFoundError(f"Automation data file not found: {file_path}")
-            
-            with open(file_path, 'r', encoding='utf-8') as f:
+        # Handle Path objects
+        if isinstance(data, Path):
+            if not data.exists():
+                raise FileNotFoundError(f"Automation data file not found: {data}")
+            with open(data, 'r', encoding='utf-8') as f:
                 return json.load(f)
-        else:
+        
+        # Handle string inputs
+        if isinstance(data, str):
+            # Check if it looks like a file path - be more restrictive
+            # Must not start with [ or { (JSON indicators) and should be a reasonable file path
+            is_potential_file = (
+                not data.strip().startswith(('[', '{')) and
+                len(data) < 500 and  # File paths are usually not very long
+                (data.endswith('.json') or ('/' in data and not 'http' in data))
+            )
+            
+            if is_potential_file:
+                file_path = Path(data)
+                if file_path.exists():
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        return json.load(f)
+                else:
+                    raise FileNotFoundError(f"Automation data file not found: {file_path}")
+            
             # Try to parse as JSON string
             try:
                 return json.loads(data)
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid JSON string provided: {e}")
+            except json.JSONDecodeError:
+                # Re-raise the original JSONDecodeError for tests that expect it
+                raise
+        
+        raise ValueError(f"Unsupported data type: {type(data)}")
     
     def _parse_step(self, step_data: Dict[str, Any], step_index: int) -> ParsedStep:
         """Parse a single step from the automation data."""
         if not isinstance(step_data, dict):
             raise ValueError(f"Step {step_index} is not a dictionary")
         
-        # Extract step metadata
-        step_metadata = {
-            key: value for key, value in step_data.items() 
-            if key not in ['model_output', 'state']
-        }
+        # Extract step metadata - use the metadata field directly if available
+        step_metadata = None
+        if 'metadata' in step_data and isinstance(step_data['metadata'], dict):
+            step_metadata = step_data['metadata'].copy()
+        
+        # Also include any other fields that aren't model_output, state, or metadata
+        other_fields = {key: value for key, value in step_data.items() 
+                       if key not in ['model_output', 'state', 'metadata']}
+        
+        if other_fields:
+            if step_metadata is None:
+                step_metadata = other_fields
+            else:
+                step_metadata.update(other_fields)
         
         # Extract timing information if available
         timing_info = {}
@@ -182,13 +213,13 @@ class InputParser:
         model_output = step_data.get('model_output', {})
         if not isinstance(model_output, dict):
             self.logger.warning(f"Step {step_index} has invalid model_output")
-            return ParsedStep(step_index, [], step_metadata, timing_info)
+            return ParsedStep(step_index=step_index, actions=[], metadata=step_metadata, timing_info=timing_info)
         
         # Extract actions
         actions_data = model_output.get('action', [])
         if not isinstance(actions_data, list):
             self.logger.warning(f"Step {step_index} has invalid actions format")
-            return ParsedStep(step_index, [], step_metadata, timing_info)
+            return ParsedStep(step_index=step_index, actions=[], metadata=step_metadata, timing_info=timing_info)
         
         # Parse each action
         parsed_actions = []
@@ -215,7 +246,7 @@ class InputParser:
         return ParsedStep(
             step_index=step_index,
             actions=parsed_actions,
-            step_metadata=step_metadata,
+            metadata=step_metadata,
             timing_info=timing_info
         )
     
@@ -272,11 +303,7 @@ class InputParser:
         # Extract XPath
         if 'xpath' in element_data and element_data['xpath']:
             xpath = element_data['xpath']
-            # Normalize XPath format
-            if not xpath.startswith('xpath=') and not xpath.startswith('/'):
-                xpath = f'//{xpath}'
-            if not xpath.startswith('xpath=') and xpath.startswith('/'):
-                xpath = f'xpath={xpath}'
+            # Store the xpath as-is without normalization
             selector_info['xpath'] = xpath
         
         # Extract CSS selector
