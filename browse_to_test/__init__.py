@@ -28,7 +28,7 @@ from .core.config import Config, ConfigBuilder, AIConfig, OutputConfig, Processi
 from .core.converter import TestConverter
 from .core.session import IncrementalSession, SessionResult
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Browse-to-Test Contributors"
 
 # Simple API - the main entry points most users need
