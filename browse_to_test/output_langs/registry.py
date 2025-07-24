@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Dict, List, Set, Optional
 import json
 from dataclasses import dataclass
+import os
+import sys
 
 from .exceptions import LanguageNotSupportedError, FrameworkNotSupportedError
 
@@ -82,7 +84,55 @@ class LanguageRegistry:
         self.base_path = base_path or Path(__file__).parent
         self._language_metadata: Dict[str, LanguageMetadata] = {}
         self._framework_language_matrix: Dict[str, Set[str]] = {}
+        self._fallback_metadata: Dict[str, LanguageMetadata] = {}
+        
+        # Initialize fallback metadata for known languages
+        self._initialize_fallback_metadata()
+        
+        # Load metadata from files
         self._load_language_metadata()
+    
+    def _initialize_fallback_metadata(self):
+        """Initialize fallback metadata for known languages to handle loading issues."""
+        self._fallback_metadata = {
+            "python": LanguageMetadata(
+                name="python",
+                display_name="Python",
+                file_extension=".py",
+                comment_prefix="#",
+                supports_async=True,
+                frameworks=["playwright", "selenium"],
+                package_manager="pip",
+                template_engine="jinja2"
+            ),
+            "typescript": LanguageMetadata(
+                name="typescript",
+                display_name="TypeScript",
+                file_extension=".ts",
+                comment_prefix="//",
+                supports_async=True,
+                frameworks=["playwright"],
+                package_manager="npm",
+                template_engine="jinja2"
+            ),
+            "javascript": LanguageMetadata(
+                name="javascript",
+                display_name="JavaScript",
+                file_extension=".js",
+                comment_prefix="//",
+                supports_async=True,
+                frameworks=["playwright"],
+                package_manager="npm",
+                template_engine="jinja2"
+            )
+        }
+        
+        # Build framework-language matrix from fallback data
+        for lang_name, metadata in self._fallback_metadata.items():
+            for framework in metadata.frameworks:
+                if framework not in self._framework_language_matrix:
+                    self._framework_language_matrix[framework] = set()
+                self._framework_language_matrix[framework].add(lang_name)
     
     def _load_language_metadata(self):
         """Load metadata for all supported languages."""
@@ -105,6 +155,15 @@ class LanguageRegistry:
                         
                 except (json.JSONDecodeError, KeyError) as e:
                     print(f"Warning: Failed to load metadata for {language.value}: {e}")
+                    # Use fallback metadata if available
+                    if language.value in self._fallback_metadata:
+                        self._language_metadata[language.value] = self._fallback_metadata[language.value]
+                        print(f"Using fallback metadata for {language.value}")
+            else:
+                # Use fallback metadata if file doesn't exist
+                if language.value in self._fallback_metadata:
+                    self._language_metadata[language.value] = self._fallback_metadata[language.value]
+                    print(f"Metadata file not found for {language.value}, using fallback")
     
     def get_supported_languages(self) -> List[str]:
         """Get list of all supported programming languages."""
@@ -127,10 +186,20 @@ class LanguageRegistry:
         Raises:
             LanguageNotSupportedError: If language is not supported
         """
-        if language not in self._language_metadata:
-            raise LanguageNotSupportedError(language, self.get_supported_languages())
+        # Check if we have metadata for this language
+        if language in self._language_metadata:
+            return self._language_metadata[language].frameworks
         
-        return self._language_metadata[language].frameworks
+        # Check fallback metadata
+        if language in self._fallback_metadata:
+            return self._fallback_metadata[language].frameworks
+        
+        # If language is in the enum but we don't have metadata, it's still technically supported
+        if language in [lang.value for lang in SupportedLanguage]:
+            print(f"Warning: No metadata found for {language}, but it's in SupportedLanguage enum")
+            return []  # Return empty list instead of raising error
+        
+        raise LanguageNotSupportedError(language, self.get_supported_languages())
     
     def get_languages_for_framework(self, framework: str) -> List[str]:
         """
@@ -169,7 +238,11 @@ class LanguageRegistry:
         if not self.is_framework_supported(framework):
             return False
         
-        return framework in self.get_frameworks_for_language(language)
+        try:
+            frameworks = self.get_frameworks_for_language(language)
+            return framework in frameworks
+        except LanguageNotSupportedError:
+            return False
     
     def validate_combination(self, language: str, framework: str) -> None:
         """
@@ -186,12 +259,17 @@ class LanguageRegistry:
         if not self.is_language_supported(language):
             raise LanguageNotSupportedError(language, self.get_supported_languages())
         
-        if not framework in self.get_frameworks_for_language(language):
-            raise FrameworkNotSupportedError(
-                framework, 
-                language, 
-                self.get_frameworks_for_language(language)
-            )
+        try:
+            frameworks = self.get_frameworks_for_language(language)
+            if not framework in frameworks:
+                raise FrameworkNotSupportedError(
+                    framework, 
+                    language, 
+                    frameworks
+                )
+        except LanguageNotSupportedError:
+            # If we can't get frameworks but language is supported, allow it
+            print(f"Warning: Could not validate framework support for {language}, allowing {framework}")
     
     def get_language_metadata(self, language: str) -> LanguageMetadata:
         """
@@ -206,10 +284,29 @@ class LanguageRegistry:
         Raises:
             LanguageNotSupportedError: If language is not supported
         """
-        if language not in self._language_metadata:
+        # Check loaded metadata first
+        if language in self._language_metadata:
+            return self._language_metadata[language]
+        
+        # Check fallback metadata
+        if language in self._fallback_metadata:
+            return self._fallback_metadata[language]
+        
+        # If language is supported but we don't have metadata, raise error
+        if not self.is_language_supported(language):
             raise LanguageNotSupportedError(language, self.get_supported_languages())
         
-        return self._language_metadata[language]
+        # Create minimal metadata for supported language
+        print(f"Warning: Creating minimal metadata for {language}")
+        return LanguageMetadata(
+            name=language,
+            display_name=language.title(),
+            file_extension=".py" if language == "python" else ".ts" if language == "typescript" else ".js",
+            comment_prefix="#" if language == "python" else "//",
+            supports_async=True,
+            frameworks=["playwright"],
+            template_engine="jinja2"
+        )
     
     def get_language_directory(self, language: str) -> Path:
         """
@@ -255,4 +352,5 @@ class LanguageRegistry:
         """Reload all language metadata from disk."""
         self._language_metadata.clear()
         self._framework_language_matrix.clear()
+        self._initialize_fallback_metadata()
         self._load_language_metadata() 

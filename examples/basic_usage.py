@@ -150,11 +150,12 @@ def basic_example():
         playwright_script = btt.convert(
             automation_data=automation_data,
             framework="playwright",
+            language="typescript",
             ai_provider="openai"
         )
         
         # Save the generated script
-        output_file = "example_outputs/generated_playwright_test.py"
+        output_file = "example_outputs/generated_playwright_test.ts"
         with open(output_file, 'w') as f:
             f.write(playwright_script)
         
