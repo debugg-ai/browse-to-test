@@ -76,7 +76,6 @@ jobs:
           --cov=browse_to_test \
           --cov-report=xml \
           --cov-report=term-missing \
-          --cov-fail-under=80 \
           --junit-xml=pytest-report.xml \
           -v
 

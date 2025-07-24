@@ -10,6 +10,15 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding="utf-8")
 
+# Read version from __init__.py
+def get_version():
+    """Extract version from __init__.py"""
+    init_file = this_directory / "browse_to_test" / "__init__.py"
+    for line in init_file.read_text().splitlines():
+        if line.startswith("__version__"):
+            return line.split('"')[1]
+    raise RuntimeError("Unable to find version string in __init__.py")
+
 # Read requirements
 requirements = []
 requirements_file = this_directory / "requirements.txt"
@@ -19,7 +28,7 @@ if requirements_file.exists():
 
 setup(
     name="browse-to-test",
-    version="0.1.0",
+    version=get_version(),
     author="Browse-to-Test Contributors", 
     author_email="",
     description="AI-powered browser automation to test script converter",
