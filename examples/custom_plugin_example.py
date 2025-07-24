@@ -472,7 +472,7 @@ def demonstrate_custom_plugin():
     )
     
     # Create orchestrator and register our custom plugin
-    orchestrator = btt.TestScriptOrchestrator(config)
+    orchestrator = btt.E2eScriptOrchestrator(config)
     orchestrator.plugin_registry.register_plugin("cypress", CypressPlugin)
     
     print("✓ Registered custom Cypress plugin")

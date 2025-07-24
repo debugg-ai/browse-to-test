@@ -88,7 +88,7 @@ class IncrementalUpdateResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class IncrementalTestScriptOrchestrator:
+class IncrementalE2eScriptOrchestrator:
     """
     Orchestrator for incremental test script generation with live updates.
     

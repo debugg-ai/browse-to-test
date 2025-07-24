@@ -55,7 +55,7 @@ asyncio.run(main())
 ### Advanced Usage with Configuration
 
 ```python
-from browse_to_test import IncrementalTestScriptOrchestrator, Config
+from browse_to_test import IncrementalE2eScriptOrchestrator, Config
 
 # Create custom configuration
 config = Config(
@@ -72,7 +72,7 @@ config = Config(
 )
 
 # Create orchestrator
-orchestrator = IncrementalTestScriptOrchestrator(config)
+orchestrator = IncrementalE2eScriptOrchestrator(config)
 
 # Start session with context hints
 setup = orchestrator.start_incremental_session(

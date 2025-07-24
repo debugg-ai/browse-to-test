@@ -17,7 +17,7 @@ from ...ai.factory import AIProviderFactory
 from ...plugins.registry import PluginRegistry
 
 
-class TestScriptOrchestrator:
+class E2eScriptOrchestrator:
     """
     Main orchestrator that coordinates the entire test script generation process.
     

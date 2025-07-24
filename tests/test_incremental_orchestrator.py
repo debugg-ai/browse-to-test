@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
 from browse_to_test.core.orchestration.incremental_orchestrator import (
-    IncrementalTestScriptOrchestrator,
+    IncrementalE2eScriptOrchestrator,
     ScriptState,
     IncrementalUpdateResult
 )
@@ -198,12 +198,12 @@ class TestScriptState:
         assert metadata["last_update"] == "2024-01-01T12:05:00"
 
 
-class TestIncrementalTestScriptOrchestrator:
-    """Tests for IncrementalTestScriptOrchestrator class."""
+class TestIncrementalE2eScriptOrchestrator:
+    """Tests for IncrementalE2eScriptOrchestrator class."""
     
     def test_orchestrator_initialization(self, basic_config):
         """Test orchestrator is initialized correctly."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         assert orchestrator.config == basic_config
         assert orchestrator.input_parser is not None
@@ -225,14 +225,14 @@ class TestIncrementalTestScriptOrchestrator:
             mock_ai_provider = Mock()
             mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider
             
-            orchestrator = IncrementalTestScriptOrchestrator(ai_enabled_config)
+            orchestrator = IncrementalE2eScriptOrchestrator(ai_enabled_config)
             
             assert orchestrator.context_collector is not None
             mock_context_collector.assert_called_once()
     
     def test_start_incremental_session_already_active(self, basic_config):
         """Test starting session when one is already active."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         orchestrator._current_script_state = ScriptState()  # Simulate active session
         
         with pytest.raises(RuntimeError, match="Incremental session already active"):
@@ -240,7 +240,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_add_step_no_active_session(self, basic_config, sample_step_data):
         """Test adding step when no session is active."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         result = orchestrator.add_step(sample_step_data)
         
@@ -249,7 +249,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_add_step_success(self, basic_config, sample_step_data):
         """Test successfully adding a step."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session
         orchestrator._current_script_state = ScriptState()
@@ -275,7 +275,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_add_step_with_parsed_step(self, basic_config):
         """Test adding a step using ParsedStep object."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session
         orchestrator._current_script_state = ScriptState()
@@ -311,7 +311,7 @@ class TestIncrementalTestScriptOrchestrator:
         # Enable AI analysis for this test
         basic_config.processing.analyze_actions_with_ai = True
         
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Mock AI provider
         mock_ai_provider = Mock()
@@ -351,7 +351,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_finalize_session_no_active_session(self, basic_config):
         """Test finalizing when no session is active."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         result = orchestrator.finalize_session()
         
@@ -360,7 +360,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_finalize_session_success(self, basic_config):
         """Test successfully finalizing a session."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session with some content
         orchestrator._current_script_state = ScriptState()
@@ -393,7 +393,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_finalize_session_with_validation_issues(self, basic_config):
         """Test finalizing session with validation issues."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session
         orchestrator._current_script_state = ScriptState()
@@ -417,7 +417,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_get_current_state_no_session(self, basic_config):
         """Test getting current state when no session is active."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         state = orchestrator.get_current_state()
         
@@ -425,7 +425,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_get_current_state_active_session(self, basic_config):
         """Test getting current state with active session."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session
         script_state = ScriptState()
@@ -447,7 +447,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_update_callbacks(self, basic_config):
         """Test update callback registration and notification."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Create mock callbacks
         callback1 = Mock()
@@ -483,7 +483,7 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_abort_session(self, basic_config):
         """Test aborting an active session."""
-        orchestrator = IncrementalTestScriptOrchestrator(basic_config)
+        orchestrator = IncrementalE2eScriptOrchestrator(basic_config)
         
         # Set up active session
         orchestrator._current_script_state = ScriptState()

@@ -17,8 +17,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from browse_to_test import (
-    TestScriptOrchestrator,
-    IncrementalTestScriptOrchestrator,
+    E2eScriptOrchestrator,
+    IncrementalE2eScriptOrchestrator,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -111,7 +111,7 @@ def demo_multi_language_generation():
             
             try:
                 # Create orchestrator for this language
-                orchestrator = TestScriptOrchestrator(config)
+                orchestrator = E2eScriptOrchestrator(config)
                 
                 # Generate test script
                 script = orchestrator.generate_test_script(

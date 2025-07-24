@@ -11,9 +11,9 @@ Browse-to-Test has been completely restructured to provide a clean, maintainable
 **Before**: Complex main API with 15+ exports and multiple convenience functions
 ```python
 # Old complex API
-from browse_to_test import TestScriptOrchestrator, Config, AIConfig, OutputConfig
+from browse_to_test import E2eScriptOrchestrator, Config, AIConfig, OutputConfig
 config = Config(ai=AIConfig(...), output=OutputConfig(...))
-orchestrator = TestScriptOrchestrator(config)
+orchestrator = E2eScriptOrchestrator(config)
 script = orchestrator.generate_test_script(data)
 ```
 
@@ -51,8 +51,8 @@ config = btt.ConfigBuilder() \
 ### 3. Unified Orchestration
 
 **Before**: Separate orchestrators for batch and incremental processing
-- `TestScriptOrchestrator` (760 lines)
-- `IncrementalTestScriptOrchestrator` (870 lines)
+- `E2eScriptOrchestrator` (760 lines)
+- `IncrementalE2eScriptOrchestrator` (870 lines)
 - Significant code duplication
 
 **After**: Unified components with clear responsibilities
@@ -129,7 +129,7 @@ config = btt.Config(
     ai=btt.AIConfig(provider="openai", model="gpt-4"),
     output=btt.OutputConfig(framework="playwright", language="python")
 )
-orchestrator = btt.TestScriptOrchestrator(config)
+orchestrator = btt.E2eScriptOrchestrator(config)
 script = orchestrator.generate_test_script(data)
 
 # New API

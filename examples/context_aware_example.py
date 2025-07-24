@@ -157,7 +157,7 @@ def main():
     )
     
     try:
-        orchestrator_basic = btt.TestScriptOrchestrator(basic_config)
+        orchestrator_basic = btt.E2eScriptOrchestrator(basic_config)
         basic_script = orchestrator_basic.generate_test_script(
             automation_data=automation_data,
             target_url="https://example.com/login"
@@ -202,7 +202,7 @@ def main():
     )
     
     try:
-        orchestrator_context = btt.TestScriptOrchestrator(context_config)
+        orchestrator_context = btt.E2eScriptOrchestrator(context_config)
         
         # First, let's see what the configuration validation shows
         validation = orchestrator_context.validate_configuration()

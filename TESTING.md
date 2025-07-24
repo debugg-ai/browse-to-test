@@ -91,7 +91,7 @@ python -m pytest tests/test_action_analyzer.py::TestActionAnalyzer
 
 Run specific test method:
 ```bash
-python -m pytest tests/test_orchestrator.py::TestTestScriptOrchestrator::test_generate_test_script_basic
+python -m pytest tests/test_orchestrator.py::TestE2eScriptOrchestrator::test_generate_test_script_basic
 ```
 
 ### Advanced Test Options
@@ -186,7 +186,7 @@ Test complete workflows:
 
 ```bash
 # Run end-to-end tests
-python -m pytest tests/test_orchestrator.py::TestTestScriptOrchestrator::test_generate_test_script_with_ai_and_context
+python -m pytest tests/test_orchestrator.py::TestE2eScriptOrchestrator::test_generate_test_script_with_ai_and_context
 ```
 
 **Characteristics**:

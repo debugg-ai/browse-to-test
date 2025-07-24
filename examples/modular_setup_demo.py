@@ -16,8 +16,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from browse_to_test import (
-    TestScriptOrchestrator,
-    IncrementalTestScriptOrchestrator,
+    E2eScriptOrchestrator,
+    IncrementalE2eScriptOrchestrator,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -97,7 +97,7 @@ def demo_shared_setup_generation():
     print("\n🚀 Generating first test script with shared setup...")
     
     # Create orchestrator
-    orchestrator = TestScriptOrchestrator(config)
+    orchestrator = E2eScriptOrchestrator(config)
     
     # Generate the first test script
     first_script = orchestrator.generate_test_script(
@@ -224,7 +224,7 @@ def demo_incremental_modular_setup():
     )
     
     # Create incremental orchestrator
-    orchestrator = IncrementalTestScriptOrchestrator(config)
+    orchestrator = IncrementalE2eScriptOrchestrator(config)
     
     print("\n🚀 Starting incremental session with shared setup...")
     

@@ -92,7 +92,7 @@ class AIProviderFactory:
                 max_tokens=config.max_tokens,
                 timeout=config.timeout,
                 retry_attempts=config.retry_attempts,
-                api_base_url=config.api_base_url,
+                api_base_url=config.base_url,
                 **config.extra_params
             )
             

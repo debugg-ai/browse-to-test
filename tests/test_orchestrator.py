@@ -1,4 +1,4 @@
-"""Tests for the TestScriptOrchestrator class."""
+"""Tests for the E2eScriptOrchestrator class."""
 
 import pytest
 from unittest.mock import Mock, MagicMock, patch
@@ -6,7 +6,7 @@ from pathlib import Path
 import json
 import tempfile
 
-from browse_to_test.core.orchestration.orchestrator import TestScriptOrchestrator
+from browse_to_test.core.orchestration.orchestrator import E2eScriptOrchestrator
 from browse_to_test.core.configuration.config import Config, AIConfig, OutputConfig, ProcessingConfig
 from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
 from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext
@@ -52,8 +52,8 @@ class MockOutputPlugin(OutputPlugin):
         return {"test_var": "test_value"}
 
 
-class TestTestScriptOrchestrator:
-    """Test the TestScriptOrchestrator class."""
+class TestE2eScriptOrchestrator:
+    """Test the E2eScriptOrchestrator class."""
     
     @pytest.fixture
     def basic_config(self):
@@ -178,7 +178,7 @@ class TestTestScriptOrchestrator:
              patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
              patch('browse_to_test.core.orchestration.orchestrator.ContextCollector') as mock_context_collector:
             
-            orchestrator = TestScriptOrchestrator(basic_config)
+            orchestrator = E2eScriptOrchestrator(basic_config)
             
             assert orchestrator.config == basic_config
             assert orchestrator.input_parser is not None
@@ -192,7 +192,7 @@ class TestTestScriptOrchestrator:
         with patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory') as mock_ai_factory, \
              patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry:
             
-            orchestrator = TestScriptOrchestrator(simple_config)
+            orchestrator = E2eScriptOrchestrator(simple_config)
             
             assert orchestrator.context_collector is None
             assert orchestrator.ai_provider is None
@@ -206,7 +206,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(simple_config)
+        orchestrator = E2eScriptOrchestrator(simple_config)
         
         result = orchestrator.generate_test_script(sample_automation_data)
         
@@ -225,7 +225,7 @@ class TestTestScriptOrchestrator:
         mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider
         mock_context_collector.return_value.collect_context.return_value = sample_system_context
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         orchestrator.ai_provider = mock_ai_provider
         orchestrator.context_collector = mock_context_collector.return_value
         
@@ -250,7 +250,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         
         custom_config = {
             "output": {
@@ -275,7 +275,7 @@ class TestTestScriptOrchestrator:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(simple_config)
+            orchestrator = E2eScriptOrchestrator(simple_config)
             
             json_data = json.dumps(sample_automation_data)
             result = orchestrator.generate_test_script(json_data)
@@ -291,7 +291,7 @@ class TestTestScriptOrchestrator:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(simple_config)
+            orchestrator = E2eScriptOrchestrator(simple_config)
             
             # Create temporary file
             with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -313,7 +313,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         
         # First generation
         result1 = orchestrator.generate_test_script(sample_automation_data)
@@ -336,7 +336,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(config)
+        orchestrator = E2eScriptOrchestrator(config)
         
         # Multiple generations should not use cache
         result1 = orchestrator.generate_test_script(sample_automation_data)
@@ -355,7 +355,7 @@ class TestTestScriptOrchestrator:
         mock_ai_factory.return_value.create_provider.side_effect = Exception("AI provider not available")
         
         # Should not crash, should continue without AI
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         
         result = orchestrator.generate_test_script(sample_automation_data)
         
@@ -370,7 +370,7 @@ class TestTestScriptOrchestrator:
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         orchestrator.ai_provider = mock_ai_provider
         
         # Make action analyzer fail
@@ -389,7 +389,7 @@ class TestTestScriptOrchestrator:
         """Test handling of plugin creation failure."""
         mock_plugin_registry.return_value.create_plugin.side_effect = Exception("Plugin not available")
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         
         # Should use fallback script generation
         result = orchestrator.generate_test_script(sample_automation_data)
@@ -408,7 +408,7 @@ class TestTestScriptOrchestrator:
         
         mock_plugin_registry.return_value.create_plugin.side_effect = Exception("Plugin error")
         
-        orchestrator = TestScriptOrchestrator(config)
+        orchestrator = E2eScriptOrchestrator(config)
         
         with pytest.raises(RuntimeError):
             orchestrator.generate_test_script(sample_automation_data)
@@ -421,7 +421,7 @@ class TestTestScriptOrchestrator:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(simple_config)
+            orchestrator = E2eScriptOrchestrator(simple_config)
             
             frameworks = ["playwright", "selenium"]
             results = orchestrator.generate_with_multiple_frameworks(
@@ -448,7 +448,7 @@ class TestTestScriptOrchestrator:
             
             mock_plugin_registry.return_value.create_plugin.side_effect = side_effect
             
-            orchestrator = TestScriptOrchestrator(simple_config)
+            orchestrator = E2eScriptOrchestrator(simple_config)
             
             frameworks = ["playwright", "selenium"]
             results = orchestrator.generate_with_multiple_frameworks(
@@ -478,7 +478,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(config)
+        orchestrator = E2eScriptOrchestrator(config)
         
         # Generate multiple different scripts to exceed cache size
         for i in range(5):
@@ -502,7 +502,7 @@ class TestTestScriptOrchestrator:
         mock_plugin = MockOutputPlugin()
         mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
         
-        orchestrator = TestScriptOrchestrator(basic_config)
+        orchestrator = E2eScriptOrchestrator(basic_config)
         
         test_script = "# Original script\nprint('test')"
         processed_script = orchestrator._post_process_script(
@@ -526,7 +526,7 @@ class TestTestScriptOrchestrator:
             processing=ProcessingConfig(strict_mode=False)  # Non-strict mode for fallback
         )
         
-        orchestrator = TestScriptOrchestrator(config)
+        orchestrator = E2eScriptOrchestrator(config)
         
         result = orchestrator._generate_fallback_script(sample_automation_data, config)
         
@@ -551,7 +551,7 @@ class TestOrchestratorEdgeCases:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(config)
+            orchestrator = E2eScriptOrchestrator(config)
             
             result = orchestrator.generate_test_script([])
             
@@ -567,7 +567,7 @@ class TestOrchestratorEdgeCases:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(config)
+            orchestrator = E2eScriptOrchestrator(config)
             
             malformed_data = [
                 {"invalid": "structure"},
@@ -589,7 +589,7 @@ class TestOrchestratorEdgeCases:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(config)
+            orchestrator = E2eScriptOrchestrator(config)
             
             # Create large dataset
             large_data = []
@@ -615,7 +615,7 @@ class TestOrchestratorEdgeCases:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(config)
+            orchestrator = E2eScriptOrchestrator(config)
             
             unicode_data = [
                 {
@@ -655,7 +655,7 @@ class TestOrchestratorIntegration:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(config)
+            orchestrator = E2eScriptOrchestrator(config)
             
             automation_data = [
                 {
@@ -687,7 +687,7 @@ class TestOrchestratorIntegration:
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
             
-            orchestrator = TestScriptOrchestrator(base_config)
+            orchestrator = E2eScriptOrchestrator(base_config)
             
             custom_config = {
                 "output": {"language": "typescript"},

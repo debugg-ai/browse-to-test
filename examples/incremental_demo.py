@@ -15,7 +15,7 @@ from browse_to_test import (
     start_incremental_session,
     add_incremental_step,
     finalize_incremental_session,
-    IncrementalTestScriptOrchestrator,
+    IncrementalE2eScriptOrchestrator,
     Config,
     OutputConfig,
     ProcessingConfig
@@ -304,7 +304,7 @@ async def demo_callback_system():
     )
     
     # Create orchestrator directly for callback demo
-    orchestrator = IncrementalTestScriptOrchestrator(config)
+    orchestrator = IncrementalE2eScriptOrchestrator(config)
     
     # Callback to track updates
     update_count = 0
@@ -391,7 +391,7 @@ async def demo_error_handling():
         output=OutputConfig(framework="playwright"),
         processing=ProcessingConfig(analyze_actions_with_ai=False)
     )
-    orchestrator = IncrementalTestScriptOrchestrator(config)
+    orchestrator = IncrementalE2eScriptOrchestrator(config)
     
     invalid_step = {
         "model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]},
