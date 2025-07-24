@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from .base import OutputPlugin, GeneratedTestScript, PluginError
-from ..core.config import OutputConfig
-from ..core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
-from ..core.language_templates import LanguageTemplateManager
+from ..core.configuration.config import OutputConfig
+from ..core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from ..core.configuration.language_templates import LanguageTemplateManager
 
 
 logger = logging.getLogger(__name__)
@@ -379,7 +379,7 @@ class PlaywrightPlugin(OutputPlugin):
         if self.config.include_error_handling:
             helpers.extend([
                 "# Custom exception for test failures",
-                "class TestActionError(Exception):",
+                "class E2eActionError(Exception):",
                 "    \"\"\"Exception raised when a test action fails.\"\"\"",
                 "    pass",
                 "",
@@ -407,7 +407,7 @@ class PlaywrightPlugin(OutputPlugin):
                 "            print(f'Action failed ({step_info}): {e}', file=sys.stderr)",
                 "        else:",
                 "            print(f'Action failed: {e}', file=sys.stderr)",
-                "        raise TestActionError(f'Action failed: {e}') from e",
+                "        raise E2eActionError(f'Action failed: {e}') from e",
             ])
         else:
             helpers.extend([
@@ -441,7 +441,7 @@ class PlaywrightPlugin(OutputPlugin):
         ])
         
         if self.config.include_error_handling:
-            helpers.append("        raise TestActionError(error_msg) from e")
+            helpers.append("        raise E2eActionError(error_msg) from e")
         else:
             helpers.append("        raise")
         
@@ -501,7 +501,7 @@ class PlaywrightPlugin(OutputPlugin):
         
         if self.config.include_error_handling:
             lines.extend([
-                "    except TestActionError as e:",
+                "    except E2eActionError as e:",
                 "        print(f'Test failed: {e}', file=sys.stderr)",
                 "        exit_code = 1",
                 "    except Exception as e:",

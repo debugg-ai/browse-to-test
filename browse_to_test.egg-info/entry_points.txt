@@ -1,0 +1,2 @@
+[console_scripts]
+browse-to-test = browse_to_test.cli:main

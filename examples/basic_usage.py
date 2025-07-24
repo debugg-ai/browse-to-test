@@ -144,17 +144,17 @@ def basic_example():
     automation_data = create_sample_automation_data()
     print(f"Created sample automation data with {len(automation_data)} steps")
     
-    # Method 1: Simple conversion using convenience function
+    # Method 1: Simple conversion using the new convert function
     print("\n--- Method 1: Simple Conversion ---")
     try:
-        playwright_script = btt.convert_to_test_script(
+        playwright_script = btt.convert(
             automation_data=automation_data,
-            output_framework="playwright",
+            framework="playwright",
             ai_provider="openai"
         )
         
         # Save the generated script
-        output_file = "generated_playwright_test.py"
+        output_file = "example_outputs/generated_playwright_test.py"
         with open(output_file, 'w') as f:
             f.write(playwright_script)
         
@@ -167,14 +167,14 @@ def basic_example():
     # Method 2: Generate Selenium script for comparison
     print("\n--- Method 2: Different Framework ---")
     try:
-        selenium_script = btt.convert_to_test_script(
+        selenium_script = btt.convert(
             automation_data=automation_data,
-            output_framework="selenium",
+            framework="selenium",
             ai_provider="openai"
         )
         
         # Save the generated script
-        output_file = "generated_selenium_test.py"
+        output_file = "example_outputs/generated_selenium_test.py"
         with open(output_file, 'w') as f:
             f.write(selenium_script)
         
@@ -189,85 +189,44 @@ def advanced_example():
     """Demonstrate advanced usage with custom configuration."""
     print("\n=== Advanced Browse-to-Test Example ===\n")
     
-    # Create custom configuration
-    config = btt.Config(
-        ai=btt.AIConfig(
-            provider="openai",
-            model="gpt-4",
-            temperature=0.1,
-        ),
-        output=btt.OutputConfig(
-            framework="playwright",
-            language="python",
-            include_assertions=True,
-            include_waits=True,
-            include_error_handling=True,
-            include_logging=True,
-            sensitive_data_keys=["username", "password"],
-            add_comments=True,
-        ),
-        processing=btt.ProcessingConfig(
-            analyze_actions_with_ai=True,
-            optimize_selectors=True,
-            validate_actions=True,
-        ),
-        debug=True,
-        verbose=True,
-    )
+    # Create custom configuration using ConfigBuilder
+    config = btt.ConfigBuilder() \
+        .framework("playwright") \
+        .ai_provider("openai", model="gpt-4") \
+        .language("python") \
+        .include_assertions(True) \
+        .include_error_handling(True) \
+        .temperature(0.1) \
+        .sensitive_data_keys(["username", "password"]) \
+        .enable_ai_analysis(True) \
+        .debug(True) \
+        .build()
     
-    # Validate configuration
-    validation_errors = config.validate()
-    if validation_errors:
-        print("Configuration validation errors:")
-        for error in validation_errors:
-            print(f"  - {error}")
-        return
+    print("✓ Configuration built successfully")
     
-    print("✓ Configuration validated successfully")
-    
-    # Create orchestrator
-    orchestrator = btt.TestScriptOrchestrator(config)
-    
-    # Validate the orchestrator setup
-    setup_errors = orchestrator.validate_configuration()
-    if setup_errors:
-        print("Setup validation errors:")
-        for error in setup_errors:
-            print(f"  - {error}")
-        return
-    
-    print("✓ Orchestrator setup validated")
+    # Create converter with custom configuration
+    converter = btt.E2eTestConverter(config)
     
     # Get available options
-    options = orchestrator.get_available_options()
     print("\nAvailable options:")
-    print(f"  AI Providers: {', '.join(options['ai_providers'])}")
-    print(f"  Output Plugins: {', '.join(options['output_plugins'])}")
-    print(f"  Frameworks: {', '.join(options['supported_frameworks'])}")
+    try:
+        ai_providers = btt.list_ai_providers()
+        frameworks = btt.list_frameworks()
+        print(f"  AI Providers: {', '.join(ai_providers)}")
+        print(f"  Frameworks: {', '.join(frameworks)}")
+    except Exception as e:
+        print(f"  Unable to list options: {e}")
     
     # Create automation data
     automation_data = create_sample_automation_data()
     
-    # Preview the conversion
-    print("\n--- Conversion Preview ---")
-    preview = orchestrator.preview_conversion(automation_data)
-    print(f"Total steps: {preview['total_steps']}")
-    print(f"Total actions: {preview['total_actions']}")
-    print(f"Action types: {preview['action_types']}")
-    print(f"Sensitive data keys: {preview['sensitive_data_keys']}")
-    
-    if preview['validation_issues']:
-        print("Validation issues:")
-        for issue in preview['validation_issues']:
-            print(f"  - {issue}")
-    
     # Generate test script with full analysis
-    print("\n--- Generating Test Script with AI Analysis ---")
+    print("\n--- Generating Test Script with Custom Configuration ---")
     try:
-        generated_script = orchestrator.generate_test_script(automation_data)
+        generated_script = converter.convert(automation_data)
         
         # Save the script
-        output_file = "generated_advanced_test.py"
+        output_file = "example_outputs/generated_advanced_test.py"
         with open(output_file, 'w') as f:
             f.write(generated_script)
         
@@ -285,42 +244,27 @@ def multi_framework_example():
     """Demonstrate generating scripts for multiple frameworks."""
     print("\n=== Multi-Framework Example ===\n")
     
-    # Create configuration optimized for multiple frameworks
-    config = btt.Config(
-        ai=btt.AIConfig(
-            provider="openai",
-            model="gpt-3.5-turbo",  # Faster model for bulk generation
-        ),
-        output=btt.OutputConfig(
-            include_assertions=True,
-            include_error_handling=True,
-            add_comments=True,
-        ),
-        processing=btt.ProcessingConfig(
-            analyze_actions_with_ai=False,  # Disable for faster generation
-        )
-    )
-    
-    orchestrator = btt.TestScriptOrchestrator(config)
     automation_data = create_sample_automation_data()
-    
-    # Generate scripts for multiple frameworks
     frameworks = ["playwright", "selenium"]
     
     print("Generating scripts for multiple frameworks...")
-    results = orchestrator.generate_with_multiple_frameworks(
-        automation_data, 
-        frameworks
-    )
     
-    for framework, script in results.items():
-        if script.startswith("# Error"):
-            print(f"✗ {framework}: {script}")
-        else:
-            output_file = f"generated_{framework}_multi.py"
+    for framework in frameworks:
+        try:
+            script = btt.convert(
+                automation_data=automation_data,
+                framework=framework,
+                ai_provider="openai"
+            )
+            
+            output_file = f"example_outputs/generated_{framework}_multi.py"
             with open(output_file, 'w') as f:
                 f.write(script)
+                
             print(f"✓ {framework}: {output_file} ({len(script.splitlines())} lines)")
+            
+        except Exception as e:
+            print(f"✗ {framework}: Failed - {e}")
 
 
 def load_from_file_example():
@@ -329,27 +273,26 @@ def load_from_file_example():
     
     # Save sample data to file
     automation_data = create_sample_automation_data()
-    data_file = "sample_automation_data.json"
+    data_file = "example_outputs/sample_automation_data.json"
     
     with open(data_file, 'w') as f:
         json.dump(automation_data, f, indent=2)
     
     print(f"Saved sample data to: {data_file}")
     
-    # Load and convert from file
+    # Load and convert from file (read data manually for now)
     try:
-        script = btt.convert_to_test_script(
-            automation_data=data_file,  # Pass file path instead of data
-            output_framework="playwright",
-            config={
-                "output": {
-                    "include_logging": True,
-                    "add_comments": True,
-                }
-            }
+        with open(data_file, 'r') as f:
+            loaded_data = json.load(f)
+        
+        script = btt.convert(
+            automation_data=loaded_data,
+            framework="playwright",
+            include_assertions=True,
+            add_comments=True
         )
         
-        output_file = "generated_from_file.py"
+        output_file = "example_outputs/generated_from_file.py"
         with open(output_file, 'w') as f:
             f.write(script)
         
@@ -361,6 +304,45 @@ def load_from_file_example():
     # Clean up
     if os.path.exists(data_file):
         os.remove(data_file)
+
+
+def incremental_session_example():
+    """Demonstrate incremental session usage."""
+    print("\n=== Incremental Session Example ===\n")
+    
+    try:
+        # Create configuration for incremental session
+        config = btt.ConfigBuilder() \
+            .framework("playwright") \
+            .ai_provider("openai") \
+            .language("python") \
+            .build()
+        
+        # Start incremental session
+        session = btt.IncrementalSession(config)
+        
+        # Start the session
+        result = session.start(target_url="https://example.com")
+        print(f"✓ Session started: {result.success}")
+        
+        # Add steps incrementally
+        automation_data = create_sample_automation_data()
+        for i, step in enumerate(automation_data[:3]):  # Just first 3 steps
+            result = session.add_step(step)
+            print(f"✓ Added step {i+1}: {len(result.current_script.splitlines())} lines")
+        
+        # Finalize the session
+        final_result = session.finalize()
+        if final_result.success:
+            output_file = "example_outputs/generated_incremental_test.py"
+            with open(output_file, 'w') as f:
+                f.write(final_result.current_script)
+            print(f"✓ Finalized incremental test: {output_file}")
+        else:
+            print(f"✗ Failed to finalize session: {final_result.error}")
+            
+    except Exception as e:
+        print(f"✗ Incremental session failed: {e}")
 
 
 def main():
@@ -379,12 +361,13 @@ def main():
         advanced_example()
         multi_framework_example()
         load_from_file_example()
+        incremental_session_example()
         
         print("\n" + "=" * 40)
         print("Examples completed! Check the generated files:")
         
         # List generated files
-        for file in Path(".").glob("generated_*.py"):
+        for file in Path("example_outputs").glob("generated_*.py"):
             size = file.stat().st_size
             print(f"  - {file.name} ({size} bytes)")
         

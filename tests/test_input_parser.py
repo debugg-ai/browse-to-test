@@ -3,12 +3,11 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
 
 import pytest
 
-import browse_to_test as btt
-from browse_to_test.core.input_parser import InputParser, ParsedAutomationData, ParsedStep, ParsedAction
+# import browse_to_test as btt
+from browse_to_test.core.processing.input_parser import InputParser, ParsedAutomationData, ParsedStep, ParsedAction
 
 
 class TestInputParser:

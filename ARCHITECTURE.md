@@ -11,9 +11,9 @@ Browse-to-Test has been completely restructured to provide a clean, maintainable
 **Before**: Complex main API with 15+ exports and multiple convenience functions
 ```python
 # Old complex API
-from browse_to_test import TestScriptOrchestrator, Config, AIConfig, OutputConfig
+from browse_to_test import E2eScriptOrchestrator, Config, AIConfig, OutputConfig
 config = Config(ai=AIConfig(...), output=OutputConfig(...))
-orchestrator = TestScriptOrchestrator(config)
+orchestrator = E2eScriptOrchestrator(config)
 script = orchestrator.generate_test_script(data)
 ```
 
@@ -27,7 +27,7 @@ script = btt.convert(data, framework="playwright")
 
 # Advanced: Using ConfigBuilder
 config = btt.ConfigBuilder().framework("playwright").build()
-converter = btt.TestConverter(config)
+converter = btt.E2eTestConverter(config)
 script = converter.convert(data)
 ```
 
@@ -51,12 +51,12 @@ config = btt.ConfigBuilder() \
 ### 3. Unified Orchestration
 
 **Before**: Separate orchestrators for batch and incremental processing
-- `TestScriptOrchestrator` (760 lines)
-- `IncrementalTestScriptOrchestrator` (870 lines)
+- `E2eScriptOrchestrator` (760 lines)
+- `IncrementalE2eScriptOrchestrator` (870 lines)
 - Significant code duplication
 
 **After**: Unified components with clear responsibilities
-- `TestConverter`: Simple, unified conversion interface
+- `E2eTestConverter`: Simple, unified conversion interface
 - `IncrementalSession`: Clean incremental processing
 - Shared logic, no duplication
 
@@ -93,7 +93,7 @@ browse_to_test/
 ├── __init__.py              # Clean API exports (80 lines vs 205)
 ├── core/
 │   ├── config.py           # Config + ConfigBuilder
-│   ├── converter.py        # Unified TestConverter
+│   ├── converter.py        # Unified E2eTestConverter
 │   ├── session.py          # IncrementalSession
 │   ├── input_parser.py     # Input parsing logic
 │   ├── action_analyzer.py  # AI action analysis
@@ -129,7 +129,7 @@ config = btt.Config(
     ai=btt.AIConfig(provider="openai", model="gpt-4"),
     output=btt.OutputConfig(framework="playwright", language="python")
 )
-orchestrator = btt.TestScriptOrchestrator(config)
+orchestrator = btt.E2eScriptOrchestrator(config)
 script = orchestrator.generate_test_script(data)
 
 # New API
@@ -138,7 +138,7 @@ config = btt.ConfigBuilder() \
     .ai_provider("openai", model="gpt-4") \
     .language("python") \
     .build()
-converter = btt.TestConverter(config)
+converter = btt.E2eTestConverter(config)
 script = converter.convert(data)
 ```
 
@@ -179,7 +179,7 @@ final = session.finalize()
 
 ### Core Components
 
-- **`TestConverter`**: Main conversion logic, unified interface
+- **`E2eTestConverter`**: Main conversion logic, unified interface
 - **`IncrementalSession`**: Live test generation with session management
 - **`ConfigBuilder`**: Fluent configuration building with validation
 - **`Config`**: Immutable configuration object with validation

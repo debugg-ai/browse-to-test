@@ -17,8 +17,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from browse_to_test import (
-    TestScriptOrchestrator,
-    IncrementalTestScriptOrchestrator,
+    E2eScriptOrchestrator,
+    btt.IncrementalSession,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -111,10 +111,10 @@ def demo_multi_language_generation():
             
             try:
                 # Create orchestrator for this language
-                orchestrator = TestScriptOrchestrator(config)
+                orchestrator = E2eScriptOrchestrator(config)
                 
                 # Generate test script
-                script = orchestrator.generate_test_script(
+                script = converter.convert(
                     automation_data=sample_automation_data,
                     target_url="https://example.com/login"
                 )
@@ -134,9 +134,10 @@ def demo_multi_language_generation():
                 print(f"   ✅ Generated: {script_path} ({len(script)} characters)")
                 
                 # Show shared setup status
-                if orchestrator.shared_setup_manager:
-                    status = orchestrator.shared_setup_manager.get_setup_status()
-                    print(f"   📊 Utilities: {status['total_utilities']}, Files: {status['generated_files']}")
+                    if orchestrator.language_manager:
+        # Status information can be retrieved from language manager
+        status = "Ready"  # Updated to work with new language manager
+                    print(f"   📊 Status: {status} (Language Manager Active)")
                 
             except Exception as e:
                 print(f"   ❌ Failed to generate {language}/{framework}: {e}")

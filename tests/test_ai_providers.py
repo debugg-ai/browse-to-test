@@ -5,7 +5,7 @@ import pytest
 
 from browse_to_test.ai.base import AIProvider, AIResponse, AIProviderError, AnalysisType, AIAnalysisRequest
 from browse_to_test.ai.factory import AIProviderFactory
-from browse_to_test.core.config import AIConfig
+from browse_to_test.core.configuration.config import AIConfig
 
 
 class MockAIProvider(AIProvider):

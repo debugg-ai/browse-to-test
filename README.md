@@ -75,7 +75,7 @@ config = btt.ConfigBuilder() \
     .build()
 
 # Create converter with custom config
-converter = btt.TestConverter(config)
+converter = btt.E2eTestConverter(config)
 script = converter.convert(automation_data)
 ```
 
@@ -138,7 +138,7 @@ config = btt.Config(
     verbose=True
 )
 
-orchestrator = btt.TestScriptOrchestrator(config)
+orchestrator = btt.E2eScriptOrchestrator(config)
 
 # Generate context-aware test script
 test_script = orchestrator.generate_test_script(
@@ -369,7 +369,7 @@ List all available AI providers.
 
 ### Core Classes
 
-#### `TestScriptOrchestrator(config)`
+#### `E2eScriptOrchestrator(config)`
 
 Main orchestrator class that coordinates the conversion process.
 
@@ -397,7 +397,7 @@ Registry for managing output plugins.
 ### Generate Multiple Frameworks
 
 ```python
-orchestrator = btt.TestScriptOrchestrator(config)
+orchestrator = btt.E2eScriptOrchestrator(config)
 scripts = orchestrator.generate_with_multiple_frameworks(
     automation_data, 
     ["playwright", "selenium"]
@@ -441,7 +441,7 @@ script = btt.convert_to_test_script(
 ### Preview Before Generation
 
 ```python
-orchestrator = btt.TestScriptOrchestrator(config)
+orchestrator = btt.E2eScriptOrchestrator(config)
 preview = orchestrator.preview_conversion(automation_data)
 
 print(f"Total steps: {preview['total_steps']}")

@@ -237,7 +237,7 @@ jobs:
         pip uninstall -y browse-to-test
         pip install .
         python -c "import browse_to_test; print('Package imports successfully')"
-        python -c "from browse_to_test import TestScriptOrchestrator; print('Main classes import successfully')"
+        python -c "from browse_to_test import E2eScriptOrchestrator; print('Main classes import successfully')"
 
   notify:
     # Send notifications about test results

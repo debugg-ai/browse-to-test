@@ -143,8 +143,8 @@ config = btt.ConfigBuilder().framework("playwright").build()
 print("✅ ConfigBuilder works")
 
 # Test converter creation
-converter = btt.TestConverter(config)
-print("✅ TestConverter creation works")
+converter = btt.E2eTestConverter(config)
+print("✅ E2eTestConverter creation works")
 
 print("✅ All basic functionality tests passed!")
 '''

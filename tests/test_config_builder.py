@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from browse_to_test.core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
+from browse_to_test.core.configuration.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
 
 
 class TestConfigBuilder:
@@ -294,25 +294,25 @@ class TestConfigBuilderIntegration:
     """Integration tests for ConfigBuilder with other components."""
 
     def test_builder_creates_valid_config_for_converter(self):
-        """Test that ConfigBuilder creates valid config for TestConverter."""
-        from browse_to_test.core.converter import TestConverter
+        """Test that ConfigBuilder creates valid config for E2eTestConverter."""
+        from browse_to_test.core.orchestration.converter import E2eTestConverter
         
         config = ConfigBuilder() \
             .framework("playwright") \
             .ai_provider("openai") \
             .build()
         
-        # Should be able to create TestConverter without errors
-        with patch('browse_to_test.core.converter.InputParser'):
-            with patch('browse_to_test.core.converter.PluginRegistry'):
-                with patch('browse_to_test.core.converter.AIProviderFactory'):
-                    with patch('browse_to_test.core.converter.ActionAnalyzer'):
-                        converter = TestConverter(config)
+        # Should be able to create E2eTestConverter without errors
+        with patch('browse_to_test.core.orchestration.converter.InputParser'):
+            with patch('browse_to_test.core.orchestration.converter.PluginRegistry'):
+                with patch('browse_to_test.core.orchestration.converter.AIProviderFactory'):
+                    with patch('browse_to_test.core.orchestration.converter.ActionAnalyzer'):
+                        converter = E2eTestConverter(config)
                         assert converter.config == config
 
     def test_builder_creates_valid_config_for_session(self):
         """Test that ConfigBuilder creates valid config for IncrementalSession."""
-        from browse_to_test.core.session import IncrementalSession
+        from browse_to_test.core.orchestration.session import IncrementalSession
         
         config = ConfigBuilder() \
             .framework("selenium") \
@@ -320,7 +320,7 @@ class TestConfigBuilderIntegration:
             .build()
         
         # Should be able to create IncrementalSession without errors
-        with patch('browse_to_test.core.session.TestConverter'):
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter'):
             session = IncrementalSession(config)
             assert session.config == config
 

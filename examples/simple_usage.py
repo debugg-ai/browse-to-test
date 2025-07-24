@@ -97,7 +97,7 @@ def main():
         .build()
     
     # Create converter with custom config
-    converter = btt.TestConverter(config)
+    converter = btt.E2eTestConverter(config)
     script = converter.convert(sample_data)
     print(f"Generated script with custom config ({len(script)} characters)")
     print()

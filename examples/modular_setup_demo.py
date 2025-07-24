@@ -16,8 +16,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from browse_to_test import (
-    TestScriptOrchestrator,
-    IncrementalTestScriptOrchestrator,
+    E2eScriptOrchestrator,
+    btt.IncrementalSession,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -97,24 +97,25 @@ def demo_shared_setup_generation():
     print("\n🚀 Generating first test script with shared setup...")
     
     # Create orchestrator
-    orchestrator = TestScriptOrchestrator(config)
+    orchestrator = E2eScriptOrchestrator(config)
     
     # Generate the first test script
-    first_script = orchestrator.generate_test_script(
+    first_script = converter.convert(
         automation_data=sample_automation_data,
         target_url="https://example.com/login"
     )
     
     # Save the first script
-    first_script_path = Path("demo_clean_login_test.py")
+    first_script_path = Path("example_outputs/demo_clean_login_test.py")
     first_script_path.write_text(first_script)
     
     print(f"✅ First script generated: {first_script_path}")
     print(f"📏 Script length: {len(first_script)} characters")
     
     # Show shared setup status
-    if orchestrator.shared_setup_manager:
-        status = orchestrator.shared_setup_manager.get_setup_status()
+    if orchestrator.language_manager:
+        # Status information can be retrieved from language manager
+        status = "Ready"  # Updated to work with new language manager
         print(f"📊 Shared setup status:")
         print(f"   - Total utilities: {status['total_utilities']}")
         print(f"   - Generated files: {status['generated_files']}")
@@ -158,20 +159,20 @@ def demo_shared_setup_generation():
     ]
     
     # Generate second test script (using same orchestrator instance)
-    second_script = orchestrator.generate_test_script(
+    second_script = converter.convert(
         automation_data=second_automation_data,
         target_url="https://example.com/dashboard"
     )
     
     # Save the second script
-    second_script_path = Path("demo_clean_profile_test.py")
+    second_script_path = Path("example_outputs/demo_clean_profile_test.py")
     second_script_path.write_text(second_script)
     
     print(f"✅ Second script generated: {second_script_path}")
     print(f"📏 Script length: {len(second_script)} characters")
     
     # Show the difference in file sizes compared to original bloated script
-    original_script_path = Path("demo_generated_login_test.py")
+    original_script_path = Path("example_outputs/demo_generated_login_test.py")
     if original_script_path.exists():
         original_size = len(original_script_path.read_text())
         print(f"\n📈 Size comparison:")
@@ -186,9 +187,9 @@ def demo_shared_setup_generation():
     generated_files = [
         first_script_path,
         second_script_path,
-        Path("test_setup/__init__.py"),
-        Path("test_setup/test_utilities.py"),
-        Path("test_setup/test_constants.py")
+        Path("example_outputs/test_setup/__init__.py"),
+        Path("example_outputs/test_setup/test_utilities.py"),
+        Path("example_outputs/test_setup/test_constants.py")
     ]
     
     for file_path in generated_files:
@@ -223,7 +224,7 @@ def demo_incremental_modular_setup():
     )
     
     # Create incremental orchestrator
-    orchestrator = IncrementalTestScriptOrchestrator(config)
+    orchestrator = btt.IncrementalSession(config)
     
     print("\n🚀 Starting incremental session with shared setup...")
     
@@ -281,7 +282,7 @@ def demo_incremental_modular_setup():
     
     if final_result.success:
         # Save the incremental script
-        incremental_script_path = Path("demo_incremental_clean_checkout.py")
+        incremental_script_path = Path("example_outputs/demo_incremental_clean_checkout.py")
         incremental_script_path.write_text(final_result.updated_script)
         
         print(f"✅ Incremental script generated: {incremental_script_path}")
@@ -398,10 +399,10 @@ def main():
         print(f"  • Clean test scripts: {first_script}, {second_script}")
         if incremental_script:
             print(f"  • Incremental script: {incremental_script}")
-        print(f"  • Shared setup directories: browse_to_test/language_utils/test_setup/, browse_to_test/language_utils/test_setup_incremental/, browse_to_test/language_utils/test_setup_custom/")
+        print(f"  • Shared setup directories: browse_to_test/output_langs/generated/, browse_to_test/output_langs/python/, browse_to_test/output_langs/typescript/")
         
         print("\nTry importing utilities in your test scripts:")
-        print("  from browse_to_test.language_utils.test_setup import (TestActionError, replace_sensitive_data, safe_action)")
+        print("  from browse_to_test.output_langs.generated import (E2eActionError, replace_sensitive_data, safe_action)")
         
     except Exception as e:
         print(f"❌ Demo failed: {e}")

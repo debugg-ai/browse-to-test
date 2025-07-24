@@ -1,0 +1,10 @@
+{
+  "name": "typescript",
+  "display_name": "TypeScript",
+  "file_extension": ".ts",
+  "comment_prefix": "//",
+  "supports_async": true,
+  "frameworks": ["playwright"],
+  "package_manager": "npm",
+  "template_engine": "jinja2"
+} 

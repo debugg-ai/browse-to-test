@@ -11,18 +11,18 @@ import json
 from typing import List, Dict, Any, Callable
 from pathlib import Path
 
-from browse_to_test.core.incremental_orchestrator import (
-    IncrementalTestScriptOrchestrator,
+from browse_to_test.core.orchestration.incremental_orchestrator import (
+    btt.IncrementalSession,
     IncrementalUpdateResult
 )
-from browse_to_test.core.config import Config, OutputConfig, ProcessingConfig
+from browse_to_test.core.configuration.config import Config, OutputConfig, ProcessingConfig
 
 
 class IncrementalTestFlowRunner:
     """Runner for incremental test flows with real-time updates."""
     
     def __init__(self, config: Config):
-        self.orchestrator = IncrementalTestScriptOrchestrator(config)
+        self.orchestrator = btt.IncrementalSession(config)
         self.update_history: List[IncrementalUpdateResult] = []
         
         # Register callback to track updates

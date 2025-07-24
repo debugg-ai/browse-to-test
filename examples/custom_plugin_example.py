@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 
 # Import the plugin base classes
 from browse_to_test.plugins.base import OutputPlugin, GeneratedTestScript, PluginError
-from browse_to_test.core.config import OutputConfig
-from browse_to_test.core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from browse_to_test.core.configuration.config import OutputConfig
+from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
 import browse_to_test as btt
 
 
@@ -472,14 +472,14 @@ def demonstrate_custom_plugin():
     )
     
     # Create orchestrator and register our custom plugin
-    orchestrator = btt.TestScriptOrchestrator(config)
+    converter = btt.E2eTestConverter(config)
     orchestrator.plugin_registry.register_plugin("cypress", CypressPlugin)
     
     print("✓ Registered custom Cypress plugin")
     
     # Generate the test script
     try:
-        cypress_script = orchestrator.generate_test_script(automation_data)
+        cypress_script = converter.convert(automation_data)
         
         # Save the script
         output_file = "generated_cypress_test.spec.js"

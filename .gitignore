@@ -1,3 +1,8 @@
 *.pyc
 /training_data/data_collectors/longest_playwright_tests
 .env
+
+# Example outputs - keep directory structure but ignore generated files
+examples/example_outputs/
+!examples/example_outputs/README.md
+/.venv

@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 import browse_to_test as btt
-from browse_to_test.core.config import Config, AIConfig, OutputConfig, ProcessingConfig
+from browse_to_test.core.configuration.config import Config, AIConfig, OutputConfig, ProcessingConfig
 
 
 class TestAIConfig:

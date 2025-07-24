@@ -1,0 +1,125 @@
+{
+  "logging_patterns": {
+    "step_log": "Log a test step with description",
+    "error_log": "Log an error with context",
+    "success_log": "Log a successful action",
+    "warning_log": "Log a warning message",
+    "debug_log": "Log debug information"
+  },
+  "error_handling_patterns": {
+    "try_catch_basic": "Basic try-catch error handling",
+    "retry_with_exponential_backoff": "Retry mechanism with exponential backoff",
+    "graceful_degradation": "Graceful degradation on error",
+    "error_context_capture": "Capture error context for debugging",
+    "custom_exception_handling": "Handle custom exceptions"
+  },
+  "wait_patterns": {
+    "wait_for_element": "Wait for element to appear",
+    "wait_for_navigation": "Wait for page navigation to complete",
+    "wait_for_condition": "Wait for custom condition",
+    "wait_with_timeout": "Wait with timeout and error handling",
+    "wait_for_stable": "Wait for element to become stable"
+  },
+  "selector_patterns": {
+    "css_selector": "Standard CSS selector usage",
+    "xpath_selector": "XPath selector usage",
+    "text_selector": "Text-based element selection",
+    "attribute_selector": "Attribute-based element selection",
+    "fallback_selectors": "Multiple fallback selectors",
+    "dynamic_selector": "Dynamic selector generation"
+  },
+  "action_patterns": {
+    "safe_click": "Safe click with error handling",
+    "safe_fill": "Safe text input with validation",
+    "safe_select": "Safe dropdown selection",
+    "conditional_action": "Conditional action based on element state",
+    "bulk_actions": "Perform multiple actions in sequence",
+    "parallel_actions": "Perform actions in parallel"
+  },
+  "assertion_patterns": {
+    "element_visibility": "Assert element visibility state",
+    "text_content": "Assert element text content",
+    "attribute_value": "Assert element attribute value",
+    "page_state": "Assert page state properties",
+    "count_assertion": "Assert element count",
+    "custom_assertion": "Custom assertion with message"
+  },
+  "data_handling_patterns": {
+    "test_data_loading": "Load test data from external source",
+    "sensitive_data_masking": "Mask sensitive data in logs",
+    "data_validation": "Validate test data structure",
+    "dynamic_data_generation": "Generate dynamic test data",
+    "data_cleanup": "Clean up test data after execution"
+  },
+  "screenshot_patterns": {
+    "on_failure": "Take screenshot on test failure",
+    "step_screenshots": "Take screenshots at each step",
+    "element_screenshots": "Take screenshot of specific element",
+    "comparison_screenshots": "Take screenshots for visual comparison",
+    "annotated_screenshots": "Take screenshots with annotations"
+  },
+  "video_patterns": {
+    "full_test_recording": "Record entire test execution",
+    "failure_recording": "Record video on test failure",
+    "step_recording": "Record specific test steps",
+    "performance_recording": "Record with performance metrics"
+  },
+  "setup_teardown_patterns": {
+    "browser_setup": "Initialize browser instance",
+    "page_setup": "Setup page with common configuration",
+    "test_data_setup": "Setup test data before execution",
+    "cleanup_after_test": "Cleanup resources after test",
+    "conditional_setup": "Conditional setup based on test type"
+  },
+  "framework_specific": {
+    "playwright": {
+      "page_object": "Playwright page object pattern",
+      "context_isolation": "Browser context isolation",
+      "network_interception": "Network request interception",
+      "file_upload": "File upload handling",
+      "mobile_testing": "Mobile device testing"
+    },
+    "selenium": {
+      "webdriver_manager": "WebDriver instance management",
+      "explicit_waits": "Explicit wait conditions",
+      "page_factory": "Page Factory pattern",
+      "cross_browser": "Cross-browser testing setup",
+      "grid_setup": "Selenium Grid configuration"
+    },
+    "cypress": {
+      "command_chaining": "Cypress command chaining",
+      "custom_commands": "Custom Cypress commands",
+      "fixtures": "Test data fixtures",
+      "intercepts": "Network intercepts",
+      "visual_testing": "Visual regression testing"
+    }
+  },
+  "integration_patterns": {
+    "ci_cd_integration": "CI/CD pipeline integration",
+    "reporting_integration": "Test reporting integration",
+    "database_integration": "Database testing integration",
+    "api_integration": "API testing integration",
+    "external_services": "External service integration"
+  },
+  "performance_patterns": {
+    "memory_monitoring": "Monitor memory usage during tests",
+    "timing_measurements": "Measure action execution times",
+    "resource_monitoring": "Monitor browser resource usage",
+    "network_monitoring": "Monitor network performance",
+    "bottleneck_detection": "Detect performance bottlenecks"
+  },
+  "accessibility_patterns": {
+    "aria_validation": "Validate ARIA attributes",
+    "keyboard_navigation": "Test keyboard navigation",
+    "screen_reader": "Test screen reader compatibility",
+    "color_contrast": "Validate color contrast ratios",
+    "focus_management": "Test focus management"
+  },
+  "security_patterns": {
+    "input_validation": "Validate input security",
+    "xss_protection": "Test XSS protection",
+    "csrf_protection": "Test CSRF protection",
+    "authentication": "Test authentication flows",
+    "authorization": "Test authorization controls"
+  }
+} 

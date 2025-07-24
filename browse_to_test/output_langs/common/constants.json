@@ -1,0 +1,165 @@
+{
+  "timeouts": {
+    "default_timeout_ms": 10000,
+    "page_load_timeout_ms": 30000,
+    "element_timeout_ms": 10000,
+    "action_timeout_ms": 5000,
+    "long_timeout_ms": 60000,
+    "short_timeout_ms": 2000
+  },
+  "retry_settings": {
+    "max_retries": 3,
+    "retry_delay_ms": 1000,
+    "exponential_backoff": true,
+    "max_retry_delay_ms": 5000
+  },
+  "browser_settings": {
+    "default_browser": "chromium",
+    "headless_mode": false,
+    "slow_mo_ms": 0,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "user_agent": "browse-to-test/1.0.0"
+  },
+  "screenshot_settings": {
+    "enabled": true,
+    "on_failure": true,
+    "on_success": false,
+    "directory": "./screenshots",
+    "format": "png",
+    "full_page": false
+  },
+  "common_selectors": {
+    "submit_button": [
+      "button[type='submit']",
+      "input[type='submit']",
+      "[role='button'][aria-label*='submit']",
+      ".submit-btn",
+      ".btn-submit"
+    ],
+    "text_input": [
+      "input[type='text']",
+      "input[type='email']", 
+      "input[type='password']",
+      "input[type='search']",
+      "textarea"
+    ],
+    "link": [
+      "a[href]",
+      "[role='link']"
+    ],
+    "form": [
+      "form",
+      "[role='form']"
+    ],
+    "modal": [
+      ".modal",
+      "[role='dialog']",
+      "[role='alertdialog']",
+      ".popup",
+      ".overlay"
+    ],
+    "close_button": [
+      ".close",
+      "[aria-label*='close']",
+      "[aria-label*='Close']",
+      "[title*='close']",
+      "[title*='Close']",
+      ".btn-close",
+      ".close-btn"
+    ],
+    "dropdown": [
+      "select",
+      "[role='combobox']",
+      "[role='listbox']",
+      ".dropdown"
+    ],
+    "checkbox": [
+      "input[type='checkbox']",
+      "[role='checkbox']"
+    ],
+    "radio": [
+      "input[type='radio']",
+      "[role='radio']"
+    ]
+  },
+  "sensitive_data_patterns": [
+    "password",
+    "secret",
+    "token",
+    "key",
+    "credential", 
+    "auth",
+    "api_key",
+    "access_token",
+    "private_key",
+    "session_id",
+    "cookie",
+    "jwt",
+    "bearer"
+  ],
+  "wait_conditions": {
+    "visible": "Element becomes visible",
+    "hidden": "Element becomes hidden",
+    "attached": "Element is attached to DOM",
+    "detached": "Element is detached from DOM",
+    "stable": "Element stops moving",
+    "enabled": "Element becomes enabled",
+    "disabled": "Element becomes disabled"
+  },
+  "action_types": {
+    "click": "Click on element",
+    "double_click": "Double-click on element", 
+    "right_click": "Right-click on element",
+    "fill": "Fill text input",
+    "clear": "Clear text input",
+    "select": "Select option from dropdown",
+    "check": "Check checkbox",
+    "uncheck": "Uncheck checkbox",
+    "hover": "Hover over element",
+    "focus": "Focus on element",
+    "blur": "Remove focus from element",
+    "press": "Press key",
+    "upload": "Upload file",
+    "drag": "Drag element",
+    "drop": "Drop element"
+  },
+  "assertion_types": {
+    "visible": "Element is visible",
+    "hidden": "Element is hidden",
+    "enabled": "Element is enabled",
+    "disabled": "Element is disabled",
+    "checked": "Checkbox is checked",
+    "unchecked": "Checkbox is unchecked",
+    "text_equals": "Element text equals expected value",
+    "text_contains": "Element text contains expected value",
+    "value_equals": "Input value equals expected value",
+    "attribute_equals": "Element attribute equals expected value",
+    "count_equals": "Element count equals expected value",
+    "url_equals": "Page URL equals expected value",
+    "url_contains": "Page URL contains expected value",
+    "title_equals": "Page title equals expected value",
+    "title_contains": "Page title contains expected value"
+  },
+  "browser_args": [
+    "--no-sandbox",
+    "--disable-web-security", 
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--disable-background-timer-throttling",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-renderer-backgrounding"
+  ],
+  "default_config": {
+    "ignore_https_errors": true,
+    "color_scheme": "light",
+    "locale": "en-US",
+    "timezone": "UTC",
+    "permissions": [],
+    "extra_http_headers": {},
+    "offline": false,
+    "java_script_enabled": true
+  }
+} 

@@ -1,0 +1,10 @@
+{
+  "name": "javascript",
+  "display_name": "JavaScript",
+  "file_extension": ".js",
+  "comment_prefix": "//",
+  "supports_async": true,
+  "frameworks": ["playwright"],
+  "package_manager": "npm",
+  "template_engine": "jinja2"
+} 

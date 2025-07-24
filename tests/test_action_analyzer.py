@@ -4,14 +4,14 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
 
-from browse_to_test.core.action_analyzer import (
-    ActionAnalyzer, 
-    ActionAnalysisResult, 
+from browse_to_test.core.processing.action_analyzer import (
+    ActionAnalyzer,
+    ActionAnalysisResult,
     ComprehensiveAnalysisResult
 )
-from browse_to_test.core.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
-from browse_to_test.core.context_collector import SystemContext, ProjectContext, TestFileInfo
-from browse_to_test.core.config import Config, ProcessingConfig
+from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
+from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext, TestFileInfo
+from browse_to_test.core.configuration.config import Config, ProcessingConfig
 from browse_to_test.ai.base import AIProvider, AIResponse, AnalysisType
 
 
@@ -366,7 +366,7 @@ class TestActionAnalyzer:
         assert len(recommendations) >= 1
         assert any("wait" in rec.lower() for rec in recommendations)
     
-    @patch('browse_to_test.core.action_analyzer.ContextCollector')
+    @patch('browse_to_test.core.processing.action_analyzer.ContextCollector')
     def test_analyze_with_ai_and_context(self, mock_context_collector, analyzer_with_ai, sample_parsed_data, sample_system_context):
         """Test analysis with AI and system context."""
         # Mock context collector
@@ -384,7 +384,7 @@ class TestActionAnalyzer:
         assert 'comprehensive_analysis' in results
         analyzer_with_ai.ai_provider.analyze_with_context.assert_called_once()
     
-    @patch('browse_to_test.core.action_analyzer.ContextCollector')
+    @patch('browse_to_test.core.processing.action_analyzer.ContextCollector')
     def test_analyze_with_ai_failure(self, mock_context_collector, analyzer_with_ai, sample_parsed_data):
         """Test analysis when AI fails."""
         # Mock AI provider to raise exception
@@ -654,7 +654,7 @@ class TestActionAnalyzerEdgeCases:
         assert results['total_actions'] == 1
         assert 'unknown_action' in results['action_types']
     
-    @patch('browse_to_test.core.action_analyzer.ContextCollector')
+    @patch('browse_to_test.core.processing.action_analyzer.ContextCollector')
     def test_context_collection_failure(self, mock_context_collector):
         """Test when context collection fails."""
         # Create analyzer with AI
@@ -738,7 +738,7 @@ class TestActionAnalyzerEdgeCases:
 class TestActionAnalyzerIntegration:
     """Integration tests for ActionAnalyzer with other components."""
     
-    @patch('browse_to_test.core.action_analyzer.ContextCollector')
+    @patch('browse_to_test.core.processing.action_analyzer.ContextCollector')
     def test_integration_with_context_collector(self, mock_context_collector):
         """Test integration with ContextCollector."""
         config = Config(
