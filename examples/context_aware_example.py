@@ -157,11 +157,8 @@ def main():
     )
     
     try:
-        orchestrator_basic = btt.E2eScriptOrchestrator(basic_config)
-        basic_script = orchestrator_basic.generate_test_script(
-            automation_data=automation_data,
-            target_url="https://example.com/login"
-        )
+        converter_basic = btt.E2eTestConverter(basic_config)
+        basic_script = converter_basic.convert(automation_data)
         print("✅ Basic script generated successfully")
         print(f"📄 Script length: {len(basic_script)} characters")
     except Exception as e:
@@ -202,7 +199,7 @@ def main():
     )
     
     try:
-        orchestrator_context = btt.E2eScriptOrchestrator(context_config)
+        orchestrator_context = btt.E2eTestConverter(context_config)
         
         # First, let's see what the configuration validation shows
         validation = orchestrator_context.validate_configuration()
@@ -245,15 +242,7 @@ def main():
         
         # Generate the actual context-aware script
         print("\n🎯 Generating context-aware script...")
-        context_script = orchestrator_context.generate_test_script(
-            automation_data=automation_data,
-            target_url="https://example.com/login",
-            context_hints={
-                "flow_type": "authentication",
-                "critical_elements": ["username", "password", "submit"],
-                "expected_outcome": "successful_login"
-            }
-        )
+        context_script = orchestrator_context.convert(automation_data)
         
         print("✅ Context-aware script generated successfully")
         print(f"📄 Script length: {len(context_script)} characters")

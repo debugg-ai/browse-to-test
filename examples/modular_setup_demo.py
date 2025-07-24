@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 from browse_to_test import (
     E2eScriptOrchestrator,
-    IncrementalE2eScriptOrchestrator,
+    btt.IncrementalSession,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -100,13 +100,13 @@ def demo_shared_setup_generation():
     orchestrator = E2eScriptOrchestrator(config)
     
     # Generate the first test script
-    first_script = orchestrator.generate_test_script(
+    first_script = converter.convert(
         automation_data=sample_automation_data,
         target_url="https://example.com/login"
     )
     
     # Save the first script
-    first_script_path = Path("demo_clean_login_test.py")
+    first_script_path = Path("example_outputs/demo_clean_login_test.py")
     first_script_path.write_text(first_script)
     
     print(f"✅ First script generated: {first_script_path}")
@@ -159,20 +159,20 @@ def demo_shared_setup_generation():
     ]
     
     # Generate second test script (using same orchestrator instance)
-    second_script = orchestrator.generate_test_script(
+    second_script = converter.convert(
         automation_data=second_automation_data,
         target_url="https://example.com/dashboard"
     )
     
     # Save the second script
-    second_script_path = Path("demo_clean_profile_test.py")
+    second_script_path = Path("example_outputs/demo_clean_profile_test.py")
     second_script_path.write_text(second_script)
     
     print(f"✅ Second script generated: {second_script_path}")
     print(f"📏 Script length: {len(second_script)} characters")
     
     # Show the difference in file sizes compared to original bloated script
-    original_script_path = Path("demo_generated_login_test.py")
+    original_script_path = Path("example_outputs/demo_generated_login_test.py")
     if original_script_path.exists():
         original_size = len(original_script_path.read_text())
         print(f"\n📈 Size comparison:")
@@ -187,9 +187,9 @@ def demo_shared_setup_generation():
     generated_files = [
         first_script_path,
         second_script_path,
-        Path("test_setup/__init__.py"),
-        Path("test_setup/test_utilities.py"),
-        Path("test_setup/test_constants.py")
+        Path("example_outputs/test_setup/__init__.py"),
+        Path("example_outputs/test_setup/test_utilities.py"),
+        Path("example_outputs/test_setup/test_constants.py")
     ]
     
     for file_path in generated_files:
@@ -224,7 +224,7 @@ def demo_incremental_modular_setup():
     )
     
     # Create incremental orchestrator
-    orchestrator = IncrementalE2eScriptOrchestrator(config)
+    orchestrator = btt.IncrementalSession(config)
     
     print("\n🚀 Starting incremental session with shared setup...")
     
@@ -282,7 +282,7 @@ def demo_incremental_modular_setup():
     
     if final_result.success:
         # Save the incremental script
-        incremental_script_path = Path("demo_incremental_clean_checkout.py")
+        incremental_script_path = Path("example_outputs/demo_incremental_clean_checkout.py")
         incremental_script_path.write_text(final_result.updated_script)
         
         print(f"✅ Incremental script generated: {incremental_script_path}")

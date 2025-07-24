@@ -154,7 +154,7 @@ def basic_example():
         )
         
         # Save the generated script
-        output_file = "generated_playwright_test.py"
+        output_file = "example_outputs/generated_playwright_test.py"
         with open(output_file, 'w') as f:
             f.write(playwright_script)
         
@@ -174,7 +174,7 @@ def basic_example():
         )
         
         # Save the generated script
-        output_file = "generated_selenium_test.py"
+        output_file = "example_outputs/generated_selenium_test.py"
         with open(output_file, 'w') as f:
             f.write(selenium_script)
         
@@ -226,7 +226,7 @@ def advanced_example():
         generated_script = converter.convert(automation_data)
         
         # Save the script
-        output_file = "generated_advanced_test.py"
+        output_file = "example_outputs/generated_advanced_test.py"
         with open(output_file, 'w') as f:
             f.write(generated_script)
         
@@ -257,7 +257,7 @@ def multi_framework_example():
                 ai_provider="openai"
             )
             
-            output_file = f"generated_{framework}_multi.py"
+            output_file = f"example_outputs/generated_{framework}_multi.py"
             with open(output_file, 'w') as f:
                 f.write(script)
                 
@@ -273,7 +273,7 @@ def load_from_file_example():
     
     # Save sample data to file
     automation_data = create_sample_automation_data()
-    data_file = "sample_automation_data.json"
+    data_file = "example_outputs/sample_automation_data.json"
     
     with open(data_file, 'w') as f:
         json.dump(automation_data, f, indent=2)
@@ -292,7 +292,7 @@ def load_from_file_example():
             add_comments=True
         )
         
-        output_file = "generated_from_file.py"
+        output_file = "example_outputs/generated_from_file.py"
         with open(output_file, 'w') as f:
             f.write(script)
         
@@ -334,7 +334,7 @@ def incremental_session_example():
         # Finalize the session
         final_result = session.finalize()
         if final_result.success:
-            output_file = "generated_incremental_test.py"
+            output_file = "example_outputs/generated_incremental_test.py"
             with open(output_file, 'w') as f:
                 f.write(final_result.current_script)
             print(f"✓ Finalized incremental test: {output_file}")
@@ -367,7 +367,7 @@ def main():
         print("Examples completed! Check the generated files:")
         
         # List generated files
-        for file in Path(".").glob("generated_*.py"):
+        for file in Path("example_outputs").glob("generated_*.py"):
             size = file.stat().st_size
             print(f"  - {file.name} ({size} bytes)")
         

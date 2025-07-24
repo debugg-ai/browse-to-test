@@ -472,14 +472,14 @@ def demonstrate_custom_plugin():
     )
     
     # Create orchestrator and register our custom plugin
-    orchestrator = btt.E2eScriptOrchestrator(config)
+    converter = btt.E2eTestConverter(config)
     orchestrator.plugin_registry.register_plugin("cypress", CypressPlugin)
     
     print("✓ Registered custom Cypress plugin")
     
     # Generate the test script
     try:
-        cypress_script = orchestrator.generate_test_script(automation_data)
+        cypress_script = converter.convert(automation_data)
         
         # Save the script
         output_file = "generated_cypress_test.spec.js"

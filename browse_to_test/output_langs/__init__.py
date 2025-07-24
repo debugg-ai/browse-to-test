@@ -26,6 +26,7 @@ Usage:
     test_script = manager.generate_test_script(automation_data)
 """
 
+from typing import List
 from .manager import LanguageManager
 from .registry import LanguageRegistry, SupportedLanguage, SupportedFramework
 from .exceptions import (
@@ -56,12 +57,12 @@ __all__ = [
 
 # Convenience functions
 
-def get_supported_languages() -> list[str]:
+def get_supported_languages() -> List[str]:
     """Get list of all supported programming languages."""
     registry = LanguageRegistry()
     return registry.get_supported_languages()
 
-def get_supported_frameworks() -> list[str]:
+def get_supported_frameworks() -> List[str]:
     """Get list of all supported testing frameworks."""
     registry = LanguageRegistry()
     return registry.get_supported_frameworks()

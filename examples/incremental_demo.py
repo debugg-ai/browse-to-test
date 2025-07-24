@@ -15,7 +15,7 @@ from browse_to_test import (
     start_incremental_session,
     add_incremental_step,
     finalize_incremental_session,
-    IncrementalE2eScriptOrchestrator,
+    btt.IncrementalSession,
     Config,
     OutputConfig,
     ProcessingConfig
@@ -200,7 +200,7 @@ async def demo_basic_incremental_workflow():
     
     # Start an incremental session for Playwright
     orchestrator, setup_result = start_incremental_session(
-        output_framework="playwright",
+        framework="playwright",
         target_url="https://example.com/login",
         config={
             "output": {
@@ -304,7 +304,7 @@ async def demo_callback_system():
     )
     
     # Create orchestrator directly for callback demo
-    orchestrator = IncrementalE2eScriptOrchestrator(config)
+    orchestrator = btt.IncrementalSession(config)
     
     # Callback to track updates
     update_count = 0
@@ -391,7 +391,7 @@ async def demo_error_handling():
         output=OutputConfig(framework="playwright"),
         processing=ProcessingConfig(analyze_actions_with_ai=False)
     )
-    orchestrator = IncrementalE2eScriptOrchestrator(config)
+    orchestrator = btt.IncrementalSession(config)
     
     invalid_step = {
         "model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]},

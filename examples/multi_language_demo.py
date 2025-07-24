@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 
 from browse_to_test import (
     E2eScriptOrchestrator,
-    IncrementalE2eScriptOrchestrator,
+    btt.IncrementalSession,
     Config,
     OutputConfig,
     SharedSetupConfig,
@@ -114,7 +114,7 @@ def demo_multi_language_generation():
                 orchestrator = E2eScriptOrchestrator(config)
                 
                 # Generate test script
-                script = orchestrator.generate_test_script(
+                script = converter.convert(
                     automation_data=sample_automation_data,
                     target_url="https://example.com/login"
                 )
