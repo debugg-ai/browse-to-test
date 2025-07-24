@@ -2,12 +2,16 @@
 Core components for the browse-to-test library.
 """
 
-from .orchestrator import TestScriptOrchestrator
-from .config import Config, AIConfig, OutputConfig, SharedSetupConfig
-from .input_parser import InputParser
-from .action_analyzer import ActionAnalyzer
-from .shared_setup_manager import SharedSetupManager, SetupUtility
-from .language_templates import LanguageTemplateManager, LanguageTemplate
+# Core orchestration
+from .orchestration import TestScriptOrchestrator
+
+# Configuration 
+from .configuration import Config, AIConfig, OutputConfig, SharedSetupConfig
+from .configuration import LanguageTemplateManager, LanguageTemplate
+from .configuration import SharedSetupManager, SetupUtility
+
+# Input/Data processing
+from .processing import InputParser, ActionAnalyzer
 
 __all__ = [
     "TestScriptOrchestrator",

@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import Config
+from ..configuration.config import Config
 
 
 logger = logging.getLogger(__name__)

@@ -8,13 +8,13 @@ import json
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
-from browse_to_test.core.incremental_orchestrator import (
+from browse_to_test.core.orchestration.incremental_orchestrator import (
     IncrementalTestScriptOrchestrator,
     ScriptState,
     IncrementalUpdateResult
 )
-from browse_to_test.core.config import Config, OutputConfig, ProcessingConfig
-from browse_to_test.core.input_parser import ParsedStep, ParsedAction
+from browse_to_test.core.configuration.config import Config, OutputConfig, ProcessingConfig
+from browse_to_test.core.processing.input_parser import ParsedStep, ParsedAction
 from browse_to_test.plugins.incremental_playwright_plugin import IncrementalPlaywrightPlugin
 
 
@@ -219,8 +219,8 @@ class TestIncrementalTestScriptOrchestrator:
     
     def test_orchestrator_initialization_with_ai(self, ai_enabled_config):
         """Test orchestrator initialization with AI enabled."""
-        with patch('browse_to_test.core.incremental_orchestrator.AIProviderFactory') as mock_ai_factory, \
-             patch('browse_to_test.core.incremental_orchestrator.ContextCollector') as mock_context_collector:
+        with patch('browse_to_test.core.orchestration.incremental_orchestrator.AIProviderFactory') as mock_ai_factory, \
+             patch('browse_to_test.core.orchestration.incremental_orchestrator.ContextCollector') as mock_context_collector:
             
             mock_ai_provider = Mock()
             mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider

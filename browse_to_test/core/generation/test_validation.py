@@ -12,15 +12,12 @@ This module provides advanced validation capabilities for generated test scripts
 - Test maintainability scoring
 """
 
-from typing import Dict, List, Optional, Any, Tuple, Union, Set
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 import re
 import ast
 import json
-import subprocess
-from pathlib import Path
-import tempfile
 
 
 class ValidationSeverity(Enum):

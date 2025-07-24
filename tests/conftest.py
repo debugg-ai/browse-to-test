@@ -12,9 +12,17 @@ from faker import Faker
 
 import browse_to_test as btt
 from browse_to_test.ai.base import AIResponse, AIProvider
-from browse_to_test.core.context_collector import SystemContext, ProjectContext, TestFileInfo
-from browse_to_test.core.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
+from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext, TestFileInfo
+from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
 
+
+collect_ignore = [
+    "browse_to_test/language_utils",
+    "browse_to_test/core",
+    "examples",
+    "script_generators",
+    "training_data",
+]
 
 # Initialize faker for generating test data
 fake = Faker()

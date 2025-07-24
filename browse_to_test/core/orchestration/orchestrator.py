@@ -8,13 +8,13 @@ from pathlib import Path
 import json
 import hashlib
 
-from .config import Config
-from .input_parser import InputParser, ParsedAutomationData
-from .action_analyzer import ActionAnalyzer, ComprehensiveAnalysisResult
-from .context_collector import ContextCollector, SystemContext
-from .shared_setup_manager import SharedSetupManager, SharedSetupConfig, SetupUtility
-from ..ai.factory import AIProviderFactory
-from ..plugins.registry import PluginRegistry
+from ..configuration.config import Config
+from ..processing.input_parser import InputParser, ParsedAutomationData
+from ..processing.action_analyzer import ActionAnalyzer, ComprehensiveAnalysisResult
+from ..processing.context_collector import ContextCollector, SystemContext
+from ..configuration.shared_setup_manager import SharedSetupManager, SharedSetupConfig, SetupUtility
+from ...ai.factory import AIProviderFactory
+from ...plugins.registry import PluginRegistry
 
 
 class TestScriptOrchestrator:

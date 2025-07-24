@@ -5,8 +5,8 @@ Abstract base classes for output plugins.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
-from ..core.input_parser import ParsedAutomationData, ParsedStep
-from ..core.config import OutputConfig
+from ..core.processing.input_parser import ParsedAutomationData, ParsedStep
+from ..core.configuration.config import OutputConfig
 
 
 @dataclass

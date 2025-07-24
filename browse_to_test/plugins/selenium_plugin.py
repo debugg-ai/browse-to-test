@@ -8,8 +8,8 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from .base import OutputPlugin, GeneratedTestScript, PluginError
-from ..core.config import OutputConfig
-from ..core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from ..core.configuration.config import OutputConfig
+from ..core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
 
 
 logger = logging.getLogger(__name__)

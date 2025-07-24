@@ -1,18 +1,18 @@
-"""Tests for the new TestConverter class introduced in the architectural restructuring."""
+"""Tests for the new E2eTestConverter class introduced in the architectural restructuring."""
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
-from browse_to_test.core.converter import TestConverter
-from browse_to_test.core.config import Config, ConfigBuilder
-from browse_to_test.core.input_parser import ParsedAutomationData
-from browse_to_test.core.action_analyzer import ComprehensiveAnalysisResult
-from browse_to_test.core.context_collector import SystemContext
+from browse_to_test.core.orchestration.converter import E2eTestConverter
+from browse_to_test.core.configuration.config import Config, ConfigBuilder
+from browse_to_test.core.processing.input_parser import ParsedAutomationData
+from browse_to_test.core.processing.action_analyzer import ComprehensiveAnalysisResult
+from browse_to_test.core.processing.context_collector import SystemContext
 
 
-class TestTestConverter:
-    """Test the TestConverter class."""
+class TestE2eTestConverter:
+    """Test the E2eTestConverter class."""
 
     @pytest.fixture
     def basic_config(self):
@@ -21,12 +21,12 @@ class TestTestConverter:
 
     @pytest.fixture
     def mock_dependencies(self):
-        """Mock all dependencies for TestConverter."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_input_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.converter.AIProviderFactory') as mock_ai_factory, \
-             patch('browse_to_test.core.converter.ActionAnalyzer') as mock_action_analyzer, \
-             patch('browse_to_test.core.converter.ContextCollector') as mock_context_collector:
+        """Mock all dependencies for E2eTestConverter."""
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_input_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.converter.AIProviderFactory') as mock_ai_factory, \
+             patch('browse_to_test.core.orchestration.converter.ActionAnalyzer') as mock_action_analyzer, \
+             patch('browse_to_test.core.orchestration.converter.ContextCollector') as mock_context_collector:
             
             yield {
                 'input_parser': mock_input_parser,
@@ -37,15 +37,15 @@ class TestTestConverter:
             }
 
     def test_init_basic(self, basic_config, mock_dependencies):
-        """Test basic TestConverter initialization."""
-        converter = TestConverter(basic_config)
+        """Test basic E2eTestConverter initialization."""
+        converter = E2eTestConverter(basic_config)
         
         assert converter.config == basic_config
         mock_dependencies['input_parser'].assert_called_once_with(basic_config)
         mock_dependencies['plugin_registry'].assert_called_once()
 
     def test_init_with_ai_provider(self, mock_dependencies):
-        """Test TestConverter initialization with AI provider enabled."""
+        """Test E2eTestConverter initialization with AI provider enabled."""
         config = ConfigBuilder() \
             .framework("playwright") \
             .ai_provider("openai") \
@@ -55,13 +55,13 @@ class TestTestConverter:
         mock_ai_provider = Mock()
         mock_dependencies['ai_factory'].return_value.create_provider.return_value = mock_ai_provider
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         
         mock_dependencies['ai_factory'].return_value.create_provider.assert_called_once_with(config.ai)
         assert converter.ai_provider == mock_ai_provider
 
     def test_init_with_ai_provider_failure(self, mock_dependencies):
-        """Test TestConverter initialization when AI provider creation fails."""
+        """Test E2eTestConverter initialization when AI provider creation fails."""
         config = ConfigBuilder() \
             .framework("playwright") \
             .ai_provider("openai") \
@@ -72,30 +72,30 @@ class TestTestConverter:
         mock_dependencies['ai_factory'].return_value.create_provider.side_effect = Exception("API key missing")
         
         # Should not raise exception, just log warning
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         assert converter.ai_provider is None
 
     def test_init_with_context_collection(self, mock_dependencies):
-        """Test TestConverter initialization with context collection enabled."""
+        """Test E2eTestConverter initialization with context collection enabled."""
         config = ConfigBuilder() \
             .framework("playwright") \
             .enable_context_collection(True) \
             .project_root("/test/project") \
             .build()
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         
         mock_dependencies['context_collector'].assert_called_once_with(config, "/test/project")
         assert converter.context_collector is not None
 
     def test_init_without_context_collection(self, basic_config, mock_dependencies):
-        """Test TestConverter initialization without context collection."""
+        """Test E2eTestConverter initialization without context collection."""
         config = ConfigBuilder() \
             .framework("playwright") \
             .enable_context_collection(False) \
             .build()
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         
         mock_dependencies['context_collector'].assert_not_called()
         assert converter.context_collector is None
@@ -112,7 +112,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         result = converter.convert(sample_automation_data)
         
         assert result == "Generated test script"
@@ -130,7 +130,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         result = converter.convert(sample_automation_data, target_url="https://example.com")
         
         assert result == "URL-specific script"
@@ -159,7 +159,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         result = converter.convert(sample_automation_data, target_url="https://example.com")
         
         assert result == "Context-aware script"
@@ -197,7 +197,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         result = converter.convert(sample_automation_data)
         
         assert result == "AI-enhanced script"
@@ -229,7 +229,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         # Should not raise exception, just continue without context
         result = converter.convert(sample_automation_data)
         
@@ -263,7 +263,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         # Should not raise exception, just continue without AI analysis
         result = converter.convert(sample_automation_data)
         
@@ -277,7 +277,7 @@ class TestTestConverter:
         """Test convert when input parsing fails."""
         mock_dependencies['input_parser'].return_value.parse.side_effect = ValueError("Invalid data")
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         
         with pytest.raises(RuntimeError, match="Failed to convert automation data"):
             converter.convert(sample_automation_data)
@@ -291,7 +291,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.side_effect = Exception("Plugin error")
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         
         with pytest.raises(RuntimeError, match="Failed to convert automation data"):
             converter.convert(sample_automation_data)
@@ -305,7 +305,7 @@ class TestTestConverter:
         
         mock_dependencies['input_parser'].return_value.parse.side_effect = ValueError("Parse error")
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         
         # In debug mode, original exception should be raised
         with pytest.raises(ValueError, match="Parse error"):
@@ -317,7 +317,7 @@ class TestTestConverter:
         mock_dependencies['input_parser'].return_value.parse.return_value = mock_parsed_data
         mock_dependencies['input_parser'].return_value.validate.return_value = ["Error 1", "Error 2"]
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         errors = converter.validate_data(["some", "data"])
         
         assert errors == ["Error 1", "Error 2"]
@@ -328,7 +328,7 @@ class TestTestConverter:
         """Test validate_data when parsing fails."""
         mock_dependencies['input_parser'].return_value.parse.side_effect = ValueError("Parse error")
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         errors = converter.validate_data(["invalid", "data"])
         
         assert len(errors) == 1
@@ -338,7 +338,7 @@ class TestTestConverter:
         """Test get_supported_frameworks method."""
         mock_dependencies['plugin_registry'].return_value.list_available_plugins.return_value = ["playwright", "selenium"]
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         frameworks = converter.get_supported_frameworks()
         
         assert frameworks == ["playwright", "selenium"]
@@ -348,7 +348,7 @@ class TestTestConverter:
         """Test get_supported_ai_providers method."""
         mock_dependencies['ai_factory'].return_value.list_available_providers.return_value = ["openai", "anthropic"]
         
-        converter = TestConverter(basic_config)
+        converter = E2eTestConverter(basic_config)
         providers = converter.get_supported_ai_providers()
         
         assert providers == ["openai", "anthropic"]
@@ -382,7 +382,7 @@ class TestTestConverter:
         mock_plugin.generate_test_script.return_value = mock_script_result
         mock_dependencies['plugin_registry'].return_value.create_plugin.return_value = mock_plugin
         
-        converter = TestConverter(config)
+        converter = E2eTestConverter(config)
         result = converter.convert(
             sample_automation_data, 
             target_url="https://example.com",
@@ -399,11 +399,11 @@ class TestTestConverter:
         assert call_kwargs['context_hints'] == {"test": "hint"}
 
 
-class TestTestConverterIntegration:
-    """Integration tests for TestConverter."""
+class TestE2eTestConverterIntegration:
+    """Integration tests for E2eTestConverter."""
 
     def test_converter_with_real_config(self):
-        """Test TestConverter with a real configuration."""
+        """Test E2eTestConverter with a real configuration."""
         config = ConfigBuilder() \
             .framework("playwright") \
             .ai_provider("openai", model="gpt-4") \
@@ -414,9 +414,9 @@ class TestTestConverterIntegration:
             .build()
         
         # Mock only the minimum required dependencies
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry, \
-             patch('browse_to_test.core.converter.ActionAnalyzer'):
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry, \
+             patch('browse_to_test.core.orchestration.converter.ActionAnalyzer'):
             
             mock_parser.return_value.parse.return_value = Mock()
             mock_plugin = Mock()
@@ -425,7 +425,7 @@ class TestTestConverterIntegration:
             mock_plugin.generate_test_script.return_value = mock_script_result
             mock_registry.return_value.create_plugin.return_value = mock_plugin
             
-            converter = TestConverter(config)
+            converter = E2eTestConverter(config)
             result = converter.convert([{"test": "data"}])
             
             assert result == "Real config script"
@@ -435,14 +435,14 @@ class TestTestConverterIntegration:
         """Test that converter error handling is consistent."""
         config = ConfigBuilder().framework("playwright").build()
         
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser:
             mock_parser.return_value.parse.side_effect = [
                 ValueError("Error 1"),
                 RuntimeError("Error 2"),
                 Exception("Error 3")
             ]
             
-            converter = TestConverter(config)
+            converter = E2eTestConverter(config)
             
             # All should be wrapped in RuntimeError (unless debug mode)
             for _ in range(3):

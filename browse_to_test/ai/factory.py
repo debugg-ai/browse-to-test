@@ -5,7 +5,7 @@ Factory for creating AI provider instances.
 import logging
 from typing import Dict, List, Type
 from .base import AIProvider, AIProviderError
-from ..core.config import AIConfig
+from ..core.configuration.config import AIConfig
 
 
 logger = logging.getLogger(__name__)

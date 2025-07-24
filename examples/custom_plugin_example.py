@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 
 # Import the plugin base classes
 from browse_to_test.plugins.base import OutputPlugin, GeneratedTestScript, PluginError
-from browse_to_test.core.config import OutputConfig
-from browse_to_test.core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from browse_to_test.core.configuration.config import OutputConfig
+from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
 import browse_to_test as btt
 
 

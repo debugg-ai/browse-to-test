@@ -5,8 +5,8 @@ import warnings
 from unittest.mock import Mock, patch, MagicMock
 
 import browse_to_test as btt
-from browse_to_test.core.converter import TestConverter
-from browse_to_test.core.session import IncrementalSession
+from browse_to_test.core.orchestration.converter import E2eTestConverter
+from browse_to_test.core.orchestration.session import IncrementalSession
 
 
 class TestSimplifiedAPI:
@@ -14,7 +14,7 @@ class TestSimplifiedAPI:
 
     def test_convert_simple_usage(self, sample_automation_data):
         """Test the basic convert() function with minimal parameters."""
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.return_value = "Generated test script"
             
             result = btt.convert(
@@ -28,7 +28,7 @@ class TestSimplifiedAPI:
     
     def test_convert_with_language(self, sample_automation_data):
         """Test convert() with language parameter."""
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.return_value = "TypeScript test script"
             
             result = btt.convert(
@@ -45,7 +45,7 @@ class TestSimplifiedAPI:
     
     def test_convert_with_kwargs(self, sample_automation_data):
         """Test convert() with additional keyword arguments."""
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.return_value = "Enhanced test script"
             
             result = btt.convert(
@@ -63,7 +63,7 @@ class TestSimplifiedAPI:
     
     def test_convert_error_handling(self, sample_automation_data):
         """Test convert() error handling."""
-        with patch.object(TestConverter, '__init__') as mock_init:
+        with patch.object(E2eTestConverter, '__init__') as mock_init:
             mock_init.side_effect = ValueError("Configuration error")
             
             with pytest.raises(ValueError, match="Configuration error"):
@@ -210,7 +210,7 @@ class TestAPIIntegration:
         mock_script = "Generated script content"
         
         # Test regular convert
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.return_value = mock_script
             
             regular_result = btt.convert(sample_automation_data, framework="playwright")
@@ -251,7 +251,7 @@ class TestErrorHandlingScenarios:
     
     def test_convert_with_empty_data(self):
         """Test convert() with empty automation data."""
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.side_effect = ValueError("No automation data provided")
             
             with pytest.raises(ValueError, match="No automation data provided"):
@@ -261,7 +261,7 @@ class TestErrorHandlingScenarios:
         """Test convert() with malformed automation data."""
         malformed_data = [{"invalid": "structure"}]
         
-        with patch.object(TestConverter, 'convert') as mock_convert:
+        with patch.object(E2eTestConverter, 'convert') as mock_convert:
             mock_convert.side_effect = RuntimeError("Failed to convert automation data")
             
             with pytest.raises(RuntimeError, match="Failed to convert automation data"):

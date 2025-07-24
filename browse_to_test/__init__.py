@@ -18,15 +18,15 @@ import browse_to_test as btt
 
 # Create custom configuration
 config = btt.ConfigBuilder().framework("playwright").ai_provider("openai").build()
-converter = btt.TestConverter(config)
+converter = btt.E2eTestConverter(config)
 script = converter.convert(automation_data)
 ```
 """
 
 from typing import List
-from .core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
-from .core.converter import TestConverter
-from .core.session import IncrementalSession, SessionResult
+from .core.configuration.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
+from .core.orchestration.converter import E2eTestConverter
+from .core.orchestration.session import IncrementalSession, SessionResult
 
 __version__ = "0.2.1"
 __author__ = "Browse-to-Test Contributors"
@@ -44,7 +44,7 @@ __all__ = [
     "ProcessingConfig",  # For backward compatibility
     
     # Main classes
-    "TestConverter", 
+    "E2eTestConverter", 
     "IncrementalSession",
     "SessionResult",
     
@@ -88,7 +88,7 @@ def convert(
         .from_kwargs(**kwargs) \
         .build()
     
-    converter = TestConverter(config)
+    converter = E2eTestConverter(config)
     return converter.convert(automation_data)
 
 

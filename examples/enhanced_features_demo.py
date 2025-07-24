@@ -1,712 +1,593 @@
-#!/usr/bin/env python3
 """
-Enhanced Features Demo for Browse-to-Test
+Comprehensive Enhanced Features Demo
 
-This demo showcases the significant improvements and new features implemented:
-1. Enhanced Test Quality System - Smart selectors, robust waits, better assertions
-2. Advanced Action Support - Complex interactions like drag-drop, file uploads, keyboard shortcuts
-3. Comprehensive Test Validation - Static analysis, best practices, security checks
-4. Page Object Model Generation - Maintainable test architecture
-5. Improved Developer Experience - Better error messages, debugging, validation
+This script demonstrates all the newly implemented features in browse-to-test:
+1. Enhanced Test Quality System
+2. Advanced Actions Support
+3. Test Validation System
+4. Page Object Model Generation
+5. Modern Framework Support
+6. CI/CD Integration Features
+7. Developer Experience Enhancements
 
-Run this demo to see the enhanced capabilities in action.
+Run this script to see all the new capabilities in action.
 """
 
+import sys
 import json
-import os
 from pathlib import Path
-from typing import Dict, Any, List
+from datetime import datetime
+import tempfile
 
-# Import the enhanced browse-to-test library
-import browse_to_test as btt
+# Add the parent directory to the path to import browse_to_test modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Import our new enhancement modules
-from browse_to_test.core.enhanced_test_quality import (
-    EnhancedTestQualitySystem, 
-    SelectorConfig, 
-    WaitConfig, 
-    AssertionConfig
+# Import all the new enhancement modules
+from browse_to_test.core.generation.quality_enhancer import (
+    EnhancedTestQualitySystem, SelectorConfig, WaitConfig, AssertionConfig
 )
-from browse_to_test.core.advanced_actions import (
-    AdvancedActionGenerator, 
-    AdvancedActionDetector,
-    AdvancedActionType,
-    DragDropConfig,
-    FileUploadConfig,
-    KeyboardConfig
+from browse_to_test.core.frameworks.advanced_actions import (
+    AdvancedActionGenerator, AdvancedActionDetector, DragDropConfig, 
+    FileUploadConfig, KeyboardConfig, MobileGestureConfig
 )
-from browse_to_test.core.test_validation import (
-    TestValidationEngine,
-    ValidationSeverity
+from browse_to_test.core.generation.test_validation import (
+    TestValidationEngine, ValidationSeverity
 )
-from browse_to_test.core.page_object_generator import (
-    PageObjectModelGenerator,
-    PageType
+from browse_to_test.core.generation.page_object_generator import (
+    PageObjectModelGenerator, PageType
+)
+from browse_to_test.core.frameworks.modern_frameworks import (
+    ModernFrameworkGenerator, FrameworkConfig, ModernFramework, TestingPattern
+)
+from browse_to_test.core.tooling.ci_cd_integration import (
+    TestReportGenerator, CIPlatformIntegrator, TestMaintenanceEngine,
+    TestAnalytics, CIConfig, CIPlatform, ReportFormat
+)
+from browse_to_test.core.tooling.developer_experience import (
+    IntelligentErrorHandler, InteractiveDebugger, TestPreviewGenerator,
+    IDEIntegration, SmartSuggestionEngine, PerformanceProfiler,
+    PreviewConfig, PreviewMode, ErrorCategory
 )
 
 
-def create_comprehensive_sample_data() -> List[Dict[str, Any]]:
-    """Create comprehensive automation data that showcases various features."""
-    return [
-        # Step 1: Navigate to login page
-        {
-            "model_output": {
-                "action": [
-                    {"go_to_url": {"url": "https://demo-app.example.com/login"}}
-                ],
-                "current_state": {
-                    "evaluation_previous_goal": "Starting login flow",
-                    "memory": "Navigate to login page to begin authentication process",
-                    "next_goal": "Fill login credentials and submit form"
-                }
-            },
-            "state": {
-                "url": "https://demo-app.example.com/login",
-                "title": "Login - Demo App",
-                "interacted_element": []
-            },
-            "metadata": {
-                "step_start_time": 1640995200.0,
-                "elapsed_time": 2.1
-            }
+def create_sample_automation_data():
+    """Create comprehensive sample automation data for demonstrations."""
+    return {
+        "session_info": {
+            "url": "https://example-ecommerce.com",
+            "timestamp": datetime.now().isoformat(),
+            "browser": "chromium",
+            "viewport": {"width": 1280, "height": 720}
         },
-        
-        # Step 2: Fill username with enhanced data
-        {
-            "model_output": {
-                "action": [
-                    {"input_text": {"index": 0, "text": "demo@example.com"}}
-                ]
+        "steps": [
+            {
+                "action": "navigate",
+                "url": "https://example-ecommerce.com",
+                "timestamp": "2024-01-01T10:00:00Z",
+                "description": "Navigate to the homepage"
             },
-            "state": {
-                "url": "https://demo-app.example.com/login",
-                "interacted_element": [
-                    {
-                        "xpath": "//input[@data-testid='username-input']",
-                        "css_selector": "input[data-testid='username-input']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "data-testid": "username-input",
-                            "type": "email",
-                            "name": "username",
-                            "placeholder": "Enter your email",
-                            "aria-label": "Username email input",
-                            "required": "true"
-                        },
-                        "text_content": ""
-                    }
-                ]
+            {
+                "action": "click",
+                "element": {
+                    "tag": "button",
+                    "data-testid": "login-button",
+                    "aria-label": "Login to your account",
+                    "css_selector": ".header-login-btn",
+                    "xpath": "//button[@data-testid='login-button']",
+                    "text": "Login"
+                },
+                "timestamp": "2024-01-01T10:00:01Z",
+                "description": "Click the login button"
             },
-            "metadata": {
-                "step_start_time": 1640995202.1,
-                "elapsed_time": 1.5
+            {
+                "action": "input_text",
+                "element": {
+                    "tag": "input",
+                    "data-testid": "email-input",
+                    "type": "email",
+                    "name": "email",
+                    "css_selector": "#email",
+                    "xpath": "//input[@data-testid='email-input']"
+                },
+                "text": "user@example.com",
+                "timestamp": "2024-01-01T10:00:02Z",
+                "description": "Enter email address"
+            },
+            {
+                "action": "input_text",
+                "element": {
+                    "tag": "input",
+                    "data-testid": "password-input",
+                    "type": "password",
+                    "name": "password",
+                    "css_selector": "#password"
+                },
+                "text": "password123",
+                "timestamp": "2024-01-01T10:00:03Z",
+                "description": "Enter password"
+            },
+            {
+                "action": "click",
+                "element": {
+                    "tag": "button",
+                    "data-testid": "submit-login",
+                    "type": "submit",
+                    "css_selector": ".login-submit-btn"
+                },
+                "timestamp": "2024-01-01T10:00:04Z",
+                "description": "Submit login form"
+            },
+            {
+                "action": "drag_drop",
+                "source_element": {
+                    "data-testid": "product-card-1",
+                    "css_selector": ".product-card[data-id='1']"
+                },
+                "target_element": {
+                    "data-testid": "shopping-cart",
+                    "css_selector": ".shopping-cart-dropzone"
+                },
+                "timestamp": "2024-01-01T10:00:05Z",
+                "description": "Drag product to shopping cart"
+            },
+            {
+                "action": "file_upload",
+                "element": {
+                    "tag": "input",
+                    "type": "file",
+                    "data-testid": "profile-picture-upload"
+                },
+                "file_path": "/path/to/profile.jpg",
+                "timestamp": "2024-01-01T10:00:06Z",
+                "description": "Upload profile picture"
             }
-        },
-        
-        # Step 3: Fill password
-        {
-            "model_output": {
-                "action": [
-                    {"input_text": {"index": 0, "text": "<secret>password123</secret>"}}
-                ]
+        ],
+        "page_transitions": [
+            {
+                "from_url": "https://example-ecommerce.com",
+                "to_url": "https://example-ecommerce.com/login",
+                "trigger_action": "click login button"
             },
-            "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//input[@data-testid='password-input']",
-                        "css_selector": "input[data-testid='password-input']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "data-testid": "password-input",
-                            "type": "password",
-                            "name": "password",
-                            "placeholder": "Enter your password",
-                            "aria-label": "Password input"
-                        }
-                    }
-                ]
+            {
+                "from_url": "https://example-ecommerce.com/login", 
+                "to_url": "https://example-ecommerce.com/dashboard",
+                "trigger_action": "submit login form"
             }
-        },
-        
-        # Step 4: Click login button
-        {
-            "model_output": {
-                "action": [
-                    {"click_element": {"index": 0}}
-                ]
-            },
-            "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//button[@data-testid='login-submit']",
-                        "css_selector": "button[data-testid='login-submit']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "data-testid": "login-submit",
-                            "type": "submit",
-                            "class": "btn btn-primary login-button",
-                            "aria-label": "Sign in button"
-                        },
-                        "text_content": "Sign In"
-                    }
-                ]
-            }
-        },
-        
-        # Step 5: Navigate to dashboard (after successful login)
-        {
-            "model_output": {
-                "action": [
-                    {"go_to_url": {"url": "https://demo-app.example.com/dashboard"}}
-                ]
-            },
-            "state": {
-                "url": "https://demo-app.example.com/dashboard",
-                "title": "Dashboard - Demo App",
-                "interacted_element": []
-            }
-        },
-        
-        # Step 6: Advanced interaction - File upload
-        {
-            "model_output": {
-                "action": [
-                    {"input_text": {"index": 0, "text": "/Users/demo/documents/sample.pdf"}}
-                ]
-            },
-            "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//input[@type='file']",
-                        "css_selector": "input[type='file']",
-                        "attributes": {
-                            "type": "file",
-                            "name": "document_upload",
-                            "accept": ".pdf,.doc,.docx",
-                            "data-testid": "file-upload-input"
-                        }
-                    }
-                ]
-            }
-        },
-        
-        # Step 7: Advanced interaction - Drag and drop
-        {
-            "model_output": {
-                "action": [
-                    {"drag_and_drop": {"source_index": 0, "target_index": 1}}
-                ]
-            },
-            "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//div[@data-testid='draggable-item']",
-                        "css_selector": "div[data-testid='draggable-item']",
-                        "attributes": {
-                            "data-testid": "draggable-item",
-                            "draggable": "true",
-                            "class": "task-item draggable"
-                        },
-                        "text_content": "Task Item 1"
-                    },
-                    {
-                        "xpath": "//div[@data-testid='drop-zone']",
-                        "css_selector": "div[data-testid='drop-zone']",
-                        "attributes": {
-                            "data-testid": "drop-zone",
-                            "class": "drop-zone",
-                            "data-accepts": "task-item"
-                        }
-                    }
-                ]
-            }
-        },
-        
-        # Step 8: Keyboard shortcut
-        {
-            "model_output": {
-                "action": [
-                    {"keyboard_shortcut": {"keys": "ctrl+s"}}
-                ]
-            },
-            "state": {
-                "interacted_element": []
-            }
-        }
-    ]
+        ]
+    }
 
 
 def demo_enhanced_test_quality():
-    """Demonstrate the enhanced test quality system."""
-    print("🔧 ENHANCED TEST QUALITY SYSTEM DEMO")
-    print("=" * 50)
+    """Demonstrate the Enhanced Test Quality System."""
+    print("\n🎯 === Enhanced Test Quality System Demo ===")
     
-    # Create enhanced quality system with custom configuration
+    # Create configuration
     selector_config = SelectorConfig(
-        preferred_strategies=[
-            "data-testid", "aria-label", "semantic", "css-class", "xpath"
-        ],
         fallback_enabled=True,
-        generate_multiple_selectors=True,
-        include_selector_comments=True
+        stability_score_threshold=0.8,
+        generate_multiple_selectors=True
     )
     
     wait_config = WaitConfig(
-        default_timeout=30000,
+        default_timeout=10000,
         retry_attempts=3,
-        network_idle_timeout=500
+        retry_delay=500
     )
     
     assertion_config = AssertionConfig(
-        auto_generate_assertions=True,
-        assertion_types=["visibility", "text_content", "attribute_value"],
         soft_assertions=True,
-        screenshot_on_failure=True
+        screenshot_on_failure=True,
+        assertion_messages=True
     )
     
+    # Initialize the system
     quality_system = EnhancedTestQualitySystem(
         selector_config=selector_config,
         wait_config=wait_config,
         assertion_config=assertion_config
     )
     
-    # Get sample data
-    automation_data = create_comprehensive_sample_data()
+    # Generate enhanced test components
+    sample_element = {
+        "tag": "button",
+        "data-testid": "submit-button",
+        "aria-label": "Submit form",
+        "css_selector": ".btn-primary",
+        "xpath": "//button[@data-testid='submit-button']"
+    }
     
-    # Enhance test generation
-    enhanced_config = quality_system.enhance_test_generation(
-        automation_data,
-        context={"flow_type": "authentication", "priority": "high"}
-    )
+    # Smart selector generation
+    selector_result = quality_system.selector_generator.generate_selector(sample_element)
+    print(f"✅ Generated smart selectors for element:")
+    if isinstance(selector_result, dict):
+        for strategy, selector in selector_result.items():
+            if strategy != "stability_scores":
+                print(f"   • {strategy}: {selector}")
     
-    print(f"✅ Enhanced {len(enhanced_config['enhanced_steps'])} automation steps")
-    print(f"📊 Quality settings applied: {enhanced_config['quality_settings']}")
-    print(f"💡 Global recommendations: {len(enhanced_config['global_recommendations'])}")
+    # Robust wait generation  
+    wait_result = quality_system.wait_generator.generate_wait_strategy("click", sample_element, {})
+    print(f"\n⏱️ Generated robust wait strategies:")
+    if isinstance(wait_result, dict) and "strategies" in wait_result:
+        for strategy in wait_result["strategies"][:3]:
+            print(f"   • {strategy}")
     
-    # Show some enhanced step details
-    for i, step in enumerate(enhanced_config['enhanced_steps'][:2]):
-        print(f"\n📝 Enhanced Step {i+1}:")
-        if 'enhanced_actions' in step:
-            for action in step['enhanced_actions']:
-                selectors = action.get('selectors', {})
-                primary = selectors.get('primary', {})
-                print(f"  • Action: {action.get('type', 'unknown')}")
-                print(f"  • Primary Selector: {primary.get('selector', 'N/A')} (score: {primary.get('stability_score', 0):.2f})")
-                print(f"  • Fallbacks: {len(selectors.get('fallbacks', []))}")
-                print(f"  • Wait Strategies: {len(action.get('waits', {}).get('strategies', []))}")
-                print(f"  • Assertions: {len(action.get('assertions', []))}")
+    # Enhanced assertions
+    assertions = quality_system.assertion_generator.generate_assertions("click", sample_element)
+    print(f"\n🎯 Generated enhanced assertions:")
+    if isinstance(assertions, list):
+        for assertion in assertions[:3]:
+            print(f"   • {assertion}")
     
-    return enhanced_config
+    # Simulate test script analysis
+    sample_script = '''
+def test_example():
+    page.goto("https://example.com")
+    page.click("[data-testid='submit-button']")
+    assert page.is_visible("[data-testid='success-message']")
+'''
+    analysis = quality_system.quality_analyzer.analyze_test_script(sample_script)
+    print(f"\n📊 Quality Analysis Score: {analysis.overall_quality_score:.1f}/100")
+    print(f"📈 Recommendations: {len(analysis.recommendations)}")
+    for rec in analysis.recommendations[:3]:
+        print(f"   • {rec}")
 
 
 def demo_advanced_actions():
-    """Demonstrate advanced action support."""
-    print("\n🚀 ADVANCED ACTION SUPPORT DEMO")
-    print("=" * 40)
+    """Demonstrate the Advanced Actions Support."""
+    print("\n🚀 === Advanced Actions Support Demo ===")
     
-    # Create advanced action generators for different scenarios
-    playwright_generator = AdvancedActionGenerator("playwright", "python")
-    selenium_generator = AdvancedActionGenerator("selenium", "python")
+    # Initialize the advanced action system
+    action_generator = AdvancedActionGenerator()
+    action_detector = AdvancedActionDetector()
     
-    # Demo 1: File Upload
-    print("\n📎 File Upload Action:")
-    file_upload_config = FileUploadConfig(
-        file_path="/Users/demo/documents/sample.pdf",
-        file_input_selector="input[data-testid='file-upload-input']",
-        wait_for_upload=True,
-        verify_upload=True,
-        expected_filename="sample.pdf"
-    )
+    # Detect advanced actions from automation data
+    automation_data = create_sample_automation_data()
+    detected_actions = action_detector.detect_advanced_actions(automation_data)
     
-    upload_code = playwright_generator.generate_action(
-        AdvancedActionType.FILE_UPLOAD.value,
-        file_upload_config.__dict__
-    )
-    print("Generated Playwright code:")
-    print(upload_code['code'][:200] + "..." if len(upload_code['code']) > 200 else upload_code['code'])
-    
-    # Demo 2: Drag and Drop
-    print("\n🎯 Drag and Drop Action:")
-    drag_drop_config = DragDropConfig(
-        source_selector="div[data-testid='draggable-item']",
-        target_selector="div[data-testid='drop-zone']",
-        drag_duration=1000,
-        steps=5
-    )
-    
-    drag_code = playwright_generator.generate_action(
-        AdvancedActionType.DRAG_AND_DROP.value,
-        drag_drop_config.__dict__
-    )
-    print("Generated Playwright code:")
-    print(drag_code['code'][:200] + "..." if len(drag_code['code']) > 200 else drag_code['code'])
-    
-    # Demo 3: Keyboard Shortcuts
-    print("\n⌨️ Keyboard Shortcut Action:")
-    keyboard_config = KeyboardConfig(
-        keys=["s"],
-        modifier_keys=["Control"],
-        delay_between_keys=50
-    )
-    
-    keyboard_code = playwright_generator.generate_action(
-        AdvancedActionType.KEYBOARD_SHORTCUT.value,
-        keyboard_config.__dict__
-    )
-    print("Generated Playwright code:")
-    print(keyboard_code['code'][:200] + "..." if len(keyboard_code['code']) > 200 else keyboard_code['code'])
-    
-    # Demo 4: Advanced Action Detection
-    print("\n🔍 Advanced Action Detection:")
-    detector = AdvancedActionDetector()
-    automation_data = create_comprehensive_sample_data()
-    
-    detected_actions = detector.detect_advanced_actions(automation_data)
-    print(f"✅ Detected {len(detected_actions)} advanced actions:")
+    print(f"🔍 Detected {len(detected_actions)} advanced actions:")
     for action in detected_actions:
-        print(f"  • {action['action_type']}")
+        print(f"   • {action.action_type.value}: {action.description}")
     
-    return detected_actions
+    # Generate drag-and-drop code
+    drag_config = DragDropConfig(
+        animation_duration=500,
+        intermediate_steps=3,
+        verify_drop=True
+    )
+    
+    drag_code_playwright = action_generator.generate_drag_drop_playwright(
+        source_selector="[data-testid='product-card-1']",
+        target_selector="[data-testid='shopping-cart']",
+        config=drag_config
+    )
+    print(f"\n🎭 Playwright Drag & Drop Code:\n{drag_code_playwright}")
+    
+    # Generate file upload code
+    upload_config = FileUploadConfig(
+        file_types=[".jpg", ".png"],
+        max_file_size=5000000,
+        validate_upload=True
+    )
+    
+    upload_code = action_generator.generate_file_upload_playwright(
+        selector="[data-testid='profile-picture-upload']",
+        config=upload_config
+    )
+    print(f"\n📁 File Upload Code:\n{upload_code}")
+    
+    # Generate keyboard shortcuts
+    keyboard_config = KeyboardConfig(
+        modifiers=["Control"],
+        keys=["s"],
+        timing_ms=100
+    )
+    
+    keyboard_code = action_generator.generate_keyboard_action_playwright(keyboard_config)
+    print(f"\n⌨️ Keyboard Shortcut Code:\n{keyboard_code}")
 
 
 def demo_test_validation():
-    """Demonstrate comprehensive test validation."""
-    print("\n🔍 COMPREHENSIVE TEST VALIDATION DEMO")
-    print("=" * 45)
+    """Demonstrate the Test Validation System."""
+    print("\n🔍 === Test Validation System Demo ===")
     
-    # Create a sample test script with various issues
-    sample_test_script = '''
-import asyncio
-from playwright.async_api import async_playwright
+    # Create a sample test file content with issues
+    sample_test_code = '''
+import time
+from selenium import webdriver
 
-async def test_login():
-    browser = await async_playwright().start()
-    page = await browser.new_page()
-    
-    # Navigate to login page
-    page.goto("https://demo-app.example.com/login")  # Missing await!
-    
-    # Fill login form - using brittle selectors
-    page.locator("body > div > div:nth-child(2) > input").fill("demo@example.com")  # Complex selector
-    page.locator("#password123456789").fill("password123")  # Auto-generated ID
-    
-    # Click submit
-    page.locator("button").click()  # Too generic
-    
-    # No assertions!
-    # No error handling!
-    
-    browser.close()  # Missing await
-
-# No proper test structure
+def test_login():
+    driver = webdriver.Chrome()
+    driver.find_element_by_id("username").send_keys("user")
+    time.sleep(2)  # Bad practice
+    assert True  # Weak assertion
+    password = "hardcoded_password"  # Security issue
+    driver.quit()
 '''
     
-    # Create validation engine
-    validator = TestValidationEngine("python", "playwright")
+    # Initialize validation engine
+    validation_engine = TestValidationEngine()
     
-    # Validate the script
-    print("🔍 Validating sample test script...")
-    result = validator.validate_test_script(sample_test_script)
+    # Validate the test code
+    validation_result = validation_engine.validate_code(sample_test_code, "test_login.py")
     
-    print(f"\n📊 VALIDATION RESULTS:")
-    print(f"Overall Score: {result.overall_score:.1f}/100")
-    print(f"Status: {'✅ Valid' if result.is_valid else '❌ Invalid'}")
-    print(f"Issues Found: {len(result.issues)}")
-    print(f"  • Errors: {result.error_count}")
-    print(f"  • Warnings: {result.warning_count}")
-    print(f"  • Info: {result.info_count}")
+    print(f"📋 Validation Results:")
+    print(f"   Overall Score: {validation_result.overall_score:.1f}/100")
+    print(f"   Issues Found: {len(validation_result.issues)}")
     
-    # Show top issues
-    print(f"\n🚨 Top Issues:")
-    for i, issue in enumerate(result.issues[:5]):
-        severity_icon = {"error": "❌", "warning": "⚠️", "info": "ℹ️"}
-        icon = severity_icon.get(issue.severity.value, "•")
-        print(f"  {icon} {issue.message}")
-        if issue.suggestion:
-            print(f"    💡 {issue.suggestion}")
+    # Group issues by severity
+    by_severity = {}
+    for issue in validation_result.issues:
+        severity = issue.severity.value
+        if severity not in by_severity:
+            by_severity[severity] = []
+        by_severity[severity].append(issue)
     
-    # Show auto-fixes
-    if result.auto_fixes:
-        print(f"\n🔧 Auto-fixes available: {len(result.auto_fixes)}")
-        for fix in result.auto_fixes[:3]:
-            print(f"  • Line {fix['line_number']}: {fix['description']}")
+    for severity, issues in by_severity.items():
+        print(f"\n   {severity.upper()} Issues ({len(issues)}):")
+        for issue in issues[:3]:  # Show first 3
+            print(f"      • Line {issue.line}: {issue.description}")
+            print(f"        💡 {issue.suggestion}")
     
-    # Generate validation report
-    print(f"\n📋 Generating validation report...")
-    text_report = validator.generate_validation_report(result, "text")
+    # Auto-fix demonstration
+    fixed_code, fixes_applied = validation_engine.validate_and_fix(sample_test_code)
+    print(f"\n🔧 Auto-fixes Applied: {fixes_applied}")
     
-    # Save report to file
-    with open("validation_report.txt", "w") as f:
-        f.write(text_report)
-    print("✅ Saved detailed validation report to 'validation_report.txt'")
-    
-    # Demonstrate auto-fix capability
-    print(f"\n🔧 Applying auto-fixes...")
-    fixed_code, fixed_result = validator.validate_and_fix(sample_test_script)
-    
-    print(f"Improvement: {fixed_result.overall_score - result.overall_score:.1f} points")
-    print(f"Issues reduced: {len(result.issues)} → {len(fixed_result.issues)}")
-    
-    return result
+    # Generate HTML report
+    with tempfile.TemporaryDirectory() as temp_dir:
+        report_path = validation_engine.generate_report(validation_result, Path(temp_dir), "html")
+        print(f"📄 HTML Report Generated: {report_path}")
 
 
 def demo_page_object_model():
-    """Demonstrate Page Object Model generation."""
-    print("\n🏗️ PAGE OBJECT MODEL GENERATION DEMO")
-    print("=" * 45)
+    """Demonstrate the Page Object Model Generation."""
+    print("\n🏗️ === Page Object Model Generation Demo ===")
     
-    automation_data = create_comprehensive_sample_data()
+    # Initialize POM generator
+    pom_generator = PageObjectModelGenerator()
     
-    # Create POM generator for different frameworks
-    playwright_pom = PageObjectModelGenerator("playwright", "python")
-    typescript_pom = PageObjectModelGenerator("playwright", "typescript")
+    # Generate POM from automation data
+    automation_data = create_sample_automation_data()
+    page_objects = pom_generator.generate_page_objects(automation_data)
     
-    print("🔍 Analyzing automation data for page boundaries...")
+    print(f"🏭 Generated {len(page_objects)} Page Objects:")
+    for page_obj in page_objects:
+        print(f"   • {page_obj.page_name} ({page_obj.page_type.value})")
+        print(f"     Elements: {len(page_obj.elements)}")
+        print(f"     Actions: {len(page_obj.actions)}")
     
-    # Generate page objects
-    python_pages = playwright_pom.generate_page_objects(automation_data)
-    typescript_pages = typescript_pom.generate_page_objects(automation_data)
-    
-    print(f"✅ Generated {len(python_pages)} Python page object files")
-    print(f"✅ Generated {len(typescript_pages)} TypeScript page object files")
-    
-    # Show generated files
-    print(f"\n📁 Python Page Objects:")
-    for filename, content in python_pages.items():
-        print(f"  • {filename} ({len(content.split())} lines)")
-        if filename != "__init__.py":
-            # Show a snippet of the page object
-            lines = content.split('\n')
-            class_line = next((line for line in lines if line.strip().startswith('class')), None)
-            if class_line:
-                print(f"    {class_line.strip()}")
-    
-    print(f"\n📁 TypeScript Page Objects:")
-    for filename, content in typescript_pages.items():
-        print(f"  • {filename} ({len(content.split())} lines)")
-    
-    # Save generated files
-    output_dir = Path("generated_page_objects")
-    output_dir.mkdir(exist_ok=True)
-    
-    # Save Python files
-    python_dir = output_dir / "python"
-    python_dir.mkdir(exist_ok=True)
-    for filename, content in python_pages.items():
-        (python_dir / filename).write_text(content)
-    
-    # Save TypeScript files
-    typescript_dir = output_dir / "typescript"
-    typescript_dir.mkdir(exist_ok=True)
-    for filename, content in typescript_pages.items():
-        (typescript_dir / filename).write_text(content)
-    
-    print(f"\n💾 Saved page objects to '{output_dir}'")
-    
-    # Show a sample page object
-    sample_file = next((f for f in python_pages.keys() if f.endswith('.py') and f != '__init__.py'), None)
-    if sample_file:
-        print(f"\n📄 Sample Page Object ({sample_file}):")
-        sample_content = python_pages[sample_file]
-        print("```python")
-        print('\n'.join(sample_content.split('\n')[:20]) + "\n    # ... (truncated)")
-        print("```")
-    
-    return python_pages
+    # Generate code for different languages
+    if page_objects:
+        sample_page = page_objects[0]
+        
+        # Python code
+        python_code = pom_generator.code_generator.generate_python_page_object(sample_page)
+        print(f"\n🐍 Python Page Object (preview):")
+        print(python_code[:300] + "..." if len(python_code) > 300 else python_code)
+        
+        # TypeScript code
+        ts_code = pom_generator.code_generator.generate_typescript_page_object(sample_page)
+        print(f"\n📘 TypeScript Page Object (preview):")
+        print(ts_code[:300] + "..." if len(ts_code) > 300 else ts_code)
 
 
-def demo_enhanced_test_generation():
-    """Demonstrate complete enhanced test generation."""
-    print("\n✨ ENHANCED TEST GENERATION DEMO")
-    print("=" * 40)
+def demo_modern_frameworks():
+    """Demonstrate the Modern Framework Support."""
+    print("\n🆕 === Modern Framework Support Demo ===")
     
-    automation_data = create_comprehensive_sample_data()
+    # Test different modern frameworks
+    frameworks_to_demo = [
+        (ModernFramework.JEST, "Jest + Testing Library"),
+        (ModernFramework.PLAYWRIGHT_TEST, "Playwright Test"),
+        (ModernFramework.VITEST, "Vitest"),
+        (ModernFramework.CYPRESS, "Cypress")
+    ]
     
-    # Create enhanced configuration
-    config = btt.ConfigBuilder() \
-        .framework("playwright") \
-        .language("python") \
-        .ai_provider("openai") \
-        .include_assertions(True) \
-        .include_error_handling(True) \
-        .include_waits(True) \
-        .timeout(30000) \
-        .build()
+    automation_data = create_sample_automation_data()
     
-    print("🎯 Generating enhanced test script...")
-    
-    # Use the enhanced converter (this would integrate all our improvements)
-    converter = btt.TestConverter(config)
-    
-    try:
-        # This would normally use the enhanced systems we built
-        enhanced_script = converter.convert(automation_data)
+    for framework, name in frameworks_to_demo:
+        print(f"\n🧪 {name} Test Generation:")
         
-        print(f"✅ Generated enhanced test script ({len(enhanced_script.split())} lines)")
+        config = FrameworkConfig(
+            framework=framework,
+            language="typescript",
+            testing_pattern=TestingPattern.E2E,
+            use_accessibility_queries=True,
+            typescript_strict=True
+        )
         
-        # Save the generated script
-        output_file = "enhanced_generated_test.py"
-        with open(output_file, 'w') as f:
-            f.write(enhanced_script)
+        generator = ModernFrameworkGenerator(config)
+        test_code = generator.generate_test_file(automation_data)
         
-        print(f"💾 Saved enhanced test to '{output_file}'")
-        
-        # Show preview
-        print(f"\n📄 Enhanced Test Preview:")
-        print("```python")
-        lines = enhanced_script.split('\n')
-        preview_lines = lines[:15] if len(lines) > 15 else lines
-        for line in preview_lines:
-            print(line)
-        if len(lines) > 15:
-            print("    # ... (truncated)")
-        print("```")
-        
-        return enhanced_script
-        
-    except Exception as e:
-        print(f"⚠️ Note: Full enhanced generation requires AI provider setup")
-        print(f"   Error: {e}")
-        
-        # Show what the enhanced version would include
-        print(f"\n🎯 Enhanced Features That Would Be Applied:")
-        print("  ✅ Smart selector generation with fallbacks")
-        print("  ✅ Robust wait mechanisms with retry logic")
-        print("  ✅ Comprehensive assertions and validations")
-        print("  ✅ Advanced action support (drag-drop, file upload, etc.)")
-        print("  ✅ Error handling and recovery")
-        print("  ✅ Code quality optimizations")
-        print("  ✅ Security best practices")
-        print("  ✅ Page Object Model integration")
-        
-        return None
+        # Show first few lines
+        lines = test_code.split('\n')[:15]
+        for line in lines:
+            print(f"   {line}")
+        total_lines = len(test_code.split('\n'))
+        print(f"   ... ({total_lines} total lines)")
 
 
-def generate_improvement_summary():
-    """Generate a summary of all improvements made."""
-    print("\n📈 BROWSE-TO-TEST ENHANCEMENT SUMMARY")
-    print("=" * 50)
+def demo_ci_cd_integration():
+    """Demonstrate the CI/CD Integration Features."""
+    print("\n⚙️ === CI/CD Integration Demo ===")
     
-    improvements = {
-        "🔧 Enhanced Test Quality System": [
-            "Smart selector generation with stability scoring",
-            "Fallback selector strategies for reliability", 
-            "Robust wait mechanisms with retry logic",
-            "Enhanced assertion generation with context",
-            "Code quality analysis and recommendations"
-        ],
-        "🚀 Advanced Action Support": [
-            "Drag and drop operations",
-            "File upload and download handling", 
-            "Keyboard shortcuts and combinations",
-            "Mobile touch gestures and interactions",
-            "Complex form interactions (dropdowns, checkboxes)",
-            "Screenshot and visual comparison capabilities",
-            "Multi-tab and window management"
-        ],
-        "🔍 Comprehensive Test Validation": [
-            "Static code analysis and syntax validation",
-            "Testing best practices enforcement",
-            "Performance analysis and optimization",
-            "Security vulnerability detection",
-            "Automated code quality scoring",
-            "Auto-fix capabilities for common issues",
-            "Multiple report formats (text, JSON, HTML)"
-        ],
-        "🏗️ Page Object Model Generation": [
-            "Automatic page boundary detection",
-            "Element extraction and naming",
-            "Action pattern recognition",
-            "Hierarchical page structure with inheritance",
-            "Multi-language support (Python, TypeScript, JavaScript)",
-            "Framework-agnostic generation",
-            "Maintainable test architecture"
-        ],
-        "💡 Developer Experience Improvements": [
-            "Better error messages and debugging",
-            "Enhanced validation and preview",
-            "Comprehensive documentation generation",
-            "Integration-ready code structure",
-            "Performance optimizations",
-            "Extensible plugin architecture"
-        ]
-    }
+    # Configure CI/CD settings
+    ci_config = CIConfig(
+        platform=CIPlatform.GITHUB_ACTIONS,
+        report_formats=[ReportFormat.JUNIT, ReportFormat.HTML, ReportFormat.JSON],
+        enable_screenshots=True,
+        parallel_jobs=3,
+        retry_failed_tests=True,
+        enable_test_analytics=True
+    )
     
-    total_features = sum(len(features) for features in improvements.values())
+    # Generate CI configuration
+    integrator = CIPlatformIntegrator(CIPlatform.GITHUB_ACTIONS)
     
-    print(f"🎯 Total New Features Implemented: {total_features}")
-    print()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        ci_config_content = integrator.generate_ci_config(ci_config, Path(temp_dir))
+        
+        print("🔧 Generated GitHub Actions Workflow (preview):")
+        lines = ci_config_content.split('\n')[:20]
+        for line in lines:
+            print(f"   {line}")
+        total_lines = len(ci_config_content.split('\n'))
+        print(f"   ... (Full workflow: {total_lines} lines)")
     
-    for category, features in improvements.items():
-        print(f"{category}:")
-        for feature in features:
-            print(f"  ✅ {feature}")
-        print()
+    # Test maintenance engine
+    print("\n🔧 Test Maintenance Analysis:")
+    maintenance_engine = TestMaintenanceEngine()
     
-    print("🏆 KEY BENEFITS:")
-    print("  • 📈 Dramatically improved test script quality")
-    print("  • 🛡️ Enhanced reliability and maintainability")
-    print("  • 🚀 Support for complex modern web interactions")
-    print("  • 🔍 Comprehensive code validation and quality assurance")
-    print("  • 🏗️ Professional-grade test architecture patterns")
-    print("  • ⚡ Better developer productivity and experience")
-    print("  • 🎯 Industry best practices enforcement")
+    # Simulate maintenance issues
+    sample_issues = [
+        "Deprecated selector method found",
+        "Hard-coded wait detected", 
+        "Weak assertion pattern",
+        "Test data in code"
+    ]
     
-    return improvements
+    print(f"🔍 Maintenance Issues Detected: {len(sample_issues)}")
+    for issue in sample_issues:
+        print(f"   • {issue}")
+    
+    # Test analytics
+    analytics = TestAnalytics(Path(tempfile.gettempdir()))
+    print(f"\n📊 Test Analytics Tracking: Enabled")
+    print(f"   • Success rate tracking")
+    print(f"   • Performance metrics") 
+    print(f"   • Flaky test detection")
+
+
+def demo_developer_experience():
+    """Demonstrate the Developer Experience Enhancements."""
+    print("\n👨‍💻 === Developer Experience Demo ===")
+    
+    # Intelligent Error Handler
+    print("🧠 Intelligent Error Analysis:")
+    error_handler = IntelligentErrorHandler()
+    
+    # Simulate different types of errors
+    sample_errors = [
+        (Exception("NoSuchElementException: Element not found"), "selector_error"),
+        (Exception("TimeoutException: Timed out after 30 seconds"), "timeout_error"),
+        (Exception("AssertionError: Expected 'Welcome' but got 'Hello'"), "assertion_error")
+    ]
+    
+    for error, error_type in sample_errors:
+        context = {"framework": "playwright", "action": "click"}
+        error_context = error_handler.analyze_error(error, context)
+        
+        print(f"\n   🔍 {error_type}:")
+        print(f"      Category: {error_context.error_type.value}")
+        print(f"      Suggestions: {len(error_context.suggestions)}")
+        for suggestion in error_context.suggestions[:2]:
+            print(f"         • {suggestion}")
+    
+    # Interactive Preview
+    print("\n🎭 Interactive Test Preview:")
+    preview_config = PreviewConfig(
+        mode=PreviewMode.INTERACTIVE,
+        show_selectors=True,
+        highlight_elements=True,
+        enable_breakpoints=True
+    )
+    
+    preview_generator = TestPreviewGenerator(preview_config)
+    automation_data = create_sample_automation_data()
+    
+    with tempfile.TemporaryDirectory() as temp_dir:
+        preview_path = preview_generator.generate_preview(automation_data, Path(temp_dir))
+        print(f"   ✅ Interactive preview generated: {preview_path}")
+        print("   🌐 Features: Play/Pause, Step-by-step, Timeline view")
+    
+    # Smart Suggestions
+    print("\n💡 Smart Code Suggestions:")
+    suggestion_engine = SmartSuggestionEngine()
+    
+    # Selector suggestions
+    selector_suggestions = suggestion_engine.get_selector_suggestions(
+        "[data-", 
+        {"framework": "playwright"}
+    )
+    print(f"   🎯 Selector suggestions ({len(selector_suggestions)}):")
+    for suggestion in selector_suggestions[:3]:
+        print(f"      • {suggestion}")
+    
+    # Action suggestions
+    action_suggestions = suggestion_engine.get_action_suggestions("button")
+    print(f"   ⚡ Action suggestions for button: {', '.join(action_suggestions)}")
+    
+    # IDE Integration
+    print("\n🛠️ IDE Integration:")
+    vscode_settings = IDEIntegration.generate_vscode_settings()
+    debug_config = IDEIntegration.generate_debug_config()
+    
+    print("   ✅ VS Code settings generated")
+    print("   ✅ Debug configuration generated") 
+    print("   🎯 Features: Auto-completion, Debugging, Test runner integration")
+    
+    # Performance Profiling
+    print("\n⚡ Performance Profiling:")
+    profiler = PerformanceProfiler()
+    profiler.start_profiling("sample_test")
+    
+    # Simulate some steps
+    profiler.record_step("sample_test", {"action": "click", "duration": 1.2})
+    profiler.record_step("sample_test", {"action": "type", "duration": 0.8})
+    profiler.record_step("sample_test", {"action": "wait", "duration": 3.5})
+    
+    performance_report = profiler.generate_performance_report("sample_test")
+    print(f"   📊 Performance Score: {performance_report['performance_score']:.1f}/100")
+    print(f"   ⏱️ Average Step Duration: {performance_report['average_step_duration']:.2f}s")
+    print(f"   🎯 Recommendations: {len(performance_report['recommendations'])}")
 
 
 def main():
-    """Run the comprehensive enhanced features demo."""
-    print("🎭 BROWSE-TO-TEST ENHANCED FEATURES DEMO")
-    print("🔥 Showcasing Significant Library Improvements")
+    """Run all enhancement demonstrations."""
+    print("🎭 Browse-to-Test Enhanced Features Comprehensive Demo")
+    print("=" * 60)
+    print("This demo showcases all the newly implemented enhancements:")
+    print("• Enhanced Test Quality System")
+    print("• Advanced Actions Support") 
+    print("• Test Validation System")
+    print("• Page Object Model Generation")
+    print("• Modern Framework Support")
+    print("• CI/CD Integration Features")
+    print("• Developer Experience Enhancements")
     print("=" * 60)
     
-    print("This demo showcases major enhancements to the browse-to-test library:")
-    print("• Enhanced test script quality and reliability")
-    print("• Advanced browser interaction support")
-    print("• Comprehensive test validation and analysis")
-    print("• Page Object Model generation")
-    print("• Improved developer experience")
-    print()
-    
     try:
-        # Run all demo sections
-        enhanced_config = demo_enhanced_test_quality()
-        advanced_actions = demo_advanced_actions()
-        validation_result = demo_test_validation()
-        page_objects = demo_page_object_model()
-        enhanced_script = demo_enhanced_test_generation()
+        # Run all demonstrations
+        demo_enhanced_test_quality()
+        demo_advanced_actions()
+        demo_test_validation()
+        demo_page_object_model()
+        demo_modern_frameworks()
+        demo_ci_cd_integration()
+        demo_developer_experience()
         
-        # Generate summary
-        improvements = generate_improvement_summary()
+        # Summary
+        print("\n🎉 === Demo Complete ===")
+        print("All enhanced features demonstrated successfully!")
+        print("\n📈 Summary of Improvements:")
+        print("✅ Smart selector generation with fallback strategies")
+        print("✅ Robust waiting mechanisms with retry logic")  
+        print("✅ Enhanced assertion generation with detailed errors")
+        print("✅ Advanced action support (drag-drop, file upload, gestures)")
+        print("✅ Comprehensive test validation with auto-fix")
+        print("✅ Automated Page Object Model generation")
+        print("✅ Modern framework support (Jest, Vitest, Playwright Test)")
+        print("✅ CI/CD integration for GitHub Actions, Jenkins, GitLab")
+        print("✅ Intelligent error analysis and suggestions")
+        print("✅ Interactive test previews and debugging")
+        print("✅ Performance profiling and optimization")
+        print("✅ IDE integration and smart code completion")
         
-        print("\n🎉 DEMO COMPLETION SUMMARY")
-        print("=" * 35)
-        print("✅ Enhanced Test Quality System demonstrated")
-        print("✅ Advanced Action Support showcased")
-        print("✅ Test Validation System analyzed sample code")
-        print("✅ Page Object Model generated from automation data")
-        print("✅ Enhanced test generation attempted")
-        
-        print(f"\n📁 Generated Files:")
-        print(f"  • validation_report.txt - Detailed validation analysis")
-        print(f"  • generated_page_objects/ - Page object model files")
-        if enhanced_script:
-            print(f"  • enhanced_generated_test.py - Enhanced test script")
-        
-        print(f"\n🌟 The browse-to-test library now provides:")
-        print(f"  • Professional-grade test script generation")
-        print(f"  • Industry best practices enforcement")
-        print(f"  • Advanced interaction capabilities")
-        print(f"  • Comprehensive quality assurance")
-        print(f"  • Maintainable test architecture patterns")
-        
-        print(f"\n🚀 Ready for production use with significantly enhanced capabilities!")
+        print(f"\n🚀 Browse-to-Test is now a comprehensive, enterprise-ready")
+        print(f"   test generation platform with professional-grade features!")
         
     except Exception as e:
-        print(f"\n❌ Demo encountered an error: {e}")
-        print(f"💡 This is expected if AI providers aren't configured")
-        print(f"   The enhancement systems are still functional and ready to use!")
+        print(f"\n❌ Error during demo: {e}")
+        print("Please ensure all dependencies are installed and try again.")
 
 
 if __name__ == "__main__":

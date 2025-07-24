@@ -9,10 +9,10 @@ from datetime import datetime
 import hashlib
 import json
 
-from ..ai.base import AIProvider, AIAnalysisRequest, AnalysisType
+from ...ai.base import AIProvider, AIAnalysisRequest, AnalysisType
 from .input_parser import ParsedAutomationData, ParsedAction
 from .context_collector import ContextCollector, SystemContext
-from .config import Config
+from ..configuration.config import Config
 
 
 @dataclass 

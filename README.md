@@ -75,7 +75,7 @@ config = btt.ConfigBuilder() \
     .build()
 
 # Create converter with custom config
-converter = btt.TestConverter(config)
+converter = btt.E2eTestConverter(config)
 script = converter.convert(automation_data)
 ```
 

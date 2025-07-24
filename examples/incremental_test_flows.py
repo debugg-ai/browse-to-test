@@ -11,11 +11,11 @@ import json
 from typing import List, Dict, Any, Callable
 from pathlib import Path
 
-from browse_to_test.core.incremental_orchestrator import (
+from browse_to_test.core.orchestration.incremental_orchestrator import (
     IncrementalTestScriptOrchestrator,
     IncrementalUpdateResult
 )
-from browse_to_test.core.config import Config, OutputConfig, ProcessingConfig
+from browse_to_test.core.configuration.config import Config, OutputConfig, ProcessingConfig
 
 
 class IncrementalTestFlowRunner:

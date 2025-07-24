@@ -5,7 +5,7 @@ Plugin registry for managing output plugins.
 import logging
 from typing import Dict, List, Type, Optional
 from .base import OutputPlugin, PluginError
-from ..core.config import OutputConfig
+from ..core.configuration.config import OutputConfig
 
 
 logger = logging.getLogger(__name__)

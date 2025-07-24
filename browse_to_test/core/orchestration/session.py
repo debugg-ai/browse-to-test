@@ -13,8 +13,8 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .config import Config
-from .converter import TestConverter
+from ..configuration.config import Config
+from .converter import E2eTestConverter
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class IncrementalSession:
             config: Configuration object
         """
         self.config = config
-        self.converter = TestConverter(config)
+        self.converter = E2eTestConverter(config)
         
         # Session state
         self._is_active = False

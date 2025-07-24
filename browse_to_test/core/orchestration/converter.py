@@ -11,19 +11,19 @@ from pathlib import Path
 import json
 import logging
 
-from .config import Config
-from .input_parser import InputParser
-from .action_analyzer import ActionAnalyzer
-from .context_collector import ContextCollector
-from .shared_setup_manager import SharedSetupManager, SharedSetupConfig
-from ..ai.factory import AIProviderFactory
-from ..plugins.registry import PluginRegistry
+from ..configuration.config import Config
+from ..processing.input_parser import InputParser
+from ..processing.action_analyzer import ActionAnalyzer
+from ..processing.context_collector import ContextCollector
+from ..configuration.shared_setup_manager import SharedSetupManager, SharedSetupConfig
+from ...ai.factory import AIProviderFactory
+from ...plugins.registry import PluginRegistry
 
 
 logger = logging.getLogger(__name__)
 
 
-class TestConverter:
+class E2eTestConverter:
     """
     Simplified test converter with a clean API.
     
@@ -32,7 +32,7 @@ class TestConverter:
     
     Example:
         >>> config = ConfigBuilder().framework("playwright").build()
-        >>> converter = TestConverter(config)
+        >>> converter = E2eTestConverter(config)
         >>> script = converter.convert(automation_data)
     """
     

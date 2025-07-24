@@ -14,13 +14,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import asyncio
 
-from .config import Config
-from .input_parser import InputParser, ParsedAutomationData, ParsedAction, ParsedStep
-from .action_analyzer import ActionAnalyzer
-from .context_collector import ContextCollector, SystemContext
-from .shared_setup_manager import SharedSetupManager, SharedSetupConfig, SetupUtility
-from ..ai.factory import AIProviderFactory
-from ..plugins.registry import PluginRegistry
+from ..configuration.config import Config
+from ..processing.input_parser import InputParser, ParsedAutomationData, ParsedAction, ParsedStep
+from ..processing.action_analyzer import ActionAnalyzer
+from ..processing.context_collector import ContextCollector, SystemContext
+from ..configuration.shared_setup_manager import SharedSetupManager, SharedSetupConfig, SetupUtility
+from ...ai.factory import AIProviderFactory
+from ...plugins.registry import PluginRegistry
 
 
 @dataclass
@@ -538,7 +538,7 @@ class IncrementalTestScriptOrchestrator:
             return step
         else:
             # Create empty step if parsing failed
-            from browse_to_test.core.input_parser import ParsedStep
+            from ..processing.input_parser import ParsedStep
             return ParsedStep(
                 step_index=step_index,
                 actions=[],

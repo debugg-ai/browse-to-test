@@ -12,9 +12,9 @@ import json
 from pathlib import Path
 
 import browse_to_test as btt
-from browse_to_test.core.config import ConfigBuilder
-from browse_to_test.core.converter import TestConverter
-from browse_to_test.core.session import IncrementalSession
+from browse_to_test.core.configuration.config import ConfigBuilder
+from browse_to_test.core.orchestration.converter import E2eTestConverter
+from browse_to_test.core.orchestration.session import IncrementalSession
 
 
 class TestEndToEndWorkflows:
@@ -23,8 +23,8 @@ class TestEndToEndWorkflows:
     @pytest.mark.integration
     def test_simple_convert_workflow(self, sample_automation_data):
         """Test the simplest possible conversion workflow."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
             
             # Setup mocks
             mock_parser.return_value.parse.return_value = Mock()
@@ -46,11 +46,11 @@ class TestEndToEndWorkflows:
     @pytest.mark.integration
     def test_advanced_convert_workflow(self, complex_automation_data):
         """Test advanced conversion with all features enabled."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry, \
-             patch('browse_to_test.core.converter.AIProviderFactory') as mock_ai_factory, \
-             patch('browse_to_test.core.converter.ActionAnalyzer') as mock_analyzer, \
-             patch('browse_to_test.core.converter.ContextCollector') as mock_context:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry, \
+             patch('browse_to_test.core.orchestration.converter.AIProviderFactory') as mock_ai_factory, \
+             patch('browse_to_test.core.orchestration.converter.ActionAnalyzer') as mock_analyzer, \
+             patch('browse_to_test.core.orchestration.converter.ContextCollector') as mock_context:
             
             # Setup comprehensive mocks
             mock_parser.return_value.parse.return_value = Mock()
@@ -91,7 +91,7 @@ class TestEndToEndWorkflows:
     @pytest.mark.integration
     def test_incremental_session_workflow(self, sample_automation_data):
         """Test complete incremental session workflow."""
-        with patch('browse_to_test.core.session.TestConverter') as mock_converter_class:
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class:
             mock_converter = MagicMock()
             mock_converter.convert.side_effect = [
                 "# Test with step 1\npage.goto('https://example.com')",
@@ -131,9 +131,9 @@ class TestEndToEndWorkflows:
 
     @pytest.mark.integration
     def test_config_builder_to_converter_integration(self):
-        """Test ConfigBuilder integration with TestConverter."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+        """Test ConfigBuilder integration with E2eTestConverter."""
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
             
             mock_parser.return_value.parse.return_value = Mock()
             mock_plugin = Mock()
@@ -155,7 +155,7 @@ class TestEndToEndWorkflows:
                 .build()
             
             # Create converter with config
-            converter = btt.TestConverter(config)
+            converter = btt.E2eTestConverter(config)
             result = converter.convert([{"test": "data"}])
             
             # Verify configuration was applied
@@ -170,7 +170,7 @@ class TestEndToEndWorkflows:
     @pytest.mark.integration 
     def test_error_propagation_through_stack(self, sample_automation_data):
         """Test that errors propagate correctly through the component stack."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser:
             
             # Test different error types at different levels
             error_scenarios = [
@@ -193,19 +193,19 @@ class TestEndToEndWorkflows:
     @pytest.mark.integration
     def test_validation_across_components(self, sample_automation_data):
         """Test validation consistency across components."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser:
             mock_parser.return_value.parse.return_value = Mock()
             mock_parser.return_value.validate.return_value = ["Input validation error"]
             
-            # Test validation through TestConverter
+            # Test validation through E2eTestConverter
             config = btt.ConfigBuilder().framework("playwright").build()
-            converter = btt.TestConverter(config)
+            converter = btt.E2eTestConverter(config)
             
             errors = converter.validate_data(sample_automation_data)
             assert "Input validation error" in errors
             
             # Test validation through IncrementalSession
-            with patch('browse_to_test.core.session.TestConverter') as mock_session_converter:
+            with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_session_converter:
                 mock_session_converter.return_value.validate_data.return_value = ["Session validation error"]
                 
                 session = btt.IncrementalSession(config)
@@ -311,8 +311,8 @@ class TestRealWorldScenarios:
             temp_file = f.name
         
         try:
-            with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-                 patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+            with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+                 patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
                 
                 mock_parser.return_value.parse.return_value = Mock()
                 mock_plugin = Mock()
@@ -331,8 +331,8 @@ class TestRealWorldScenarios:
     @pytest.mark.integration
     def test_multiple_framework_generation(self, sample_automation_data):
         """Test generating tests for multiple frameworks from same data."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
             
             mock_parser.return_value.parse.return_value = Mock()
             
@@ -361,8 +361,8 @@ class TestRealWorldScenarios:
     @pytest.mark.integration
     def test_language_specific_generation(self, sample_automation_data):
         """Test generating tests in different programming languages."""
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
             
             mock_parser.return_value.parse.return_value = Mock()
             
@@ -404,8 +404,8 @@ class TestRealWorldScenarios:
             .debug(True) \
             .build()
         
-        with patch('browse_to_test.core.converter.InputParser') as mock_parser, \
-             patch('browse_to_test.core.converter.PluginRegistry') as mock_registry:
+        with patch('browse_to_test.core.orchestration.converter.InputParser') as mock_parser, \
+             patch('browse_to_test.core.orchestration.converter.PluginRegistry') as mock_registry:
             
             mock_parser.return_value.parse.return_value = Mock()
             mock_plugin = Mock()
@@ -413,7 +413,7 @@ class TestRealWorldScenarios:
             mock_registry.return_value.create_plugin.return_value = mock_plugin
             
             # Create converter and perform multiple operations
-            converter = btt.TestConverter(config)
+            converter = btt.E2eTestConverter(config)
             
             # Test that config persists across operations
             result1 = converter.convert([{"step": 1}])
@@ -434,7 +434,7 @@ class TestRealWorldScenarios:
         """Test that incremental sessions can recover from errors."""
         config = btt.ConfigBuilder().framework("playwright").build()
         
-        with patch('browse_to_test.core.session.TestConverter') as mock_converter_class:
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class:
             mock_converter = MagicMock()
             
             # Simulate intermittent failures

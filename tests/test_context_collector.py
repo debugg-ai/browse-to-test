@@ -8,10 +8,10 @@ from datetime import datetime
 
 import pytest
 
-from browse_to_test.core.context_collector import (
+from browse_to_test.core.processing.context_collector import (
     ContextCollector, SystemContext, ProjectContext, TestFileInfo
 )
-from browse_to_test.core.config import Config
+from browse_to_test.core.configuration.config import Config
 
 
 class TestProjectContext:

@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from browse_to_test.core.session import IncrementalSession, SessionResult
-from browse_to_test.core.config import ConfigBuilder
+from browse_to_test.core.orchestration.session import IncrementalSession, SessionResult
+from browse_to_test.core.configuration.config import ConfigBuilder
 
 
 class TestSessionResult:
@@ -59,8 +59,8 @@ class TestIncrementalSession:
 
     @pytest.fixture
     def mock_converter(self):
-        """Mock TestConverter."""
-        with patch('browse_to_test.core.session.TestConverter') as mock:
+        """Mock E2eTestConverter."""
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock:
             yield mock
 
     def test_init(self, basic_config, mock_converter):
@@ -420,7 +420,7 @@ class TestIncrementalSessionIntegration:
         """Test a complete session workflow."""
         config = ConfigBuilder().framework("playwright").build()
         
-        with patch('browse_to_test.core.session.TestConverter') as mock_converter_class:
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class:
             mock_converter = MagicMock()
             mock_converter.convert.side_effect = [
                 "Script with step 1",
@@ -457,7 +457,7 @@ class TestIncrementalSessionIntegration:
         """Test that session continues even when individual operations have errors."""
         config = ConfigBuilder().framework("playwright").build()
         
-        with patch('browse_to_test.core.session.TestConverter') as mock_converter_class:
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class:
             mock_converter = MagicMock()
             # First step succeeds, second fails, third succeeds
             mock_converter.convert.side_effect = [
@@ -490,7 +490,7 @@ class TestIncrementalSessionIntegration:
         """Test that session properly tracks metadata."""
         config = ConfigBuilder().framework("playwright").build()
         
-        with patch('browse_to_test.core.session.TestConverter'):
+        with patch('browse_to_test.core.orchestration.session.E2eTestConverter'):
             session = IncrementalSession(config)
             
             # Start with metadata

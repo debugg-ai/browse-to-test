@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Any, Union, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .config import Config
+from ..configuration.config import Config
 
 
 @dataclass

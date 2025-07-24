@@ -6,10 +6,10 @@ from pathlib import Path
 import json
 import tempfile
 
-from browse_to_test.core.orchestrator import TestScriptOrchestrator
-from browse_to_test.core.config import Config, AIConfig, OutputConfig, ProcessingConfig
-from browse_to_test.core.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
-from browse_to_test.core.context_collector import SystemContext, ProjectContext
+from browse_to_test.core.orchestration.orchestrator import TestScriptOrchestrator
+from browse_to_test.core.configuration.config import Config, AIConfig, OutputConfig, ProcessingConfig
+from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
+from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext
 from browse_to_test.ai.base import AIProvider, AIResponse
 from browse_to_test.plugins.base import OutputPlugin, GeneratedTestScript
 
@@ -174,9 +174,9 @@ class TestTestScriptOrchestrator:
     
     def test_orchestrator_initialization(self, basic_config):
         """Test orchestrator initialization."""
-        with patch('browse_to_test.core.orchestrator.AIProviderFactory') as mock_ai_factory, \
-             patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.ContextCollector') as mock_context_collector:
+        with patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory') as mock_ai_factory, \
+             patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.ContextCollector') as mock_context_collector:
             
             orchestrator = TestScriptOrchestrator(basic_config)
             
@@ -189,17 +189,17 @@ class TestTestScriptOrchestrator:
     
     def test_orchestrator_without_context_collection(self, simple_config):
         """Test orchestrator initialization without context collection."""
-        with patch('browse_to_test.core.orchestrator.AIProviderFactory') as mock_ai_factory, \
-             patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry:
+        with patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory') as mock_ai_factory, \
+             patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry:
             
             orchestrator = TestScriptOrchestrator(simple_config)
             
             assert orchestrator.context_collector is None
             assert orchestrator.ai_provider is None
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
-    @patch('browse_to_test.core.orchestrator.ContextCollector')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.ContextCollector')
     def test_generate_test_script_basic(self, mock_context_collector, mock_ai_factory, mock_plugin_registry, simple_config, sample_automation_data):
         """Test basic test script generation without AI or context."""
         # Setup mocks
@@ -214,9 +214,9 @@ class TestTestScriptOrchestrator:
         assert "Mock generated test script" in result
         mock_plugin_registry.return_value.create_plugin.assert_called_once()
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
-    @patch('browse_to_test.core.orchestrator.ContextCollector')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.ContextCollector')
     def test_generate_test_script_with_ai_and_context(self, mock_context_collector, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data, mock_ai_provider, sample_system_context):
         """Test test script generation with AI analysis and context collection."""
         # Setup mocks
@@ -243,8 +243,8 @@ class TestTestScriptOrchestrator:
         # Verify context was collected
         mock_context_collector.return_value.collect_context.assert_called()
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_generate_test_script_with_custom_config(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data):
         """Test generation with custom configuration overrides."""
         mock_plugin = MockOutputPlugin()
@@ -269,8 +269,8 @@ class TestTestScriptOrchestrator:
     
     def test_generate_test_script_from_json_string(self, simple_config, sample_automation_data):
         """Test generation from JSON string input."""
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -285,8 +285,8 @@ class TestTestScriptOrchestrator:
     
     def test_generate_test_script_from_file(self, simple_config, sample_automation_data):
         """Test generation from JSON file input."""
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -306,8 +306,8 @@ class TestTestScriptOrchestrator:
             finally:
                 Path(temp_file).unlink()  # Clean up
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_generate_test_script_caching(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data):
         """Test caching functionality."""
         mock_plugin = MockOutputPlugin()
@@ -325,8 +325,8 @@ class TestTestScriptOrchestrator:
         # Plugin should only be called once due to caching
         assert mock_plugin_registry.return_value.create_plugin.call_count >= 1
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_generate_test_script_cache_disabled(self, mock_ai_factory, mock_plugin_registry, sample_automation_data):
         """Test generation with caching disabled."""
         config = Config(
@@ -346,8 +346,8 @@ class TestTestScriptOrchestrator:
         # But no caching should occur
         assert len(orchestrator._generation_cache) == 0
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_ai_provider_initialization_failure(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data):
         """Test handling of AI provider initialization failure."""
         mock_plugin = MockOutputPlugin()
@@ -362,8 +362,8 @@ class TestTestScriptOrchestrator:
         assert isinstance(result, str)
         assert orchestrator.ai_provider is None
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_analysis_failure_fallback(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data, mock_ai_provider):
         """Test fallback when AI analysis fails."""
         mock_plugin = MockOutputPlugin()
@@ -383,8 +383,8 @@ class TestTestScriptOrchestrator:
             # Should still generate script despite analysis failure
             assert "Mock generated test script" in result
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_plugin_creation_failure(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data):
         """Test handling of plugin creation failure."""
         mock_plugin_registry.return_value.create_plugin.side_effect = Exception("Plugin not available")
@@ -398,8 +398,8 @@ class TestTestScriptOrchestrator:
         # Should contain fallback content
         assert "Error generating test script" in result or len(result) > 0
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_strict_mode_errors(self, mock_ai_factory, mock_plugin_registry, sample_automation_data):
         """Test error handling in strict mode."""
         config = Config(
@@ -415,8 +415,8 @@ class TestTestScriptOrchestrator:
     
     def test_generate_with_multiple_frameworks(self, simple_config, sample_automation_data):
         """Test generating scripts for multiple frameworks."""
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -437,8 +437,8 @@ class TestTestScriptOrchestrator:
     
     def test_generate_with_multiple_frameworks_error_handling(self, simple_config, sample_automation_data):
         """Test error handling in multiple framework generation."""
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             # Make plugin creation fail for one framework
             def side_effect(config):
@@ -464,8 +464,8 @@ class TestTestScriptOrchestrator:
             assert ("Error generating script" in results["selenium"] or 
                     "Error: Failed to generate test script" in results["selenium"])
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_cache_size_limiting(self, mock_ai_factory, mock_plugin_registry, sample_automation_data):
         """Test cache size limiting functionality."""
         config = Config(
@@ -495,8 +495,8 @@ class TestTestScriptOrchestrator:
         # Cache should be limited
         assert len(orchestrator._generation_cache) <= config.processing.max_cache_size
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory')
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory')
     def test_post_process_script(self, mock_ai_factory, mock_plugin_registry, basic_config):
         """Test script post-processing functionality."""
         mock_plugin = MockOutputPlugin()
@@ -516,8 +516,8 @@ class TestTestScriptOrchestrator:
         # Should contain original script
         assert "Original script" in processed_script
     
-    @patch('browse_to_test.core.orchestrator.PluginRegistry')
-    @patch('browse_to_test.core.orchestrator.AIProviderFactory') 
+    @patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry')
+    @patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory') 
     def test_fallback_script_generation(self, mock_ai_factory, mock_plugin_registry, basic_config, sample_automation_data):
         """Test fallback script generation when main generation fails."""
         mock_plugin_registry.return_value.create_plugin.side_effect = Exception("Plugin failed")
@@ -545,8 +545,8 @@ class TestOrchestratorEdgeCases:
         """Test with empty automation data."""
         config = Config()
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -561,8 +561,8 @@ class TestOrchestratorEdgeCases:
         """Test with malformed automation data."""
         config = Config()
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -583,8 +583,8 @@ class TestOrchestratorEdgeCases:
         """Test with very large automation data."""
         config = Config()
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -609,8 +609,8 @@ class TestOrchestratorEdgeCases:
         """Test with unicode and special characters."""
         config = Config()
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -649,8 +649,8 @@ class TestOrchestratorIntegration:
             )
         )
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin
@@ -681,8 +681,8 @@ class TestOrchestratorIntegration:
             processing=ProcessingConfig(analyze_actions_with_ai=True)
         )
         
-        with patch('browse_to_test.core.orchestrator.PluginRegistry') as mock_plugin_registry, \
-             patch('browse_to_test.core.orchestrator.AIProviderFactory'):
+        with patch('browse_to_test.core.orchestration.orchestrator.PluginRegistry') as mock_plugin_registry, \
+             patch('browse_to_test.core.orchestration.orchestrator.AIProviderFactory'):
             
             mock_plugin = MockOutputPlugin()
             mock_plugin_registry.return_value.create_plugin.return_value = mock_plugin

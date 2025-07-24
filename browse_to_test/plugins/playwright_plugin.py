@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from .base import OutputPlugin, GeneratedTestScript, PluginError
-from ..core.config import OutputConfig
-from ..core.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
-from ..core.language_templates import LanguageTemplateManager
+from ..core.configuration.config import OutputConfig
+from ..core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from ..core.configuration.language_templates import LanguageTemplateManager
 
 
 logger = logging.getLogger(__name__)
