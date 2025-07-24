@@ -8,7 +8,7 @@ from .orchestration import TestScriptOrchestrator
 # Configuration 
 from .configuration import Config, AIConfig, OutputConfig, SharedSetupConfig
 from .configuration import LanguageTemplateManager, LanguageTemplate
-from .configuration import SharedSetupManager, SetupUtility
+from .configuration import SharedSetupManager, SetupUtility, LanguageManager
 
 # Input/Data processing
 from .processing import InputParser, ActionAnalyzer
@@ -25,4 +25,5 @@ __all__ = [
     "SetupUtility",
     "LanguageTemplateManager",
     "LanguageTemplate",
+    "LanguageManager",
 ] 

@@ -29,10 +29,10 @@ class AIConfig:
 class SharedSetupConfig:
     """Configuration for shared setup generation."""
     enabled: bool = True
-    setup_dir: str = "browse_to_test/language_utils/test_setup"
-    utilities_file: str = "test_utilities.py"
-    constants_file: str = "test_constants.py" 
-    framework_helpers_file: str = "framework_helpers.py"
+    setup_dir: str = "browse_to_test/output_langs/generated"
+    utilities_file: str = "utilities.py"
+    constants_file: str = "constants.py" 
+    framework_helpers_file: str = "exceptions.py"
     generate_separate_files: bool = True
     include_docstrings: bool = True
     organize_by_category: bool = True

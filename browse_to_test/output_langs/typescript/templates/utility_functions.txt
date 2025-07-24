@@ -1,0 +1,65 @@
+// Utility functions for test automation
+
+export function logStep(step: string, details: string = ''): void {
+    console.error(`🔸 ${step}`);
+    if (details) {
+        console.error(`   ${details}`);
+    }
+}
+
+export function logError(error: string, details: string = ''): void {
+    console.error(`❌ ${error}`);
+    if (details) {
+        console.error(`   ${details}`);
+    }
+}
+
+export function logSuccess(message: string): void {
+    console.error(`✅ ${message}`);
+}
+
+export function logWarning(message: string): void {
+    console.error(`⚠️ ${message}`);
+}
+
+export function logDebug(message: string): void {
+    console.error(`🔧 ${message}`);
+}
+
+export function replaceSensitiveData(text: string, sensitiveMap: Record<string, any>): string {
+    if (typeof text !== 'string') {
+        return text;
+    }
+    
+    for (const [placeholder, value] of Object.entries(sensitiveMap)) {
+        const replacementValue = value !== null && value !== undefined ? String(value) : '';
+        text = text.replace(`<secret>${placeholder}</secret>`, replacementValue);
+    }
+    
+    return text;
+}
+
+export function maskSensitiveData(data: any, sensitiveKeys: string[] = ['password', 'token', 'key', 'secret', 'credential']): any {
+    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+        const masked: Record<string, any> = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (sensitiveKeys.some(sensitiveKey => key.toLowerCase().includes(sensitiveKey.toLowerCase()))) {
+                masked[key] = '***MASKED***';
+            } else {
+                masked[key] = maskSensitiveData(value, sensitiveKeys);
+            }
+        }
+        return masked;
+    } else if (Array.isArray(data)) {
+        return data.map(item => maskSensitiveData(item, sensitiveKeys));
+    } else {
+        return data;
+    }
+}
+
+export function formatSelector(selector: string): string {
+    if (selector.length > 50) {
+        return `${selector.slice(0, 47)}...`;
+    }
+    return selector;
+} 

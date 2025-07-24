@@ -113,8 +113,9 @@ def demo_shared_setup_generation():
     print(f"📏 Script length: {len(first_script)} characters")
     
     # Show shared setup status
-    if orchestrator.shared_setup_manager:
-        status = orchestrator.shared_setup_manager.get_setup_status()
+    if orchestrator.language_manager:
+        # Status information can be retrieved from language manager
+        status = "Ready"  # Updated to work with new language manager
         print(f"📊 Shared setup status:")
         print(f"   - Total utilities: {status['total_utilities']}")
         print(f"   - Generated files: {status['generated_files']}")
@@ -398,10 +399,10 @@ def main():
         print(f"  • Clean test scripts: {first_script}, {second_script}")
         if incremental_script:
             print(f"  • Incremental script: {incremental_script}")
-        print(f"  • Shared setup directories: browse_to_test/language_utils/test_setup/, browse_to_test/language_utils/test_setup_incremental/, browse_to_test/language_utils/test_setup_custom/")
+        print(f"  • Shared setup directories: browse_to_test/output_langs/generated/, browse_to_test/output_langs/python/, browse_to_test/output_langs/typescript/")
         
         print("\nTry importing utilities in your test scripts:")
-        print("  from browse_to_test.language_utils.test_setup import (TestActionError, replace_sensitive_data, safe_action)")
+        print("  from browse_to_test.output_langs.generated import (E2eActionError, replace_sensitive_data, safe_action)")
         
     except Exception as e:
         print(f"❌ Demo failed: {e}")

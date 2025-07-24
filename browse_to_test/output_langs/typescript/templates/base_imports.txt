@@ -1,0 +1,10 @@
+/**
+ * Generated test script by browse-to-test.
+ *
+ * This script was automatically generated from browser automation data.
+ * Framework: {framework}
+ * Language: TypeScript
+ * Generated at: {timestamp}
+ */
+
+import {{ Page, Browser, BrowserContext }} from '@playwright/test'; 

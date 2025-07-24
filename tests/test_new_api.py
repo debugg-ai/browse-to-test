@@ -241,12 +241,14 @@ class TestErrorHandlingScenarios:
     
     def test_convert_with_invalid_framework(self, sample_automation_data):
         """Test convert() with invalid framework."""
-        with pytest.raises(RuntimeError, match="Failed to convert automation data"):
+        from browse_to_test.output_langs.exceptions import FrameworkNotSupportedError
+        with pytest.raises(FrameworkNotSupportedError, match="Framework 'invalid_framework' is not supported"):
             btt.convert(sample_automation_data, framework="invalid_framework")
     
     def test_convert_with_invalid_language(self, sample_automation_data):
         """Test convert() with invalid language."""
-        with pytest.raises(RuntimeError, match="Failed to convert automation data"):
+        from browse_to_test.output_langs.exceptions import LanguageNotSupportedError
+        with pytest.raises(LanguageNotSupportedError, match="Language 'invalid_lang' is not supported"):
             btt.convert(sample_automation_data, framework="playwright", language="invalid_lang")
     
     def test_convert_with_empty_data(self):

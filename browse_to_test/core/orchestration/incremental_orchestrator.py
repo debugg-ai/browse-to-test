@@ -18,7 +18,7 @@ from ..configuration.config import Config
 from ..processing.input_parser import InputParser, ParsedAutomationData, ParsedAction, ParsedStep
 from ..processing.action_analyzer import ActionAnalyzer
 from ..processing.context_collector import ContextCollector, SystemContext
-from ..configuration.shared_setup_manager import SharedSetupManager, SharedSetupConfig, SetupUtility
+from ...output_langs import LanguageManager
 from ...ai.factory import AIProviderFactory
 from ...plugins.registry import PluginRegistry
 
@@ -129,28 +129,15 @@ class IncrementalTestScriptOrchestrator:
         # Initialize action analyzer for incremental analysis
         self.action_analyzer = ActionAnalyzer(self.ai_provider, config)
         
-        # Initialize shared setup manager if enabled
-        self.shared_setup_manager = None
+        # Initialize language manager if enabled
+        self.language_manager = None
         if config.output.shared_setup.enabled:
-            setup_config = SharedSetupConfig(
-                setup_dir=Path(config.output.shared_setup.setup_dir),
-                utilities_file=config.output.shared_setup.utilities_file,
-                constants_file=config.output.shared_setup.constants_file,
-                framework_helpers_file=config.output.shared_setup.framework_helpers_file,
-                generate_separate_files=config.output.shared_setup.generate_separate_files,
-                include_docstrings=config.output.shared_setup.include_docstrings,
-                organize_by_category=config.output.shared_setup.organize_by_category,
-                auto_generate_imports=config.output.shared_setup.auto_generate_imports,
-                language=config.output.language
+            output_dir = Path(config.output.shared_setup.setup_dir)
+            self.language_manager = LanguageManager(
+                language=config.output.language,
+                framework=config.output.framework,
+                output_dir=output_dir
             )
-            self.shared_setup_manager = SharedSetupManager(
-                setup_config, 
-                config.project_root, 
-                language=config.output.language
-            )
-            
-            # Add standard utilities for the configured framework and language
-            self.shared_setup_manager.add_standard_utilities(config.output.framework)
         
         # Current session state
         self._current_script_state: Optional[ScriptState] = None
@@ -440,11 +427,10 @@ class IncrementalTestScriptOrchestrator:
             raw_script = self._current_script_state.to_script()
             
             # Generate shared setup if enabled
-            if self.shared_setup_manager and self.config.output.shared_setup.enabled:
+            if self.language_manager and self.config.output.shared_setup.enabled:
                 # Generate setup files
-                setup_files = self.shared_setup_manager.generate_setup_files(
-                    force_regenerate=self.config.output.shared_setup.force_regenerate,
-                    language=self.config.output.language
+                setup_files = self.language_manager.generate_setup_files(
+                    force_regenerate=self.config.output.shared_setup.force_regenerate
                 )
                 
                 if self.config.verbose:
@@ -737,7 +723,7 @@ class IncrementalTestScriptOrchestrator:
     def _generate_clean_incremental_script(self, script: str, config: Config) -> str:
         """Generate a clean incremental script that imports from shared setup."""
         
-        if not self.shared_setup_manager:
+        if not self.language_manager:
             return script
         
         lines = []
@@ -770,10 +756,7 @@ class IncrementalTestScriptOrchestrator:
             ])
         
         # Add shared setup imports
-        setup_imports = self.shared_setup_manager.get_imports_for_test_script(
-            framework=config.output.framework,
-            language=config.output.language
-        )
+        setup_imports = self.language_manager.get_import_statements_for_test(use_setup_files=True)
         if setup_imports:
             lines.extend(setup_imports)
             lines.append("")
@@ -796,7 +779,7 @@ class IncrementalTestScriptOrchestrator:
         # Skip common utility functions and imports that are now in shared setup
         skip_patterns = [
             'def replace_sensitive_data(',
-            'class TestActionError(',
+            'class E2eActionError(',
             'async def safe_action(',
             'async def try_locate_and_act(',
             'def safe_selenium_action(',

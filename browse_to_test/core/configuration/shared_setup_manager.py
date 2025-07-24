@@ -172,7 +172,7 @@ class SharedSetupManager:
         
         # Generate exception utility
         exception_utility = self._create_language_aware_utility(
-            name="TestActionError",
+            name="E2eActionError",
             utility_type="exception",
             category="exception",
             description="Custom exception for test action failures",

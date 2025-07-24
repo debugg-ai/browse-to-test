@@ -1,0 +1,10 @@
+{
+  "name": "python",
+  "display_name": "Python",
+  "file_extension": ".py",
+  "comment_prefix": "#",
+  "supports_async": true,
+  "frameworks": ["playwright", "selenium"],
+  "package_manager": "pip",
+  "template_engine": "jinja2"
+} 

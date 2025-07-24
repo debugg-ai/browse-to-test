@@ -1,0 +1,39 @@
+// Custom exception classes for test automation
+
+export class E2eActionError extends Error {
+    public action?: string;
+    public selector?: string;
+    
+    constructor(message: string, action?: string, selector?: string) {
+        super(message);
+        this.name = 'E2eActionError';
+        this.action = action;
+        this.selector = selector;
+    }
+}
+
+export class ElementNotFoundError extends E2eActionError {
+    constructor(selector: string, timeout?: number) {
+        const message = timeout 
+            ? `Element not found: ${selector} (timeout: ${timeout}ms)`
+            : `Element not found: ${selector}`;
+        super(message, undefined, selector);
+        this.name = 'ElementNotFoundError';
+    }
+}
+
+export class TimeoutError extends E2eActionError {
+    constructor(action: string, timeout: number) {
+        const message = `Action timed out after ${timeout}ms: ${action}`;
+        super(message, action);
+        this.name = 'TimeoutError';
+    }
+}
+
+export class NavigationError extends E2eActionError {
+    constructor(url: string, reason?: string) {
+        const message = reason ? `Navigation failed to: ${url} - ${reason}` : `Navigation failed to: ${url}`;
+        super(message);
+        this.name = 'NavigationError';
+    }
+} 

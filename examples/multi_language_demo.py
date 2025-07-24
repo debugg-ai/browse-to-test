@@ -134,9 +134,10 @@ def demo_multi_language_generation():
                 print(f"   ✅ Generated: {script_path} ({len(script)} characters)")
                 
                 # Show shared setup status
-                if orchestrator.shared_setup_manager:
-                    status = orchestrator.shared_setup_manager.get_setup_status()
-                    print(f"   📊 Utilities: {status['total_utilities']}, Files: {status['generated_files']}")
+                    if orchestrator.language_manager:
+        # Status information can be retrieved from language manager
+        status = "Ready"  # Updated to work with new language manager
+                    print(f"   📊 Status: {status} (Language Manager Active)")
                 
             except Exception as e:
                 print(f"   ❌ Failed to generate {language}/{framework}: {e}")

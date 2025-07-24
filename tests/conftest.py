@@ -5,7 +5,7 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 import pytest
 from faker import Faker
@@ -13,7 +13,7 @@ from faker import Faker
 import browse_to_test as btt
 from browse_to_test.ai.base import AIResponse, AIProvider
 from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext, TestFileInfo
-from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
+from browse_to_test.core.processing.input_parser import ParsedAutomationData
 
 
 collect_ignore = [

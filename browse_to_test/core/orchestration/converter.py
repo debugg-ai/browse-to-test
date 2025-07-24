@@ -8,14 +8,13 @@ to test scripts, replacing the complex orchestrator classes.
 
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
-import json
 import logging
 
 from ..configuration.config import Config
 from ..processing.input_parser import InputParser
 from ..processing.action_analyzer import ActionAnalyzer
 from ..processing.context_collector import ContextCollector
-from ..configuration.shared_setup_manager import SharedSetupManager, SharedSetupConfig
+from ...output_langs import LanguageManager
 from ...ai.factory import AIProviderFactory
 from ...plugins.registry import PluginRegistry
 
@@ -67,26 +66,15 @@ class E2eTestConverter:
         if config.processing.collect_system_context:
             self.context_collector = ContextCollector(config, config.project_root)
         
-        # Initialize shared setup manager if enabled
-        self.shared_setup_manager = None
+        # Initialize language manager if enabled
+        self.language_manager = None
         if config.output.shared_setup.enabled:
-            setup_config = SharedSetupConfig(
-                setup_dir=Path(config.output.shared_setup.setup_dir),
-                utilities_file=config.output.shared_setup.utilities_file,
-                constants_file=config.output.shared_setup.constants_file,
-                framework_helpers_file=config.output.shared_setup.framework_helpers_file,
-                generate_separate_files=config.output.shared_setup.generate_separate_files,
-                include_docstrings=config.output.shared_setup.include_docstrings,
-                organize_by_category=config.output.shared_setup.organize_by_category,
-                auto_generate_imports=config.output.shared_setup.auto_generate_imports,
-                language=config.output.language
+            output_dir = Path(config.output.shared_setup.setup_dir)
+            self.language_manager = LanguageManager(
+                language=config.output.language,
+                framework=config.output.framework,
+                output_dir=output_dir
             )
-            self.shared_setup_manager = SharedSetupManager(
-                setup_config, 
-                config.project_root, 
-                language=config.output.language
-            )
-            self.shared_setup_manager.add_standard_utilities(config.output.framework)
     
     def convert(
         self, 

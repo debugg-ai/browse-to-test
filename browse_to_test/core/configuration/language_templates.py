@@ -413,7 +413,7 @@ public static CompletableFuture<{return_type}> {name}({params}) {{
             print(f'Action failed ({step_info}): {e}', file=sys.stderr)
         else:
             print(f'Action failed: {e}', file=sys.stderr)
-        raise TestActionError(f'Action failed: {e}') from e'''
+        raise E2eActionError(f'Action failed: {e}') from e'''
         
         elif template.language == "typescript" and framework == "playwright":
             return '''export async function safeAction<T>(
@@ -430,7 +430,7 @@ public static CompletableFuture<{return_type}> {name}({params}) {{
         } else {
             console.error(`Action failed: ${errorMessage}`);
         }
-        throw new TestActionError(`Action failed: ${errorMessage}`);
+        throw new E2eActionError(`Action failed: ${errorMessage}`);
     }
 }'''
         
@@ -445,7 +445,7 @@ public static CompletableFuture<{return_type}> {name}({params}) {{
         } else {
             console.error(`Action failed: ${errorMessage}`);
         }
-        throw new TestActionError(`Action failed: ${errorMessage}`);
+        throw new E2eActionError(`Action failed: ${errorMessage}`);
     }
 }'''
         
@@ -474,7 +474,7 @@ public static CompletableFuture<{return_type}> {name}({params}) {{
     except Exception as e:
         error_msg = f'Element interaction failed: {e} ({step_info})'
         print(f'  ✗ {error_msg}', file=sys.stderr)
-        raise TestActionError(error_msg) from e'''
+        raise E2eActionError(error_msg) from e'''
         
         elif template.language == "typescript" and framework == "playwright":
             return '''export async function tryLocateAndAct(
@@ -504,7 +504,7 @@ public static CompletableFuture<{return_type}> {name}({params}) {{
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorMsg = `Element interaction failed: ${errorMessage} (${stepInfo})`;
         console.error(`  ✗ ${errorMsg}`);
-        throw new TestActionError(errorMsg);
+        throw new E2eActionError(errorMsg);
     }
 }'''
         
