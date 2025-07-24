@@ -1,6 +1,7 @@
 """
 Custom exceptions for the output language generation system.
 """
+from typing import List, Optional
 
 
 class OutputLanguageError(Exception):
@@ -11,7 +12,7 @@ class OutputLanguageError(Exception):
 class LanguageNotSupportedError(OutputLanguageError):
     """Raised when a requested programming language is not supported."""
     
-    def __init__(self, language: str, supported_languages: list[str] = None):
+    def __init__(self, language: str, supported_languages: Optional[List[str]] = None):
         self.language = language
         self.supported_languages = supported_languages or []
         
@@ -26,7 +27,7 @@ class LanguageNotSupportedError(OutputLanguageError):
 class FrameworkNotSupportedError(OutputLanguageError):
     """Raised when a requested framework is not supported for a given language."""
     
-    def __init__(self, framework: str, language: str, supported_frameworks: list[str] = None):
+    def __init__(self, framework: str, language: str, supported_frameworks: Optional[List[str]] = None):
         self.framework = framework
         self.language = language
         self.supported_frameworks = supported_frameworks or []
@@ -42,7 +43,7 @@ class FrameworkNotSupportedError(OutputLanguageError):
 class TemplateGenerationError(OutputLanguageError):
     """Raised when template generation fails."""
     
-    def __init__(self, template_name: str, language: str, reason: str = None):
+    def __init__(self, template_name: str, language: str, reason: Optional[str] = None):
         self.template_name = template_name
         self.language = language
         self.reason = reason
@@ -57,7 +58,7 @@ class TemplateGenerationError(OutputLanguageError):
 class CodeGenerationError(OutputLanguageError):
     """Raised when code generation fails."""
     
-    def __init__(self, operation: str, language: str, framework: str = None, reason: str = None):
+    def __init__(self, operation: str, language: str, framework: Optional[str] = None, reason: Optional[str] = None):
         self.operation = operation
         self.language = language
         self.framework = framework
