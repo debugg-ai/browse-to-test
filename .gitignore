@@ -6,3 +6,6 @@
 examples/example_outputs/
 !examples/example_outputs/README.md
 /.venv
+/build
+build/
+dist/
