@@ -1,53 +1,35 @@
 #!/usr/bin/env python3
 """
-Multi-Language Demo - Browse-to-Test
+Multi-Language Demo
 
-This example demonstrates the comprehensive multi-language support system that generates:
-1. Test scripts in multiple programming languages (Python, TypeScript, JavaScript, C#, Java)
-2. Language-specific shared utilities and setup files  
-3. Framework-specific helpers for each language
-4. Proper import/export statements for each language
-
-The system supports clean, idiomatic code generation for each target language.
+This demo shows how to generate test scripts in multiple languages using the new simplified API.
 """
 
+import sys
 import json
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from browse_to_test import (
-    E2eScriptOrchestrator,
-    btt.IncrementalSession,
-    Config,
-    OutputConfig,
-    SharedSetupConfig,
-    SharedSetupManager,
-    SetupUtility,
-    LanguageTemplateManager
-)
+# Add the parent directory to the path to import browse_to_test modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import browse_to_test as btt
 
 # Load environment variables
 load_dotenv()
 
 def demo_multi_language_generation():
-    """Demonstrate generating test scripts in multiple languages."""
+    """Demo generating test scripts in multiple languages."""
+    print("\n🌍 === Multi-Language Test Generation Demo ===")
     
-    print("🌐 Browse-to-Test Multi-Language Demo")
-    print("Generating test scripts in multiple programming languages")
-    print("=" * 80)
-    
-    # Sample browser automation data
-    sample_automation_data = [
+    # Sample automation data
+    automation_data = [
         {
-            "step_index": 0,
-            "actions": [
-                {
-                    "action_type": "go_to_url",
-                    "parameters": {"url": "https://example.com/login"},
-                    "selector_info": {}
-                }
-            ]
+            "model_output": {
+                "action": [{"go_to_url": {"url": "https://example.com"}}]
+            },
+            "state": {"interacted_element": []}
         },
         {
             "step_index": 1,
@@ -81,68 +63,26 @@ def demo_multi_language_generation():
         }
     ]
     
-    # Supported languages to demonstrate
-    languages = ["python", "typescript", "javascript", "csharp", "java"]
-    frameworks = ["playwright"]  # Can extend to selenium, etc.
-    
-    generated_files = {}
+    languages = ["python", "typescript", "javascript"]
     
     for language in languages:
-        print(f"\n🚀 Generating {language.title()} test scripts...")
+        print(f"\n📝 Generating {language.title()} test script...")
         
-        for framework in frameworks:
-            print(f"   📁 Framework: {framework}")
-            
-            # Create language-specific configuration
-            config = Config(
-                output=OutputConfig(
-                    framework=framework,
-                    language=language,
-                    shared_setup=SharedSetupConfig(
-                        enabled=True,
-                        setup_dir=f"browse_to_test/language_utils/test_setup_{language}",
-                        include_docstrings=True,
-                        organize_by_category=True,
-                        force_regenerate=True
-                    )
-                ),
-                verbose=False  # Reduce noise for demo
-            )
-            
-            try:
-                # Create orchestrator for this language
-                orchestrator = E2eScriptOrchestrator(config)
-                
-                # Generate test script
-                script = converter.convert(
-                    automation_data=sample_automation_data,
-                    target_url="https://example.com/login"
-                )
-                
-                # Save the script with appropriate extension
-                extension = config.output.file_extension
-                script_path = Path(f"demo_login_test_{language}_{framework}{extension}")
-                script_path.write_text(script)
-                
-                if language not in generated_files:
-                    generated_files[language] = {}
-                if framework not in generated_files[language]:
-                    generated_files[language][framework] = []
-                    
-                generated_files[language][framework].append(script_path)
-                
-                print(f"   ✅ Generated: {script_path} ({len(script)} characters)")
-                
-                # Show shared setup status
-                    if orchestrator.language_manager:
-        # Status information can be retrieved from language manager
-        status = "Ready"  # Updated to work with new language manager
-                    print(f"   📊 Status: {status} (Language Manager Active)")
-                
-            except Exception as e:
-                print(f"   ❌ Failed to generate {language}/{framework}: {e}")
-    
-    return generated_files
+        # Create configuration for this language
+        config = btt.ConfigBuilder() \
+            .framework("playwright") \
+            .language(language) \
+            .ai_provider("openai") \
+            .build()
+        
+        # Create converter
+        converter = btt.E2eTestConverter(config)
+        
+        # Generate test script
+        script = converter.convert(automation_data)
+        
+        print(f"✅ {language.title()} script generated!")
+        print(f"📏 Script length: {len(script)} characters")
 
 def demo_language_specific_utilities():
     """Demonstrate generating language-specific utilities directly."""
@@ -152,7 +92,7 @@ def demo_language_specific_utilities():
     print("=" * 80)
     
     # Create template manager
-    template_manager = LanguageTemplateManager()
+    template_manager = btt.LanguageTemplateManager()
     
     print("\n📝 Generating utilities for each language...")
     
@@ -162,21 +102,21 @@ def demo_language_specific_utilities():
         print(f"\n🔹 {language.title()} Utilities:")
         
         # Create setup manager for this language
-        setup_config = SharedSetupConfig(
+        setup_config = btt.SharedSetupConfig(
             setup_dir=Path(f"browse_to_test/language_utils/utilities_{language}"),
             include_docstrings=True,
             organize_by_category=True
         )
         setup_config.language = language
         
-        manager = SharedSetupManager(setup_config, language=language)
+        manager = btt.SharedSetupManager(setup_config, language=language)
         
         # Add standard utilities
         manager.add_standard_utilities("playwright")
         
         # Add a custom assertion utility
         try:
-            custom_assertion = SetupUtility(
+            custom_assertion = btt.SetupUtility(
                 name="assert_element_visible",
                 content="",  # Will be generated per language
                 category="assertion",
@@ -241,7 +181,7 @@ def demo_cross_language_comparison():
     print("🔄 Cross-Language Comparison Demo")
     print("=" * 80)
     
-    template_manager = LanguageTemplateManager()
+    template_manager = btt.LanguageTemplateManager()
     languages = ["python", "typescript", "javascript", "csharp", "java"]
     
     print("\n📋 Comparing 'safe_action' utility across languages:")
@@ -346,7 +286,7 @@ def main():
     
     try:
         # Demo 1: Generate test scripts in multiple languages
-        generated_files = demo_multi_language_generation()
+        demo_multi_language_generation()
         
         # Demo 2: Language-specific utilities
         demo_language_specific_utilities()

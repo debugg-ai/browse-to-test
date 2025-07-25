@@ -1,54 +1,52 @@
 #!/usr/bin/env python3
 """
-Modular Setup Demo - Browse-to-Test
+Modular Setup Demo
 
-This example demonstrates the new modular setup system that generates:
-1. Shared setup files with reusable utilities
-2. Clean, focused test scripts that import from shared setup
-3. Incremental accumulation of utilities across multiple script generations
-
-The system eliminates repetitive setup code and makes generated scripts much cleaner.
+This demo shows how to use browse-to-test with modular shared setup files 
+that can be reused across multiple test scripts.
 """
 
+import sys
 import json
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from typing import Dict, Any
 
-from browse_to_test import (
-    E2eScriptOrchestrator,
-    btt.IncrementalSession,
-    Config,
-    OutputConfig,
-    SharedSetupConfig,
-    SharedSetupManager,
-    SetupUtility
+# Add the parent directory to the path to import browse_to_test modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import browse_to_test as btt
+from browse_to_test.core.configuration.config import (
+    Config, ConfigBuilder, SharedSetupConfig
 )
 
 # Load environment variables
 load_dotenv()
 
-def demo_shared_setup_generation():
-    """Demonstrate generating shared setup files and clean test scripts."""
+def demo_basic_shared_setup():
+    """Demo basic shared setup generation and usage."""
+    print("\n🔧 === Basic Shared Setup Demo ===")
+    
+    # Create configuration with shared setup enabled
+    config = ConfigBuilder() \
+        .framework("playwright") \
+        .language("python") \
+        .ai_provider("openai") \
+        .enable_shared_setup(
+            setup_dir="shared_test_utils",
+            generate_utilities=True,
+            generate_constants=True,
+            generate_exceptions=True
+        ) \
+        .build()
+    
+    # Create converter with shared setup
+    converter = btt.E2eTestConverter(config)
     
     print("🎭 Browse-to-Test Modular Setup Demo")
     print("Generating clean test scripts with shared utilities")
     print("=" * 60)
-    
-    # Create configuration with shared setup enabled
-    config = Config(
-        output=OutputConfig(
-            framework="playwright",
-            shared_setup=SharedSetupConfig(
-                enabled=True,
-                setup_dir="browse_to_test/language_utils/test_setup",
-                include_docstrings=True,
-                organize_by_category=True,
-                force_regenerate=True  # For demo purposes
-            )
-        ),
-        verbose=True
-    )
     
     # Sample browser automation data
     sample_automation_data = [
@@ -96,9 +94,6 @@ def demo_shared_setup_generation():
     
     print("\n🚀 Generating first test script with shared setup...")
     
-    # Create orchestrator
-    orchestrator = E2eScriptOrchestrator(config)
-    
     # Generate the first test script
     first_script = converter.convert(
         automation_data=sample_automation_data,
@@ -113,7 +108,7 @@ def demo_shared_setup_generation():
     print(f"📏 Script length: {len(first_script)} characters")
     
     # Show shared setup status
-    if orchestrator.language_manager:
+    if converter.language_manager:
         # Status information can be retrieved from language manager
         status = "Ready"  # Updated to work with new language manager
         print(f"📊 Shared setup status:")
@@ -158,7 +153,7 @@ def demo_shared_setup_generation():
         }
     ]
     
-    # Generate second test script (using same orchestrator instance)
+    # Generate second test script (using same converter instance)
     second_script = converter.convert(
         automation_data=second_automation_data,
         target_url="https://example.com/dashboard"
@@ -211,7 +206,7 @@ def demo_incremental_modular_setup():
     
     # Create configuration with shared setup enabled
     config = Config(
-        output=OutputConfig(
+        output=btt.OutputConfig(
             framework="playwright",
             shared_setup=SharedSetupConfig(
                 enabled=True,
@@ -309,7 +304,7 @@ def demo_manual_utility_addition():
         organize_by_category=True
     )
     
-    manager = SharedSetupManager(setup_config)
+    manager = btt.SharedSetupManager(setup_config)
     
     # Add standard utilities
     manager.add_standard_utilities("playwright")
@@ -317,7 +312,7 @@ def demo_manual_utility_addition():
     print("📝 Adding custom utilities...")
     
     # Add a custom assertion helper
-    custom_assertion = SetupUtility(
+    custom_assertion = btt.SetupUtility(
         name="assert_element_text",
         content='''async def assert_element_text(page: Page, selector: str, expected_text: str):
     """Assert that an element contains the expected text."""
@@ -334,7 +329,7 @@ def demo_manual_utility_addition():
     print(f"   ✓ Custom assertion utility added: {added}")
     
     # Add a data management utility
-    data_utility = SetupUtility(
+    data_utility = btt.SetupUtility(
         name="load_test_data",
         content='''def load_test_data(file_path: str) -> dict:
     """Load test data from JSON file."""
@@ -377,7 +372,7 @@ def main():
     
     try:
         # Demo 1: Basic shared setup generation
-        first_script, second_script = demo_shared_setup_generation()
+        first_script, second_script = demo_basic_shared_setup()
         
         # Demo 2: Incremental generation with modular setup
         incremental_script = demo_incremental_modular_setup()

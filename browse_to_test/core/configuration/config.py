@@ -589,6 +589,11 @@ class ConfigBuilder:
         self._config.output.include_error_handling = include
         return self
     
+    def include_logging(self, include: bool = True) -> 'ConfigBuilder':
+        """Include logging statements in generated tests."""
+        self._config.output.include_logging = include
+        return self
+    
     def debug(self, enabled: bool = True) -> 'ConfigBuilder':
         """Enable debug mode."""
         self._config.debug = enabled

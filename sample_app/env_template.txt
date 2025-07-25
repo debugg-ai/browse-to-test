@@ -1,0 +1,31 @@
+# Browse-to-Test Environment Variables Template
+# Copy these to your shell environment or .env file
+
+# OpenAI API Key (required for openai provider)
+export OPENAI_API_KEY="your-openai-api-key-here"
+
+# Anthropic API Key (required for anthropic provider)  
+export ANTHROPIC_API_KEY="your-anthropic-api-key-here"
+
+# Azure OpenAI (if using Azure)
+# export AZURE_OPENAI_API_KEY="your-azure-key"
+# export AZURE_OPENAI_ENDPOINT="your-azure-endpoint"
+
+# Browse-to-Test Configuration (optional)
+export BROWSE_TO_TEST_AI_PROVIDER="openai"
+export BROWSE_TO_TEST_OUTPUT_FRAMEWORK="playwright"
+export BROWSE_TO_TEST_DEBUG="false"
+
+# Context-aware features (optional)
+export BROWSE_TO_TEST_PROCESSING_COLLECT_CONTEXT="true"
+export BROWSE_TO_TEST_PROCESSING_USE_INTELLIGENT_ANALYSIS="true"
+export BROWSE_TO_TEST_PROCESSING_CONTEXT_ANALYSIS_DEPTH="medium"
+
+# Usage:
+# 1. Copy this file to .env (or source directly):
+#    cp env_template.txt .env
+#    
+# 2. Edit .env with your actual API keys
+#
+# 3. Source the environment (if not using .env):
+#    source env_template.txt 

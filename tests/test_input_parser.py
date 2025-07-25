@@ -650,4 +650,66 @@ class TestParsedAutomationData:
         """Test with empty steps."""
         data = ParsedAutomationData(steps=[])
         assert len(data.steps) == 0
-        assert data.total_actions == 0 
+        assert data.total_actions == 0
+
+    def test_strict_mode_validation_regression(self, basic_config):
+        """Test strict mode validation for missing model_output (Regression test)."""
+        # Enable strict mode
+        basic_config.processing.strict_mode = True
+        parser = InputParser(basic_config)
+        
+        # Invalid data without model_output should raise error
+        invalid_data = [{"invalid": "data"}]
+        
+        with pytest.raises(ValueError, match="missing required 'model_output' field"):
+            parser.parse(invalid_data)
+
+    def test_invalid_model_output_type_strict_mode(self, basic_config):
+        """Test that invalid model_output type raises error in strict mode."""
+        basic_config.processing.strict_mode = True
+        parser = InputParser(basic_config)
+        
+        # Invalid model_output type
+        invalid_data = [
+            {
+                "model_output": "should_be_dict_not_string",
+                "state": {"interacted_element": []},
+            }
+        ]
+        
+        with pytest.raises(ValueError, match="invalid model_output type"):
+            parser.parse(invalid_data)
+
+    def test_graceful_handling_non_strict_mode(self, basic_config):
+        """Test graceful handling of invalid data when strict mode is disabled."""
+        # Ensure strict mode is disabled (default)
+        basic_config.processing.strict_mode = False
+        parser = InputParser(basic_config)
+        
+        # Invalid data should be handled gracefully
+        invalid_data = [{"invalid": "data"}]
+        
+        parsed = parser.parse(invalid_data)
+        assert len(parsed.steps) == 1
+        assert len(parsed.steps[0].actions) == 0
+
+    def test_valid_data_with_required_fields(self, basic_config):
+        """Test that valid data with required fields works in strict mode."""
+        basic_config.processing.strict_mode = True
+        parser = InputParser(basic_config)
+        
+        # Valid data with required model_output
+        valid_data = [
+            {
+                "model_output": {
+                    "action": [{"go_to_url": {"url": "https://example.com"}}]
+                },
+                "state": {"interacted_element": []},
+                "metadata": {"description": "Navigate"}
+            }
+        ]
+        
+        parsed = parser.parse(valid_data)
+        assert len(parsed.steps) == 1
+        assert len(parsed.steps[0].actions) == 1
+        assert parsed.steps[0].actions[0].action_type == "go_to_url" 

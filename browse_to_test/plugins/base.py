@@ -273,6 +273,10 @@ class OutputPlugin(ABC):
         Returns:
             Text with appropriate handling applied
         """
+        # Handle None input gracefully
+        if text is None:
+            return text
+            
         if not self.config.mask_sensitive_data:
             return text
         
@@ -288,4 +292,16 @@ class OutputPlugin(ABC):
                 return f"{{get_env_var('{key.upper()}')}}"
             return match.group(0)  # Keep original if not in sensitive keys
         
-        return re.sub(pattern, replace_secret, text) 
+        processed_text = re.sub(pattern, replace_secret, text)
+        
+        # Only check for sensitive keywords if no placeholders were replaced
+        # This prevents masking placeholder syntax like <secret>password</secret>
+        if processed_text == text and self.config.sensitive_data_keys:
+            for sensitive_key in self.config.sensitive_data_keys:
+                # Check if the sensitive key is contained in the text (case-insensitive)
+                if sensitive_key.lower() in processed_text.lower():
+                    # Mask the sensitive data
+                    processed_text = "***REDACTED***"
+                    break
+        
+        return processed_text 

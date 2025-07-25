@@ -2,8 +2,7 @@
 """
 Simplified incremental session for live test script generation.
 
-This module provides a clean interface for incremental test generation,
-replacing the complex IncrementalE2eScriptOrchestrator.
+This module provides a clean interface for incremental test generation.
 """
 
 from typing import Dict, List, Optional, Any, Union, Callable

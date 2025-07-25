@@ -183,6 +183,13 @@ class InputParser:
         if not isinstance(step_data, dict):
             raise ValueError(f"Step {step_index} is not a dictionary")
         
+        # Check for required fields - model_output is required for valid automation data
+        if 'model_output' not in step_data:
+            if self.strict_mode:
+                raise ValueError(f"Step {step_index} is missing required 'model_output' field")
+            self.logger.warning(f"Step {step_index} is missing required 'model_output' field")
+            return ParsedStep(step_index=step_index, actions=[], metadata={}, timing_info={})
+        
         # Extract step metadata - use the metadata field directly if available
         step_metadata = None
         if 'metadata' in step_data and isinstance(step_data['metadata'], dict):
@@ -212,6 +219,8 @@ class InputParser:
         # Get model output containing actions
         model_output = step_data.get('model_output', {})
         if not isinstance(model_output, dict):
+            if self.strict_mode:
+                raise ValueError(f"Step {step_index} has invalid model_output type: {type(model_output)}")
             self.logger.warning(f"Step {step_index} has invalid model_output")
             return ParsedStep(step_index=step_index, actions=[], metadata=step_metadata, timing_info=timing_info)
         

@@ -88,6 +88,9 @@ def convert(
         .from_kwargs(**kwargs) \
         .build()
     
+    # Enable strict mode for better validation in the simple API
+    config.processing.strict_mode = True
+    
     converter = E2eTestConverter(config)
     return converter.convert(automation_data)
 

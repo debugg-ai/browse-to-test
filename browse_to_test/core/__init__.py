@@ -2,9 +2,6 @@
 Core components for the browse-to-test library.
 """
 
-# Core orchestration
-from .orchestration import E2eScriptOrchestrator
-
 # Configuration 
 from .configuration import Config, AIConfig, OutputConfig, SharedSetupConfig
 from .configuration import LanguageTemplateManager, LanguageTemplate
@@ -14,7 +11,6 @@ from .configuration import SharedSetupManager, SetupUtility, LanguageManager
 from .processing import InputParser, ActionAnalyzer
 
 __all__ = [
-    "E2eScriptOrchestrator",
     "Config",
     "AIConfig", 
     "OutputConfig",

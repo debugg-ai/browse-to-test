@@ -350,4 +350,35 @@ class TestConfigBuilderIntegration:
         
         # Later calls should win
         assert config.ai.temperature == 0.9
-        assert config.output.framework == "selenium" 
+        assert config.output.framework == "selenium"
+
+    def test_include_logging_method_regression(self):
+        """Test that include_logging method exists and works (Regression test)."""
+        # This test prevents regression of the missing include_logging method
+        config = ConfigBuilder() \
+            .framework("playwright") \
+            .include_logging(True) \
+            .build()
+        
+        assert config.output.include_logging is True
+
+    def test_include_logging_fluent_chaining(self):
+        """Test that include_logging method works in fluent interface."""
+        config = ConfigBuilder() \
+            .framework("playwright") \
+            .include_logging(True) \
+            .include_assertions(True) \
+            .include_error_handling(True) \
+            .build()
+        
+        assert config.output.include_logging is True
+        assert config.output.include_assertions is True
+        assert config.output.include_error_handling is True
+
+    def test_include_logging_disable(self):
+        """Test that include_logging can be explicitly disabled."""
+        config = ConfigBuilder() \
+            .include_logging(False) \
+            .build()
+        
+        assert config.output.include_logging is False 
