@@ -5,7 +5,10 @@ Configuration management for the browse-to-test library.
 
 import os
 import json
-import yaml
+try:
+    import yaml
+except ImportError:
+    yaml = None
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
@@ -239,6 +242,8 @@ class Config:
         
         with open(file_path) as f:
             if file_path.suffix.lower() in ['.yml', '.yaml']:
+                if yaml is None:
+                    raise ImportError("PyYAML is required to load YAML config files. Install with: pip install PyYAML")
                 config_dict = yaml.safe_load(f)
             elif file_path.suffix.lower() == '.json':
                 config_dict = json.load(f)

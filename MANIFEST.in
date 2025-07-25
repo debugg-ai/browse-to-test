@@ -1,0 +1,50 @@
+# Include all metadata and configuration files
+include README.md
+include LICENSE
+include requirements.txt
+include requirements-dev.txt
+include *.md
+
+# Include all JSON configuration files
+recursive-include browse_to_test/output_langs/common *.json
+
+# Include all language metadata files
+recursive-include browse_to_test/output_langs *.json
+
+# Include all template files
+recursive-include browse_to_test/output_langs/python/templates *.txt
+recursive-include browse_to_test/output_langs/typescript/templates *.txt  
+recursive-include browse_to_test/output_langs/javascript/templates *.txt
+
+# Include any other template files that might be added
+recursive-include browse_to_test/output_langs/*/templates *.txt
+recursive-include browse_to_test/output_langs */templates *.py
+recursive-include browse_to_test/output_langs */templates *.js
+recursive-include browse_to_test/output_langs */templates *.ts
+
+# Include any configuration files in the core directories
+recursive-include browse_to_test/core */templates *.txt
+recursive-include browse_to_test/core */templates *.py
+recursive-include browse_to_test/core */templates *.js
+recursive-include browse_to_test/core */templates *.ts
+
+# Include test data files if any
+recursive-include tests *.json
+recursive-include tests *.txt
+recursive-include tests *.py
+
+# Include example files
+recursive-include examples *.py
+recursive-include examples *.md
+recursive-include examples *.txt
+recursive-include examples *.json
+
+# Exclude build artifacts and cache files  
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude .coverage
+global-exclude *.egg-info 
