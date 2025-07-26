@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 from ...exceptions import TemplateGenerationError, CodeGenerationError
+from browse_to_test.core.configuration import CommentManager
 
 
 class PlaywrightPythonGenerator:
@@ -285,8 +286,17 @@ class PlaywrightPythonGenerator:
         
         # Generate main test function
         test_name = kwargs.get('test_name', 'generated_test')
+        # Generate function header with proper documentation
+        comment_manager = CommentManager("python")
         script_parts.append(f"async def {test_name}():")
-        script_parts.append('    """Generated test function."""')
+        
+        # Add contextual documentation
+        doc_lines = comment_manager.doc_string(
+            "Generated test function for automated browser testing",
+            returns="None",
+            indent="    "
+        )
+        script_parts.extend(doc_lines)
         script_parts.append("")
         
         # Browser setup
@@ -304,10 +314,27 @@ class PlaywrightPythonGenerator:
             "        try:"
         ])
         
-        # Generate test steps
+        # Generate test steps with detailed comments
         indent = "            "
         for i, step in enumerate(automation_data):
-            script_parts.append(f"{indent}# Step {i + 1}: {step.get('description', 'Unknown action')}")
+            # Create detailed step header
+            step_header_lines = comment_manager.step_header(
+                step_number=i + 1,
+                description=step.get('description', 'Unknown action'),
+                metadata=step if isinstance(step, dict) else None,
+                indent=indent
+            )
+            script_parts.extend(step_header_lines)
+            
+            # Add contextual information if available
+            if step.get('url'):
+                context_lines = comment_manager.contextual_info_comment({
+                    'url': step.get('url'),
+                    'element_count': step.get('element_count'),
+                    'action_type': step.get('type'),
+                }, indent)
+                script_parts.extend(context_lines)
+            
             script_parts.extend(self._generate_step_code(step, indent))
             script_parts.append("")
         

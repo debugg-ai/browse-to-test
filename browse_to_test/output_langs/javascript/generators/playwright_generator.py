@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 from ...exceptions import TemplateGenerationError, CodeGenerationError
+from browse_to_test.core.configuration import CommentManager
 
 
 class PlaywrightJavascriptGenerator:
@@ -173,10 +174,28 @@ module.exports = {
         test_name = kwargs.get('test_name', 'generated_test')
         script_parts.append(f"test('{test_name}', async ({{ page }}) => {{")
         
-        # Generate test steps
+        # Generate test steps with detailed comments
+        comment_manager = CommentManager("javascript")
         indent = "    "
         for i, step in enumerate(automation_data):
-            script_parts.append(f"{indent}// Step {i + 1}: {step.get('description', 'Unknown action')}")
+            # Create detailed step header
+            step_header_lines = comment_manager.step_header(
+                step_number=i + 1,
+                description=step.get('description', 'Unknown action'),
+                metadata=step if isinstance(step, dict) else None,
+                indent=indent
+            )
+            script_parts.extend(step_header_lines)
+            
+            # Add contextual information if available
+            if step.get('url'):
+                context_lines = comment_manager.contextual_info_comment({
+                    'url': step.get('url'),
+                    'element_count': step.get('element_count'),
+                    'action_type': step.get('type'),
+                }, indent)
+                script_parts.extend(context_lines)
+            
             script_parts.extend(self._generate_step_code(step, indent))
             script_parts.append("")
         

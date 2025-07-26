@@ -3,6 +3,8 @@ Anthropic (Claude) provider implementation.
 """
 
 import time
+import asyncio
+import aiohttp
 from typing import Dict, List, Optional, Any
 from ..base import AIProvider, AIResponse, AIProviderError
 
@@ -21,7 +23,7 @@ class AnthropicProvider(AIProvider):
         self.timeout = kwargs.get('timeout', 30)
         self.retry_attempts = kwargs.get('retry_attempts', 3)
         self.extra_params = {k: v for k, v in kwargs.items() 
-                           if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts', 'api_base_url']}
+                           if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts']}
         
         # Import Anthropic here to avoid dependency issues
         try:
@@ -37,13 +39,19 @@ class AnthropicProvider(AIProvider):
         if self.api_key:
             self.client = self.anthropic.Anthropic(
                 api_key=self.api_key,
-                base_url=kwargs.get('api_base_url'),
+                timeout=self.timeout
+            )
+            # Set up async client
+            self.async_client = self.anthropic.AsyncAnthropic(
+                api_key=self.api_key,
                 timeout=self.timeout
             )
         else:
             # Let Anthropic SDK find the API key from environment
             self.client = self.anthropic.Anthropic(
-                base_url=kwargs.get('api_base_url'),
+                timeout=self.timeout
+            )
+            self.async_client = self.anthropic.AsyncAnthropic(
                 timeout=self.timeout
             )
     
@@ -134,17 +142,81 @@ class AnthropicProvider(AIProvider):
                 content=content,
                 model=self.model,
                 provider=self.provider_name,
-                prompt_tokens=response.usage.input_tokens if response.usage else None,
-                completion_tokens=response.usage.output_tokens if response.usage else None,
-                total_tokens=(
-                    response.usage.input_tokens + response.usage.output_tokens
-                    if response.usage and response.usage.input_tokens and response.usage.output_tokens
-                    else None
-                ),
-                response_time=end_time - start_time,
+                tokens_used=(response.usage.input_tokens + response.usage.output_tokens) if response.usage else None,
+                finish_reason=response.stop_reason,
                 metadata={
-                    "stop_reason": response.stop_reason,
-                    "stop_sequence": response.stop_sequence,
+                    "prompt_tokens": response.usage.input_tokens if response.usage else None,
+                    "completion_tokens": response.usage.output_tokens if response.usage else None,
+                    "response_time": end_time - start_time,
+                    "response_id": response.id,
+                    "model": response.model,
+                }
+            )
+            
+        except Exception as e:
+            # Handle Anthropic-specific errors
+            if hasattr(self.anthropic, 'AnthropicError') and isinstance(e, self.anthropic.AnthropicError):
+                error_msg = f"Anthropic API error: {e}"
+            else:
+                error_msg = f"Anthropic request failed: {e}"
+            
+            raise AIProviderError(
+                error_msg,
+                provider=self.provider_name,
+                model=self.model
+            ) from e
+    
+    async def generate_async(
+        self, 
+        prompt: str, 
+        system_prompt: Optional[str] = None,
+        **kwargs
+    ) -> AIResponse:
+        """Generate content using Anthropic Claude asynchronously."""
+        start_time = time.time()
+        
+        # Prepare generation parameters
+        generation_params = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "messages": [{"role": "user", "content": prompt}],
+            **self.extra_params,
+            **kwargs
+        }
+        
+        # Add system prompt if provided
+        if system_prompt:
+            generation_params["system"] = system_prompt
+        
+        try:
+            response = await self._make_async_request_with_retry(
+                self.async_client.messages.create,
+                **generation_params
+            )
+            
+            end_time = time.time()
+            
+            # Extract response data
+            content = ""
+            if response.content:
+                # Handle both text and other content types
+                for content_block in response.content:
+                    if hasattr(content_block, 'text'):
+                        content += content_block.text
+                    elif isinstance(content_block, str):
+                        content += content_block
+            
+            return AIResponse(
+                content=content,
+                model=self.model,
+                provider=self.provider_name,
+                tokens_used=(response.usage.input_tokens + response.usage.output_tokens) if response.usage else None,
+                finish_reason=response.stop_reason,
+                metadata={
+                    "prompt_tokens": response.usage.input_tokens if response.usage else None,
+                    "completion_tokens": response.usage.output_tokens if response.usage else None,
+                    "response_time": end_time - start_time,
                     "response_id": response.id,
                     "model": response.model,
                 }
@@ -200,4 +272,18 @@ class AnthropicProvider(AIProvider):
                 
                 # Wait before retrying
                 wait_time = 2 ** attempt  # Exponential backoff
-                time.sleep(wait_time) 
+                time.sleep(wait_time)
+    
+    async def _make_async_request_with_retry(self, request_func, **kwargs):
+        """Make async request with retry logic."""
+        
+        for attempt in range(self.retry_attempts):
+            try:
+                return await request_func(**kwargs)
+            except Exception as e:
+                if attempt == self.retry_attempts - 1:
+                    raise
+                
+                # Wait before retrying
+                wait_time = 2 ** attempt  # Exponential backoff
+                await asyncio.sleep(wait_time) 

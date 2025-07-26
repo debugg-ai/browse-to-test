@@ -33,6 +33,29 @@ class ParsedAction:
         if self.parameters is None:
             self.parameters = {}
         # Don't automatically set metadata to {} - let it stay None if not provided
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ParsedAction':
+        """Create ParsedAction from dictionary."""
+        return cls(
+            action_type=data.get('action_type', ''),
+            parameters=data.get('parameters', {}),
+            step_index=data.get('step_index', 0),
+            action_index=data.get('action_index', 0),
+            selector_info=data.get('selector_info'),
+            metadata=data.get('metadata')
+        )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert ParsedAction to dictionary."""
+        return {
+            'action_type': self.action_type,
+            'parameters': self.parameters,
+            'step_index': self.step_index,
+            'action_index': self.action_index,
+            'selector_info': self.selector_info,
+            'metadata': self.metadata
+        }
 
 
 @dataclass
@@ -48,6 +71,33 @@ class ParsedStep:
         """Post-initialization processing for ParsedStep."""
         # Don't automatically set timing_info or metadata to {} - let them stay None if not provided
         pass
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ParsedStep':
+        """Create ParsedStep from dictionary."""
+        actions_data = data.get('actions', [])
+        actions = []
+        for action_data in actions_data:
+            if isinstance(action_data, dict):
+                actions.append(ParsedAction.from_dict(action_data))
+            else:
+                actions.append(action_data)  # Already a ParsedAction
+        
+        return cls(
+            step_index=data.get('step_index', 0),
+            actions=actions,
+            metadata=data.get('metadata'),
+            timing_info=data.get('timing_info')
+        )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert ParsedStep to dictionary."""
+        return {
+            'step_index': self.step_index,
+            'actions': [action.to_dict() if hasattr(action, 'to_dict') else action.__dict__ for action in self.actions],
+            'metadata': self.metadata,
+            'timing_info': self.timing_info
+        }
 
 
 @dataclass
@@ -66,6 +116,15 @@ class ParsedAutomationData:
         
         # Recalculate total actions from steps
         self.total_actions = sum(len(step.actions) for step in self.steps)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the parsed data to a dictionary format."""
+        return {
+            "steps": [step.to_dict() if hasattr(step, 'to_dict') else step.__dict__ for step in self.steps],
+            "total_actions": self.total_actions,
+            "sensitive_data_keys": self.sensitive_data_keys or [],
+            "metadata": self.metadata or {}
+        }
 
 
 class InputParser:

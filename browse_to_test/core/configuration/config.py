@@ -12,6 +12,7 @@ except ImportError:
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
+from .comment_manager import CommentManager
 
 
 @dataclass
@@ -144,6 +145,11 @@ class OutputConfig:
     def comment_prefix(self) -> str:
         """Get the comment prefix for the target language.""" 
         return self.language_config.get("comment_prefix", "#")
+    
+    @property
+    def comment_manager(self) -> CommentManager:
+        """Get a comment manager instance for the target language."""
+        return CommentManager(self.language)
     
     def get_framework_language_combination(self) -> str:
         """Get a string representing the framework-language combination."""

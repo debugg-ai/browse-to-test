@@ -3,9 +3,12 @@
 Base classes for AI provider integration.
 """
 
+import asyncio
+import aiohttp
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 
 
@@ -25,6 +28,7 @@ class AnalysisType(Enum):
     VALIDATION = "validation"
     CONTEXT_ANALYSIS = "context_analysis"
     INTELLIGENT_ANALYSIS = "intelligent_analysis"
+    COMPREHENSIVE = "comprehensive"
 
 
 @dataclass
@@ -48,6 +52,7 @@ class AIAnalysisRequest:
     current_action: Optional[Dict[str, Any]] = None
     previous_actions: Optional[List[Dict[str, Any]]] = None
     additional_context: Optional[Dict[str, Any]] = None
+    target_url: Optional[str] = None
     
     def to_prompt(self) -> str:
         """Generate AI prompt based on analysis type and available context."""
@@ -420,6 +425,11 @@ class AIProvider(ABC):
         """Generate a response from the AI provider."""
         pass
     
+    @abstractmethod
+    async def generate_async(self, prompt: str, system_prompt: Optional[str] = None, **kwargs) -> AIResponse:
+        """Generate a response from the AI provider asynchronously."""
+        pass
+    
     def analyze_with_context(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Perform context-aware analysis using the AI provider."""
         
@@ -431,6 +441,28 @@ class AIProvider(ABC):
         
         # Make the AI call
         response = self.generate(prompt, system_prompt, **kwargs)
+        
+        # Add metadata about the analysis
+        response.metadata.update({
+            'analysis_type': request.analysis_type.value,
+            'target_framework': request.target_framework,
+            'has_context': request.system_context is not None,
+            'context_summary': request._format_system_context_summary() if request.system_context else None
+        })
+        
+        return response
+    
+    async def analyze_with_context_async(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
+        """Perform context-aware analysis using the AI provider asynchronously."""
+        
+        # Generate appropriate system prompt based on analysis type
+        system_prompt = self._generate_system_prompt(request)
+        
+        # Generate the main prompt
+        prompt = request.to_prompt()
+        
+        # Make the AI call
+        response = await self.generate_async(prompt, system_prompt, **kwargs)
         
         # Add metadata about the analysis
         response.metadata.update({

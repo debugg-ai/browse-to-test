@@ -19,6 +19,14 @@ class MockAIProvider(AIProvider):
             tokens_used=100
         )
     
+    async def generate_async(self, prompt: str, system_prompt: str = None, **kwargs) -> AIResponse:
+        return AIResponse(
+            content=f"Mock async response to: {prompt[:50]}...",
+            model="mock-model",
+            provider="mock",
+            tokens_used=100
+        )
+    
     def is_available(self) -> bool:
         return True
     

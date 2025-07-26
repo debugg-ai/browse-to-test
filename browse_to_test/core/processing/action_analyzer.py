@@ -3,6 +3,7 @@
 AI-powered action analysis and optimization with system context support.
 """
 
+import asyncio
 from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -129,7 +130,153 @@ class ActionAnalyzer:
         basic_results['has_context'] = system_context is not None
         
         return basic_results
+    
+    async def analyze_automation_data_async(
+        self, 
+        parsed_data: ParsedAutomationData,
+        target_url: Optional[str] = None,
+        use_intelligent_analysis: bool = None
+    ) -> Dict[str, Any]:
+        """
+        Perform comprehensive analysis of automation data with system context asynchronously.
         
+        Args:
+            parsed_data: Parsed automation data to analyze
+            target_url: URL being tested (helps with context filtering)
+            use_intelligent_analysis: Whether to use AI for intelligent analysis
+            
+        Returns:
+            Dictionary containing analysis results and recommendations
+        """
+        
+        # Determine if we should use intelligent analysis
+        if use_intelligent_analysis is None:
+            use_intelligent_analysis = self.config.processing.analyze_actions_with_ai
+            
+        # Collect system context if enabled (this can remain sync as it's typically fast)
+        system_context = None
+        if self.config.processing.analyze_actions_with_ai:
+            try:
+                system_context = self.context_collector.collect_context(
+                    target_url=target_url,
+                    force_refresh=False
+                )
+            except Exception as e:
+                if self.config.debug:
+                    print(f"Warning: Could not collect system context: {e}")
+        
+        # Perform basic analysis first (sync, fast)
+        basic_results = self._analyze_basic_patterns(parsed_data)
+        
+        # Enhanced analysis with AI (async)
+        if use_intelligent_analysis and self.ai_provider:
+            try:
+                # Perform intelligent analysis directly (will be queued at higher level)
+                intelligent_results = await self._perform_intelligent_analysis_async(
+                    parsed_data, system_context, target_url
+                )
+                
+                # Merge results
+                return self._merge_analysis_results(basic_results, intelligent_results)
+                
+            except Exception as e:
+                if self.config.debug:
+                    print(f"Warning: AI analysis failed: {e}")
+                # Fall back to basic results
+                return basic_results
+        else:
+            return basic_results
+    
+    def analyze_comprehensive(
+        self,
+        parsed_data: ParsedAutomationData,
+        system_context: Optional[SystemContext] = None,
+        target_url: Optional[str] = None
+    ) -> ComprehensiveAnalysisResult:
+        """
+        Perform comprehensive analysis using AI.
+        
+        This is the main entry point for AI-powered analysis.
+        """
+        if not self.ai_provider:
+            raise ValueError("AI provider is required for comprehensive analysis")
+        
+        # Create analysis request
+        request = AIAnalysisRequest(
+            analysis_type=AnalysisType.COMPREHENSIVE,
+            automation_data=parsed_data.to_dict(),
+            system_context=system_context,
+            target_framework=self.config.output.framework,
+            target_url=target_url
+        )
+        
+        # Get AI response
+        response = self.ai_provider.analyze_with_context(request)
+        
+        # Parse response into structured result
+        return self._parse_comprehensive_response(response, parsed_data)
+    
+    async def analyze_comprehensive_async(
+        self,
+        parsed_data: ParsedAutomationData,
+        system_context: Optional[SystemContext] = None,
+        target_url: Optional[str] = None
+    ) -> ComprehensiveAnalysisResult:
+        """
+        Perform comprehensive analysis using AI asynchronously.
+        
+        This is the main entry point for AI-powered analysis.
+        """
+        if not self.ai_provider:
+            raise ValueError("AI provider is required for comprehensive analysis")
+        
+        # Create analysis request
+        request = AIAnalysisRequest(
+            analysis_type=AnalysisType.COMPREHENSIVE,
+            automation_data=parsed_data.to_dict(),
+            system_context=system_context,
+            target_framework=self.config.output.framework,
+            target_url=target_url
+        )
+        
+        # Get AI response directly (will be queued at higher level)
+        response = await self.ai_provider.analyze_with_context_async(request)
+        
+        # Parse response into structured result
+        return self._parse_comprehensive_response(response, parsed_data)
+    
+    async def _perform_intelligent_analysis_async(
+        self,
+        parsed_data: ParsedAutomationData,
+        system_context: Optional[SystemContext],
+        target_url: Optional[str]
+    ) -> Dict[str, Any]:
+        """
+        Perform intelligent analysis with AI asynchronously.
+        
+        This is a helper method that's called as an async task.
+        """
+        # Create analysis request
+        request = AIAnalysisRequest(
+            analysis_type=AnalysisType.OPTIMIZATION,
+            automation_data=parsed_data.to_dict(),
+            system_context=system_context,
+            target_framework=self.config.output.framework,
+            target_url=target_url
+        )
+        
+        # Use async AI provider
+        response = await self.ai_provider.analyze_with_context_async(request)
+        
+        # Extract insights from response
+        return {
+            'ai_insights': response.content,
+            'ai_metadata': response.metadata,
+            'response_time': response.response_time,
+            'quality_score': self._calculate_ai_quality_score(response),
+            'recommendations': self._extract_recommendations(response.content)
+        }
+    
     def _perform_intelligent_analysis(
         self, 
         parsed_data: ParsedAutomationData, 
@@ -319,6 +466,15 @@ class ActionAnalyzer:
             recommendations.append("Consider adding screenshots at key points for debugging")
         
         return recommendations
+    
+    def _parse_comprehensive_response(
+        self, 
+        ai_response: Any, 
+        parsed_data: ParsedAutomationData,
+        system_context: Optional[SystemContext] = None
+    ) -> ComprehensiveAnalysisResult:
+        """Parse AI response into comprehensive analysis results."""
+        return self._parse_intelligent_analysis_response(ai_response, parsed_data, system_context)
     
     def _parse_intelligent_analysis_response(
         self, 
