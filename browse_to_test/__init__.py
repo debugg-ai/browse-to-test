@@ -62,7 +62,7 @@ from .core.configuration.config import Config, ConfigBuilder, AIConfig, OutputCo
 from .core.orchestration.converter import E2eTestConverter
 from .core.orchestration.session import IncrementalSession, SessionResult, AsyncIncrementalSession
 
-__version__ = "0.2.9"
+__version__ = "0.2.10"
 __author__ = "Browse-to-Test Contributors"
 
 # Simple API - the main entry points most users need
