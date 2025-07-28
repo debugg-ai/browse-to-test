@@ -4,17 +4,22 @@
 
 Browse-to-Test is a Python library that uses AI to convert browser automation data into test scripts for various testing frameworks (Playwright, Selenium, Cypress, etc.). It provides an intelligent, configurable, and extensible way to transform recorded browser interactions into maintainable test code.
 
+> **🆕 What's New:** Async processing support for high-performance automation, language-aware comment generation, and enhanced multi-language output with proper syntax for Python, JavaScript, TypeScript, C#, and Java. See [CHANGELOG.md](CHANGELOG.md) for details.
+
 ## 🌟 Features
 
 - **🤖 AI-Powered Conversion**: Uses OpenAI, Anthropic, or other AI providers to intelligently convert automation data
 - **🧠 Context-Aware Generation**: Leverages existing tests, documentation, and system knowledge for intelligent analysis
+- **⚡ Async Support**: Non-blocking asynchronous processing for high-performance automation
 - **🔌 Multi-Framework Support**: Generate tests for Playwright, Selenium, Cypress, and more
+- **🗣️ Multi-Language Output**: Support for Python, JavaScript, TypeScript, C#, and Java with proper syntax
 - **🏗️ Plugin Architecture**: Easily extensible with custom plugins for new frameworks/languages
 - **⚙️ Highly Configurable**: Comprehensive configuration system for fine-tuning output
 - **🔍 Smart Analysis**: AI-powered action analysis and optimization with system context
 - **📚 System Intelligence**: Analyzes existing tests, UI components, API endpoints, and documentation
 - **🎯 Pattern Recognition**: Identifies similar tests and reuses established patterns
 - **🔐 Sensitive Data Handling**: Automatic detection and secure handling of sensitive information
+- **💬 Language-Aware Comments**: Generates appropriate comment formats for each programming language
 - **📊 Validation & Preview**: Built-in validation and preview capabilities with context insights
 - **🚀 Easy to Use**: Simple API with sensible defaults and intelligent recommendations
 
@@ -98,6 +103,30 @@ for step_data in automation_steps:
 
 # Finalize when done
 final = session.finalize()
+```
+
+### Asynchronous Processing
+
+```python
+import asyncio
+import browse_to_test as btt
+
+async def main():
+    # Async conversion for better performance
+    config = btt.ConfigBuilder().framework("playwright").build()
+    script = await btt.convert_async(automation_data, framework="playwright", ai_provider="openai")
+    
+    # Async incremental session
+    session = btt.AsyncIncrementalSession(config)
+    result = await session.start_async("https://example.com")
+    
+    for step_data in automation_steps:
+        # Non-blocking step addition
+        result = await session.add_step_async(step_data, wait_for_completion=False)
+    
+    final = await session.finalize_async()
+
+asyncio.run(main())
 print(f"Complete test script:\n{final.current_script}")
 ```
 
@@ -452,6 +481,62 @@ print(f"Similar tests: {len(preview.get('similar_tests', []))}")
 print(f"Quality score: {preview.get('estimated_quality_score', 0)}")
 ```
 
+## ⚡ Async Processing
+
+Browse-to-Test supports asynchronous processing to handle performance bottlenecks with AI calls and enable concurrent operations.
+
+### Key Benefits
+
+- **🚀 Non-blocking AI calls**: Process multiple automation steps concurrently
+- **📊 Better performance**: Up to 5x faster for large automation datasets
+- **🎛️ Queue management**: Intelligent queuing and throttling of AI requests
+- **⏱️ Timeout handling**: Configurable timeouts with graceful error handling
+- **🔄 Background processing**: Add steps without waiting for completion
+
+### Quick Start
+
+```python
+import asyncio
+import browse_to_test as btt
+
+async def convert_multiple_datasets():
+    tasks = [
+        btt.convert_async(dataset1, framework="playwright", ai_provider="openai"),
+        btt.convert_async(dataset2, framework="selenium", ai_provider="anthropic"),
+    ]
+    scripts = await asyncio.gather(*tasks)
+    return scripts
+
+# Run async code
+scripts = asyncio.run(convert_multiple_datasets())
+```
+
+For detailed async documentation, see [ASYNC_README.md](ASYNC_README.md).
+
+## 🗣️ Multi-Language Support
+
+Generate test scripts in multiple programming languages with proper syntax and language-specific features:
+
+| Language | Comment Style | Documentation | Framework Support |
+|----------|---------------|---------------|-------------------|
+| **Python** | `# comment` | `"""docstrings"""` | Playwright, Selenium |
+| **JavaScript** | `// comment` | `/** JSDoc */` | Playwright |
+| **TypeScript** | `// comment` | `/** TSDoc */` | Playwright |
+| **C#** | `// comment` | `/// XML docs` | Planned |
+| **Java** | `// comment` | `/** Javadoc */` | Planned |
+
+### Language-Specific Output
+
+```python
+# Python example with proper syntax
+config = btt.ConfigBuilder().language("python").framework("playwright").build()
+script = btt.convert(automation_data, config=config)
+
+# JavaScript example with proper syntax  
+config = btt.ConfigBuilder().language("javascript").framework("playwright").build()
+script = btt.convert(automation_data, config=config)
+```
+
 ## 🧠 Context-Aware Features
 
 Browse-to-Test includes powerful context-aware capabilities that analyze your existing codebase to generate more intelligent and consistent test scripts.
@@ -580,6 +665,13 @@ mypy browse_to_test/
 ### Reporting Issues
 
 Please use the [GitHub issue tracker](https://github.com/yourusername/browse-to-test/issues) to report bugs or request features.
+
+## 📚 Documentation
+
+- **[ASYNC_README.md](ASYNC_README.md)**: Comprehensive async processing guide
+- **[INCREMENTAL_README.md](INCREMENTAL_README.md)**: Incremental session documentation  
+- **[COMMENT_SYSTEM_UPGRADE.md](COMMENT_SYSTEM_UPGRADE.md)**: Language-specific comment system details
+- **[CHANGELOG.md](CHANGELOG.md)**: Recent changes and version history
 
 ## 📄 License
 

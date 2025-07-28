@@ -203,6 +203,26 @@ Provide specific, actionable recommendations that leverage the project's existin
 """
         return prompt
     
+    def _generate_basic_prompt(self) -> str:
+        """Generate a basic analysis prompt for unspecified analysis types."""
+        prompt = f"""
+Analyze the following browser automation data and provide recommendations for {self.target_framework}:
+
+Automation Data:
+{self._format_automation_data()}
+
+Please provide:
+1. General analysis and observations
+2. Recommended approach for {self.target_framework}
+3. Potential issues or improvements
+4. Best practices and suggestions
+"""
+        
+        if self.system_context:
+            prompt += self._add_context_to_prompt()
+            
+        return prompt
+    
     def _format_automation_data(self) -> str:
         """Format automation data for inclusion in prompts."""
         if not self.automation_data:

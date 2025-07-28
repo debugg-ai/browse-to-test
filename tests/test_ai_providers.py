@@ -258,6 +258,21 @@ class TestAIAnalysisRequest:
         prompt = request.to_prompt()
         
         assert "no system context available" in prompt.lower()
+    
+    def test_comprehensive_prompt(self):
+        """Test comprehensive analysis prompt generation (uses basic prompt)."""
+        request = AIAnalysisRequest(
+            analysis_type=AnalysisType.COMPREHENSIVE,
+            automation_data=[{"model_output": "click", "state": "button"}],
+            target_framework="playwright"
+        )
+        
+        prompt = request.to_prompt()
+        
+        assert "playwright" in prompt
+        assert "automation data" in prompt.lower()
+        assert "general analysis" in prompt.lower()
+        assert "click" in prompt
 
 
 class TestAIProviderFactory:
