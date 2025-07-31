@@ -253,11 +253,23 @@ class OutputPlugin(ABC):
         if not self.config.add_comments:
             return content
         
+        comment_prefix = "#"
+        if self.config.language == "python":
+            comment_prefix = "#"
+        elif self.config.language == "typescript":
+            comment_prefix = "//"
+        elif self.config.language == "javascript":
+            comment_prefix = "//"
+
         header_lines = [
-            "# Generated test script using browse-to-test",
-            f"# Framework: {self.config.framework}",
-            f"# Language: {self.config.language}",
-            "# This script was automatically generated from browser automation data",
+            f"{comment_prefix} Generated test script using DebuggAI's browse-to-test open source project",
+            f"{comment_prefix} visit us at https://debugg.ai for more information",
+            f"{comment_prefix} For docs, see https://github.com/debugg-ai/browse-to-test",
+            f"{comment_prefix} To submit an issue or request a feature, please visit https://github.com/debugg-ai/browse-to-test/issues",
+            "",
+            f"{comment_prefix} Framework: {self.config.framework}",
+            f"{comment_prefix} Language: {self.config.language}",
+            f"{comment_prefix} This script was automatically generated from sequential browser automation data",
             "",
         ]
         
