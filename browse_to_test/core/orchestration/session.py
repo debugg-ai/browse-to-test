@@ -16,7 +16,7 @@ from datetime import datetime
 from ..configuration.config import Config
 from ..configuration.comment_manager import CommentManager
 from .converter import E2eTestConverter
-from ..processing.input_parser import ParsedStep
+from ..processing.input_parser import ParsedStep, ParsedAutomationData
 from .async_queue import queue_ai_task, wait_for_ai_task, get_global_queue_manager, QueuedTask
 
 
@@ -451,7 +451,9 @@ class AsyncIncrementalSession:
         try:
             # Parse step if needed
             if isinstance(step_data, dict):
-                step = ParsedStep.from_dict(step_data)
+                # Use the input parser to correctly parse the step data
+                # This properly extracts actions from model_output.action structure
+                step = self.converter.input_parser._parse_step(step_data, len(self._steps))
                 # Keep original data for processing to preserve model_output structure
                 original_step_data = step_data
             else:
@@ -633,15 +635,23 @@ class AsyncIncrementalSession:
         This method is called as an async task for each step.
         """
         try:
-            # Use original step data to preserve model_output structure
-            step_data = [original_step_data]
-            
-            # Use async converter to generate script for this step
-            step_script = await self.converter.convert_async(
-                step_data,
-                target_url=self._target_url,
-                context_hints=self._context_hints
-            )
+            # Check if step has any valid actions
+            if not step.actions:
+                logger.info(f"Step {step.step_index} has no valid actions - generating comment placeholder")
+                
+                # Generate a comment indicating this step was skipped
+                step_script = f"    # Step {step.step_index + 1}: No valid actions found (likely empty action data)"
+                
+            else:
+                # Use original step data to preserve model_output structure
+                step_data = [original_step_data]
+                
+                # Use async converter to generate script for this step
+                step_script = await self.converter.convert_async(
+                    step_data,
+                    target_url=self._target_url,
+                    context_hints=self._context_hints
+                )
             
             # Update script sections (this needs to be thread-safe)
             await self._update_script_sections_async(step, step_script)
@@ -672,9 +682,11 @@ class AsyncIncrementalSession:
         if self._steps:
             try:
                 # Use the async converter to generate script from all steps
-                all_steps_data = [step.to_dict() for step in self._steps]
+                # Create ParsedAutomationData from ParsedStep objects instead of converting to dict
+                total_actions = sum(len(step.actions) for step in self._steps)
+                parsed_data = ParsedAutomationData(steps=self._steps.copy(), total_actions=total_actions)
                 self._current_script = await self.converter.convert_async(
-                    all_steps_data,
+                    parsed_data,
                     target_url=self._target_url,
                     context_hints=self._context_hints
                 )

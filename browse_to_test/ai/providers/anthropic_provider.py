@@ -7,6 +7,8 @@ import asyncio
 import aiohttp
 from typing import Dict, List, Optional, Any
 from ..base import AIProvider, AIResponse, AIProviderError
+from ..error_handler import AIErrorHandler, ExponentialBackoffStrategy, ErrorType
+from ..prompt_optimizer import PromptOptimizer, PromptTemplate
 
 
 class AnthropicProvider(AIProvider):
@@ -24,6 +26,16 @@ class AnthropicProvider(AIProvider):
         self.retry_attempts = kwargs.get('retry_attempts', 3)
         self.extra_params = {k: v for k, v in kwargs.items() 
                            if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts']}
+        
+        # Initialize enhanced error handling and optimization
+        self.error_handler = AIErrorHandler(
+            retry_strategy=ExponentialBackoffStrategy(
+                base_delay=1.0,
+                max_delay=30.0,
+                max_attempts=self.retry_attempts
+            )
+        )
+        self.prompt_optimizer = PromptOptimizer()
         
         # Import Anthropic here to avoid dependency issues
         try:

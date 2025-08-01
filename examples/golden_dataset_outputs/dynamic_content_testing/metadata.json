@@ -1,0 +1,47 @@
+{
+  "example_name": "Dynamic Content Testing",
+  "framework": "selenium",
+  "language": "python",
+  "complexity": "high",
+  "features_demonstrated": [
+    "Single Page Application (SPA) testing",
+    "AJAX request monitoring and waiting",
+    "Dynamic content loading and filtering",
+    "Infinite scroll implementation",
+    "Modal dialog interactions with accessibility",
+    "JavaScript execution and evaluation",
+    "Mobile responsive testing",
+    "Touch interaction simulation",
+    "Performance metrics collection",
+    "Network request interception",
+    "Error handling for failed AJAX requests",
+    "Comprehensive logging and debugging",
+    "Cross-viewport testing (desktop + mobile)",
+    "Advanced WebDriver configuration"
+  ],
+  "test_characteristics": {
+    "total_steps": 16,
+    "estimated_duration": "75-90 seconds",
+    "assertions_count": 25,
+    "error_scenarios_covered": 12,
+    "selenium_advanced_features": [
+      "Chrome DevTools Protocol (CDP) usage",
+      "Performance logging integration",
+      "Custom WebDriver configuration",
+      "JavaScript injection for monitoring",
+      "Network request blocking simulation",
+      "Touch event simulation",
+      "Viewport switching for responsive testing"
+    ]
+  },
+  "data_quality_indicators": {
+    "realistic_spa_behavior": true,
+    "proper_ajax_handling": true,
+    "infinite_scroll_implementation": true,
+    "mobile_responsive_coverage": true,
+    "performance_monitoring": true,
+    "error_scenario_coverage": true,
+    "accessibility_considerations": true,
+    "cross_browser_compatibility_setup": true
+  }
+}

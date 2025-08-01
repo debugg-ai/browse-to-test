@@ -311,6 +311,10 @@ class InputParser:
                 self.logger.warning(error_msg)
                 continue
         
+        # If no valid actions were found, log this appropriately
+        if not parsed_actions and actions_data:
+            self.logger.info(f"Step {step_index} has {len(actions_data)} action(s) but no valid actions after parsing - likely contains empty action objects")
+        
         return ParsedStep(
             step_index=step_index,
             actions=parsed_actions,
@@ -326,8 +330,13 @@ class InputParser:
         interacted_elements: List[Dict[str, Any]]
     ) -> Optional[ParsedAction]:
         """Parse a single action from the action data."""
-        if not isinstance(action_data, dict) or not action_data:
-            self.logger.warning(f"Empty or invalid action at step {step_index}, action {action_index}")
+        if not isinstance(action_data, dict):
+            self.logger.warning(f"Invalid action type at step {step_index}, action {action_index}: expected dict, got {type(action_data)}")
+            return None
+        
+        if not action_data:
+            # Empty dict - this is common in real automation data and should be handled gracefully
+            self.logger.debug(f"Empty action at step {step_index}, action {action_index} - skipping")
             return None
         
         # Extract action type (first key in the dictionary)

@@ -1,0 +1,41 @@
+{
+  "example_name": "SaaS Dashboard Workflow",
+  "framework": "playwright",
+  "language": "typescript",
+  "complexity": "high",
+  "features_demonstrated": [
+    "TypeScript type safety and interfaces",
+    "Page Object Model pattern",
+    "Authentication flow testing",
+    "Dashboard data validation",
+    "CRUD operations with API monitoring",
+    "Real-time WebSocket testing",
+    "Modal dialog interactions",
+    "Form validation and submission",
+    "Responsive design testing",
+    "Performance metrics validation",
+    "Advanced error handling with context",
+    "Network request/response monitoring"
+  ],
+  "test_characteristics": {
+    "total_steps": 16,
+    "estimated_duration": "60-75 seconds",
+    "assertions_count": 20,
+    "error_scenarios_covered": 10,
+    "typescript_features": [
+      "Strong typing with interfaces",
+      "Generic type parameters",
+      "Enum usage for role types",
+      "Promise return types",
+      "Optional chaining for safe access"
+    ]
+  },
+  "data_quality_indicators": {
+    "realistic_saas_workflow": true,
+    "proper_authentication_flow": true,
+    "real_time_data_handling": true,
+    "responsive_design_coverage": true,
+    "performance_monitoring": true,
+    "accessibility_attributes": true
+  }
+}

@@ -550,6 +550,10 @@ class PlaywrightPlugin(OutputPlugin):
             return self._generate_scroll(action, step_info, "down")
         elif action.action_type == "scroll_up":
             return self._generate_scroll(action, step_info, "up")
+        elif action.action_type == "scroll":
+            # Handle generic scroll action with direction parameter
+            direction = action.parameters.get("direction", "down")
+            return self._generate_scroll(action, step_info, direction)
         elif action.action_type == "wait":
             return self._generate_wait(action, step_info)
         elif action.action_type == "done":

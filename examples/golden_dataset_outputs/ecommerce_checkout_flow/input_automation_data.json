@@ -1,0 +1,514 @@
+[
+  {
+    "model_output": {
+      "action": [
+        {
+          "go_to_url": {
+            "url": "https://demo-shop.example.com"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "step_start_time": 1704067200.0,
+      "step_end_time": 1704067203.2,
+      "elapsed_time": 3.2,
+      "page_title": "Demo Shop - Home",
+      "current_url": "https://demo-shop.example.com"
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[@data-testid='product-card'][1]//button[contains(@class, 'add-to-cart')]",
+          "css_selector": "[data-testid='product-card']:first-child .add-to-cart-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "add-to-cart-btn",
+            "data-product-id": "prod-123",
+            "class": "btn btn-primary add-to-cart-btn",
+            "aria-label": "Add Wireless Headphones to cart"
+          },
+          "text_content": "Add to Cart - $199.99",
+          "bounding_box": {
+            "x": 320,
+            "y": 450,
+            "width": 140,
+            "height": 36
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067203.2,
+      "step_end_time": 1704067204.8,
+      "elapsed_time": 1.6,
+      "network_requests": [
+        {
+          "url": "/api/cart/add",
+          "method": "POST",
+          "status": 200
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".cart-notification.success",
+            "timeout": 5000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'cart-notification') and contains(@class, 'success')]",
+          "css_selector": ".cart-notification.success",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "cart-notification success fade-in",
+            "role": "alert",
+            "aria-live": "polite"
+          },
+          "text_content": "\u2713 Wireless Headphones added to cart"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067204.8,
+      "step_end_time": 1704067206.1,
+      "elapsed_time": 1.3
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//a[@href='/cart' or contains(@class, 'cart-link')]",
+          "css_selector": ".header-cart-link",
+          "highlight_index": 0,
+          "attributes": {
+            "href": "/cart",
+            "class": "header-cart-link",
+            "data-testid": "cart-link",
+            "aria-label": "View cart (1 item)"
+          },
+          "text_content": "Cart (1)"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067206.1,
+      "step_end_time": 1704067207.5,
+      "elapsed_time": 1.4,
+      "page_navigation": {
+        "from": "https://demo-shop.example.com",
+        "to": "https://demo-shop.example.com/cart"
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@data-testid='checkout-btn' or contains(@class, 'checkout-btn')]",
+          "css_selector": ".checkout-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "checkout-btn",
+            "class": "btn btn-success checkout-btn",
+            "type": "button"
+          },
+          "text_content": "Proceed to Checkout"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067207.5,
+      "step_end_time": 1704067209.1,
+      "elapsed_time": 1.6,
+      "page_navigation": {
+        "from": "https://demo-shop.example.com/cart",
+        "to": "https://demo-shop.example.com/checkout"
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "john.doe@example.com"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='email' or @id='email']",
+          "css_selector": "#checkout-email",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "checkout-email",
+            "name": "email",
+            "type": "email",
+            "required": "true",
+            "autocomplete": "email",
+            "placeholder": "Enter your email address"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067209.1,
+      "step_end_time": 1704067210.3,
+      "elapsed_time": 1.2,
+      "form_validation": {
+        "field": "email",
+        "valid": true
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "John Doe"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='fullName' or @id='fullName']",
+          "css_selector": "#checkout-fullname",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "checkout-fullname",
+            "name": "fullName",
+            "type": "text",
+            "required": "true",
+            "autocomplete": "name",
+            "placeholder": "Full Name"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "123 Main Street"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='address' or @id='address']",
+          "css_selector": "#checkout-address",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "checkout-address",
+            "name": "address",
+            "type": "text",
+            "required": "true",
+            "autocomplete": "street-address"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "select_option": {
+            "index": 0,
+            "value": "credit_card"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//select[@name='paymentMethod']",
+          "css_selector": "#payment-method",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "payment-method",
+            "name": "paymentMethod",
+            "required": "true"
+          },
+          "options": [
+            {
+              "value": "credit_card",
+              "text": "Credit Card"
+            },
+            {
+              "value": "paypal",
+              "text": "PayPal"
+            },
+            {
+              "value": "apple_pay",
+              "text": "Apple Pay"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "<secret>4111111111111111</secret>"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='cardNumber']",
+          "css_selector": "#card-number",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "card-number",
+            "name": "cardNumber",
+            "type": "text",
+            "maxlength": "19",
+            "pattern": "[0-9\\s]*",
+            "placeholder": "1234 5678 9012 3456",
+            "autocomplete": "cc-number"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "12/25"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='expiryDate']",
+          "css_selector": "#card-expiry",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "card-expiry",
+            "name": "expiryDate",
+            "type": "text",
+            "placeholder": "MM/YY",
+            "maxlength": "5",
+            "autocomplete": "cc-exp"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "<secret>123</secret>"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='cvv']",
+          "css_selector": "#card-cvv",
+          "highlight_index": 0,
+          "attributes": {
+            "id": "card-cvv",
+            "name": "cvv",
+            "type": "password",
+            "maxlength": "4",
+            "placeholder": "CVV",
+            "autocomplete": "cc-csc"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@type='submit' and contains(@class, 'place-order')]",
+          "css_selector": ".place-order-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "type": "submit",
+            "class": "btn btn-success place-order-btn",
+            "data-testid": "place-order-btn"
+          },
+          "text_content": "Place Order - $199.99"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067220.1,
+      "step_end_time": 1704067225.8,
+      "elapsed_time": 5.7,
+      "network_requests": [
+        {
+          "url": "/api/orders/create",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "url": "/api/payment/process",
+          "method": "POST",
+          "status": 200
+        }
+      ],
+      "loading_states": [
+        {
+          "element": ".place-order-btn",
+          "state": "loading",
+          "duration": 3.2
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".order-confirmation",
+            "timeout": 10000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'order-confirmation')]",
+          "css_selector": ".order-confirmation",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "order-confirmation success-state",
+            "data-testid": "order-confirmation"
+          },
+          "text_content": "Order Confirmed! Your order #ORD-2024-001 has been placed successfully."
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704067225.8,
+      "step_end_time": 1704067227.2,
+      "elapsed_time": 1.4,
+      "page_navigation": {
+        "from": "https://demo-shop.example.com/checkout",
+        "to": "https://demo-shop.example.com/order-confirmation"
+      },
+      "success_indicators": [
+        {
+          "type": "page_title",
+          "value": "Order Confirmation"
+        },
+        {
+          "type": "order_number",
+          "value": "ORD-2024-001"
+        },
+        {
+          "type": "confirmation_message",
+          "present": true
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "done": {
+            "text": "Successfully completed e-commerce checkout flow",
+            "success": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "total_steps": 14,
+      "total_duration": 27.2,
+      "success_rate": 100,
+      "critical_path_completed": true
+    }
+  }
+]

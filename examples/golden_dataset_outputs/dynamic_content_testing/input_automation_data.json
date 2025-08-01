@@ -1,0 +1,519 @@
+[
+  {
+    "model_output": {
+      "action": [
+        {
+          "go_to_url": {
+            "url": "https://spa-demo.example.com/"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "step_start_time": 1704074400.0,
+      "step_end_time": 1704074405.2,
+      "elapsed_time": 5.2,
+      "page_title": "Dynamic Content Demo - SPA",
+      "current_url": "https://spa-demo.example.com/",
+      "spa_indicators": {
+        "framework": "React",
+        "router": "React Router",
+        "state_management": "Redux"
+      },
+      "initial_load_time": 3.8,
+      "javascript_ready": true
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_ajax": {
+            "timeout": 10000,
+            "indicator": ".loading-spinner"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'loading-spinner')]",
+          "css_selector": ".loading-spinner",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "loading-spinner active",
+            "data-testid": "initial-loading",
+            "aria-hidden": "false"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "ajax_requests": [
+        {
+          "url": "/api/content/initial",
+          "method": "GET",
+          "status": 200,
+          "duration": 1.2
+        },
+        {
+          "url": "/api/user/preferences",
+          "method": "GET",
+          "status": 200,
+          "duration": 0.8
+        }
+      ],
+      "loading_complete": true,
+      "dom_updates": 12
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": "[data-testid='content-grid']",
+            "timeout": 8000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[@data-testid='content-grid']",
+          "css_selector": "[data-testid='content-grid']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "content-grid",
+            "class": "content-grid loaded",
+            "data-total-items": "20",
+            "data-items-per-page": "10"
+          },
+          "child_elements_count": 10
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@data-testid='filter-category' and @data-category='technology']",
+          "css_selector": "[data-testid='filter-category'][data-category='technology']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "filter-category",
+            "data-category": "technology",
+            "class": "filter-btn",
+            "type": "button",
+            "aria-pressed": "false"
+          },
+          "text_content": "Technology"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704074410.5,
+      "step_end_time": 1704074413.8,
+      "elapsed_time": 3.3,
+      "filter_applied": {
+        "category": "technology",
+        "results_count": 8,
+        "animation_duration": 0.5
+      },
+      "ajax_requests": [
+        {
+          "url": "/api/content/filter?category=technology",
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_dynamic_content": {
+            "selector": ".content-item",
+            "expected_count": 8,
+            "timeout": 5000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'content-item')]",
+          "css_selector": ".content-item",
+          "highlight_index": 0,
+          "multiple_elements": true,
+          "element_count": 8,
+          "attributes": {
+            "class": "content-item technology-category fade-in",
+            "data-category": "technology"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "scroll_to_bottom": {
+            "trigger_infinite_scroll": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "step_start_time": 1704074415.0,
+      "step_end_time": 1704074418.5,
+      "elapsed_time": 3.5,
+      "scroll_behavior": {
+        "infinite_scroll_triggered": true,
+        "scroll_threshold": "80%",
+        "new_items_loaded": 5
+      },
+      "ajax_requests": [
+        {
+          "url": "/api/content/load-more?category=technology&offset=8",
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".content-item:nth-child(13)",
+            "timeout": 6000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'content-item')][13]",
+          "css_selector": ".content-item:nth-child(13)",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "content-item technology-category lazy-loaded",
+            "data-item-id": "tech-13",
+            "data-lazy-loaded": "true"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[@data-item-id='tech-5']//button[contains(@class, 'view-details')]",
+          "css_selector": "[data-item-id='tech-5'] .view-details-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "view-details-btn",
+            "data-item-id": "tech-5",
+            "type": "button"
+          },
+          "text_content": "View Details"
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_modal": {
+            "selector": ".detail-modal",
+            "timeout": 4000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'detail-modal')]",
+          "css_selector": ".detail-modal",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "detail-modal active slide-in",
+            "data-item-id": "tech-5",
+            "role": "dialog",
+            "aria-modal": "true",
+            "tabindex": "-1"
+          },
+          "animation_state": "completed"
+        }
+      ]
+    },
+    "metadata": {
+      "modal_data": {
+        "loaded_content": true,
+        "ajax_content_loaded": true,
+        "accessibility_focused": true
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "execute_javascript": {
+            "script": "return document.querySelector('.detail-modal .content').scrollHeight",
+            "wait_for_result": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "javascript_execution": {
+        "result": 1240,
+        "execution_time": 0.05,
+        "success": true
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@data-testid='close-modal' or contains(@class, 'close-modal')]",
+          "css_selector": ".close-modal-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "close-modal",
+            "class": "close-modal-btn",
+            "type": "button",
+            "aria-label": "Close modal"
+          },
+          "text_content": "\u00d7"
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element_hidden": {
+            "selector": ".detail-modal",
+            "timeout": 3000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "modal_closed": true,
+      "animation_completed": true,
+      "focus_returned": true
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "switch_viewport": {
+            "width": 375,
+            "height": 667,
+            "device": "mobile"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "viewport_change": {
+        "from": {
+          "width": 1280,
+          "height": 720
+        },
+        "to": {
+          "width": 375,
+          "height": 667
+        },
+        "device_type": "mobile",
+        "responsive_triggered": true
+      },
+      "layout_changes": [
+        "header_collapsed",
+        "sidebar_hidden",
+        "grid_single_column"
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_responsive_layout": {
+            "timeout": 3000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[@data-testid='content-grid']",
+          "css_selector": "[data-testid='content-grid']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "content-grid",
+            "class": "content-grid loaded mobile-layout",
+            "data-columns": "1"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "touch_scroll": {
+            "direction": "down",
+            "distance": 500
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "touch_interaction": {
+        "type": "scroll",
+        "direction": "down",
+        "distance": 500,
+        "momentum_scrolling": true
+      },
+      "mobile_specific": true
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "verify_mobile_responsiveness": {
+            "elements": [
+              ".content-item",
+              ".filter-btn",
+              ".header"
+            ]
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'content-item')]",
+          "css_selector": ".content-item",
+          "highlight_index": 0,
+          "multiple_elements": true,
+          "mobile_responsive": true,
+          "attributes": {
+            "class": "content-item technology-category mobile-optimized"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "done": {
+            "text": "Successfully completed dynamic content testing with mobile responsiveness",
+            "success": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "total_steps": 16,
+      "total_duration": 42.8,
+      "success_rate": 100,
+      "spa_features_tested": [
+        "ajax_loading",
+        "dynamic_filtering",
+        "infinite_scroll",
+        "modal_interactions",
+        "javascript_execution",
+        "mobile_responsiveness",
+        "touch_interactions"
+      ],
+      "performance_metrics": {
+        "initial_load_time": 3.8,
+        "ajax_response_times": [
+          1.2,
+          0.8,
+          1.5,
+          0.9
+        ],
+        "animation_durations": [
+          0.5,
+          0.3,
+          0.4
+        ]
+      }
+    }
+  }
+]

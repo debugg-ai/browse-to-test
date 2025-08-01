@@ -1,0 +1,569 @@
+[
+  {
+    "model_output": {
+      "action": [
+        {
+          "go_to_url": {
+            "url": "https://app.saas-platform.com/login"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "step_start_time": 1704070800.0,
+      "step_end_time": 1704070802.5,
+      "elapsed_time": 2.5,
+      "page_title": "Login - SaaS Platform",
+      "current_url": "https://app.saas-platform.com/login",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "<secret>admin@company.com</secret>"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@data-testid='email-input' or @name='email']",
+          "css_selector": "[data-testid='email-input']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "email-input",
+            "name": "email",
+            "type": "email",
+            "required": "true",
+            "autocomplete": "username",
+            "placeholder": "Enter your email",
+            "aria-label": "Email address"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "form_validation": {
+        "field": "email",
+        "valid": true,
+        "real_time_validation": true
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "<secret>SecurePass123!</secret>"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@data-testid='password-input' or @name='password']",
+          "css_selector": "[data-testid='password-input']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "password-input",
+            "name": "password",
+            "type": "password",
+            "required": "true",
+            "autocomplete": "current-password",
+            "placeholder": "Enter your password",
+            "aria-label": "Password"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@type='submit' and @data-testid='login-button']",
+          "css_selector": "[data-testid='login-button']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "login-button",
+            "type": "submit",
+            "class": "btn btn-primary login-btn",
+            "aria-label": "Sign in to your account"
+          },
+          "text_content": "Sign In"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704070805.0,
+      "step_end_time": 1704070808.2,
+      "elapsed_time": 3.2,
+      "network_requests": [
+        {
+          "url": "/api/auth/login",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "url": "/api/user/profile",
+          "method": "GET",
+          "status": 200
+        }
+      ],
+      "authentication": {
+        "method": "JWT",
+        "session_established": true,
+        "token_stored": true
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_navigation": {
+            "url_pattern": "**/dashboard",
+            "timeout": 10000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "step_start_time": 1704070808.2,
+      "step_end_time": 1704070810.8,
+      "elapsed_time": 2.6,
+      "page_navigation": {
+        "from": "https://app.saas-platform.com/login",
+        "to": "https://app.saas-platform.com/dashboard"
+      },
+      "dashboard_load": {
+        "initial_data_loaded": true,
+        "widgets_count": 6,
+        "real_time_connections": [
+          "websocket://app.saas-platform.com/ws"
+        ]
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": "[data-testid='dashboard-stats']",
+            "timeout": 8000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[@data-testid='dashboard-stats']",
+          "css_selector": "[data-testid='dashboard-stats']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "dashboard-stats",
+            "class": "dashboard-stats-container loaded"
+          },
+          "child_elements": [
+            {
+              "selector": ".stat-card[data-metric='users']",
+              "text": "1,245 Active Users"
+            },
+            {
+              "selector": ".stat-card[data-metric='revenue']",
+              "text": "$24,567 Revenue"
+            },
+            {
+              "selector": ".stat-card[data-metric='conversion']",
+              "text": "3.2% Conversion"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//nav//a[@href='/users' or contains(@class, 'users-nav')]",
+          "css_selector": "[data-nav='users']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-nav": "users",
+            "href": "/users",
+            "class": "nav-link",
+            "aria-label": "Manage users"
+          },
+          "text_content": "Users"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704070815.0,
+      "step_end_time": 1704070817.3,
+      "elapsed_time": 2.3,
+      "page_navigation": {
+        "from": "https://app.saas-platform.com/dashboard",
+        "to": "https://app.saas-platform.com/users"
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".users-table",
+            "timeout": 5000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//table[contains(@class, 'users-table')]",
+          "css_selector": ".users-table",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "users-table data-table",
+            "data-testid": "users-table",
+            "role": "table"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[contains(@class, 'add-user-btn') or @data-testid='add-user-btn']",
+          "css_selector": "[data-testid='add-user-btn']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "add-user-btn",
+            "class": "btn btn-primary add-user-btn",
+            "type": "button"
+          },
+          "text_content": "+ Add New User"
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".modal.add-user-modal",
+            "timeout": 3000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'modal') and contains(@class, 'add-user-modal')]",
+          "css_selector": ".modal.add-user-modal",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "modal add-user-modal fade-in",
+            "data-testid": "add-user-modal",
+            "role": "dialog",
+            "aria-modal": "true"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "Jane Smith"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='fullName' or @data-testid='user-name-input']",
+          "css_selector": "[data-testid='user-name-input']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "user-name-input",
+            "name": "fullName",
+            "type": "text",
+            "required": "true",
+            "placeholder": "Enter full name"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "input_text": {
+            "index": 0,
+            "text": "jane.smith@company.com"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//input[@name='email' or @data-testid='user-email-input']",
+          "css_selector": "[data-testid='user-email-input']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "user-email-input",
+            "name": "email",
+            "type": "email",
+            "required": "true",
+            "placeholder": "Enter email address"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "select_option": {
+            "index": 0,
+            "value": "manager"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//select[@name='role' or @data-testid='user-role-select']",
+          "css_selector": "[data-testid='user-role-select']",
+          "highlight_index": 0,
+          "attributes": {
+            "data-testid": "user-role-select",
+            "name": "role",
+            "required": "true"
+          },
+          "options": [
+            {
+              "value": "admin",
+              "text": "Administrator"
+            },
+            {
+              "value": "manager",
+              "text": "Manager"
+            },
+            {
+              "value": "user",
+              "text": "Standard User"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "click_element": {
+            "index": 0
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//button[@type='submit' and contains(@class, 'save-user')]",
+          "css_selector": ".save-user-btn",
+          "highlight_index": 0,
+          "attributes": {
+            "type": "submit",
+            "class": "btn btn-success save-user-btn",
+            "data-testid": "save-user-btn"
+          },
+          "text_content": "Create User"
+        }
+      ]
+    },
+    "metadata": {
+      "step_start_time": 1704070825.0,
+      "step_end_time": 1704070827.8,
+      "elapsed_time": 2.8,
+      "network_requests": [
+        {
+          "url": "/api/users/create",
+          "method": "POST",
+          "status": 201
+        }
+      ],
+      "real_time_updates": {
+        "websocket_message": {
+          "type": "user_created",
+          "data": {
+            "id": "user_456",
+            "name": "Jane Smith"
+          }
+        }
+      }
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "wait_for_element": {
+            "selector": ".success-notification",
+            "timeout": 5000
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//div[contains(@class, 'success-notification')]",
+          "css_selector": ".success-notification",
+          "highlight_index": 0,
+          "attributes": {
+            "class": "success-notification toast-notification",
+            "role": "alert",
+            "aria-live": "polite"
+          },
+          "text_content": "\u2713 User 'Jane Smith' created successfully"
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "verify_table_row": {
+            "selector": ".users-table tbody tr",
+            "contains": "Jane Smith"
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": [
+        {
+          "xpath": "//table[@class='users-table']//tr[contains(.,'Jane Smith')]",
+          "css_selector": ".users-table tbody tr:has-text('Jane Smith')",
+          "highlight_index": 0,
+          "attributes": {
+            "data-user-id": "user_456",
+            "class": "user-row"
+          },
+          "cells": [
+            {
+              "column": "name",
+              "text": "Jane Smith"
+            },
+            {
+              "column": "email",
+              "text": "jane.smith@company.com"
+            },
+            {
+              "column": "role",
+              "text": "Manager"
+            },
+            {
+              "column": "status",
+              "text": "Active"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "model_output": {
+      "action": [
+        {
+          "done": {
+            "text": "Successfully completed SaaS dashboard workflow",
+            "success": true
+          }
+        }
+      ]
+    },
+    "state": {
+      "interacted_element": []
+    },
+    "metadata": {
+      "total_steps": 16,
+      "total_duration": 35.4,
+      "success_rate": 100,
+      "features_tested": [
+        "authentication",
+        "dashboard_navigation",
+        "data_visualization",
+        "crud_operations",
+        "real_time_updates",
+        "modal_interactions"
+      ]
+    }
+  }
+]

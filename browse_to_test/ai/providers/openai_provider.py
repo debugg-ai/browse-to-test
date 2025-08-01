@@ -7,6 +7,8 @@ import asyncio
 import aiohttp
 from typing import Dict, List, Optional, Any
 from ..base import AIProvider, AIResponse, AIProviderError
+from ..error_handler import AIErrorHandler, ExponentialBackoffStrategy, ErrorType
+from ..prompt_optimizer import PromptOptimizer, PromptTemplate
 
 
 class OpenAIProvider(AIProvider):
@@ -26,6 +28,16 @@ class OpenAIProvider(AIProvider):
         self.extra_params = {k: v for k, v in kwargs.items() 
                            if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts', 'api_base_url']}
         
+        # Initialize enhanced error handling and optimization
+        self.error_handler = AIErrorHandler(
+            retry_strategy=ExponentialBackoffStrategy(
+                base_delay=1.0,
+                max_delay=30.0,
+                max_attempts=self.retry_attempts
+            )
+        )
+        self.prompt_optimizer = PromptOptimizer()
+        
         # Import OpenAI here to avoid dependency issues
         try:
             import openai
@@ -36,29 +48,27 @@ class OpenAIProvider(AIProvider):
                 provider="openai"
             )
         
-        # Set up the client
-        if self.api_key:
+        # Set up the client only if we have an API key (either provided or in environment)
+        import os
+        effective_api_key = self.api_key or os.getenv("OPENAI_API_KEY")
+        
+        if effective_api_key:
             self.client = self.openai.OpenAI(
-                api_key=self.api_key,
+                api_key=effective_api_key,
                 base_url=kwargs.get('api_base_url'),
                 timeout=self.timeout
             )
             # Set up async client
             self.async_client = self.openai.AsyncOpenAI(
-                api_key=self.api_key,
+                api_key=effective_api_key,
                 base_url=kwargs.get('api_base_url'),
                 timeout=self.timeout
             )
         else:
-            # Let OpenAI SDK find the API key from environment
-            self.client = self.openai.OpenAI(
-                base_url=kwargs.get('api_base_url'),
-                timeout=self.timeout
-            )
-            self.async_client = self.openai.AsyncOpenAI(
-                base_url=kwargs.get('api_base_url'),
-                timeout=self.timeout
-            )
+            # No API key available - don't create clients to avoid hanging
+            # Validation will catch this and provide a proper error message
+            self.client = None
+            self.async_client = None
     
     @property
     def provider_name(self) -> str:
@@ -106,6 +116,15 @@ class OpenAIProvider(AIProvider):
         **kwargs
     ) -> AIResponse:
         """Generate content using OpenAI."""
+        
+        # Check if client is available (API key was provided)
+        if not self.client:
+            raise AIProviderError(
+                "OpenAI API key not available. Please provide an API key or set OPENAI_API_KEY environment variable.",
+                provider=self.provider_name,
+                model=self.model
+            )
+        
         start_time = time.time()
         
         # Prepare messages
@@ -174,6 +193,15 @@ class OpenAIProvider(AIProvider):
         **kwargs
     ) -> AIResponse:
         """Generate content using OpenAI asynchronously."""
+        
+        # Check if client is available (API key was provided)
+        if not self.async_client:
+            raise AIProviderError(
+                "OpenAI API key not available. Please provide an API key or set OPENAI_API_KEY environment variable.",
+                provider=self.provider_name,
+                model=self.model
+            )
+        
         start_time = time.time()
         
         # Prepare messages
@@ -260,30 +288,21 @@ class OpenAIProvider(AIProvider):
         }
     
     def _make_request_with_retry(self, request_func, **kwargs):
-        """Make request with retry logic."""
-        import time
-        
-        for attempt in range(self.retry_attempts):
-            try:
-                return request_func(**kwargs)
-            except Exception as e:
-                if attempt == self.retry_attempts - 1:
-                    raise
-                
-                # Wait before retrying
-                wait_time = 2 ** attempt  # Exponential backoff
-                time.sleep(wait_time)
+        """Make request with enhanced retry logic."""
+        return self.error_handler.handle_with_retry_sync(
+            request_func,
+            provider="openai",
+            model=self.model,
+            **kwargs
+        )
     
     async def _make_async_request_with_retry(self, request_func, **kwargs):
-        """Make async request with retry logic."""
+        """Make async request with enhanced retry logic."""
+        async def wrapped_request():
+            return await request_func(**kwargs)
         
-        for attempt in range(self.retry_attempts):
-            try:
-                return await request_func(**kwargs)
-            except Exception as e:
-                if attempt == self.retry_attempts - 1:
-                    raise
-                
-                # Wait before retrying
-                wait_time = 2 ** attempt  # Exponential backoff
-                await asyncio.sleep(wait_time)
+        return await self.error_handler.handle_with_retry(
+            wrapped_request,
+            provider="openai",
+            model=self.model
+        )

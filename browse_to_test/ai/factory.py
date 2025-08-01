@@ -32,18 +32,6 @@ class AIProviderFactory:
             self.register_provider("anthropic", AnthropicProvider)
         except ImportError as e:
             logger.warning(f"Anthropic provider not available: {e}")
-        
-        try:
-            from .providers.azure_provider import AzureOpenAIProvider
-            self.register_provider("azure", AzureOpenAIProvider)
-        except ImportError as e:
-            logger.warning(f"Azure OpenAI provider not available: {e}")
-        
-        try:
-            from .providers.local_provider import LocalAIProvider
-            self.register_provider("local", LocalAIProvider)
-        except ImportError as e:
-            logger.warning(f"Local AI provider not available: {e}")
     
     def register_provider(self, name: str, provider_class: Type[AIProvider]):
         """
@@ -54,7 +42,7 @@ class AIProviderFactory:
             provider_class: Class that implements AIProvider
         """
         if not issubclass(provider_class, AIProvider):
-            raise ValueError(f"Provider class must inherit from AIProvider")
+            raise ValueError("Provider class must inherit from AIProvider")
         
         self._providers[name.lower()] = provider_class
         logger.debug(f"Registered AI provider: {name}")

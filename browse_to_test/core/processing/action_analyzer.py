@@ -6,7 +6,7 @@ AI-powered action analysis and optimization with system context support.
 import asyncio
 from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import json
 
@@ -61,6 +61,9 @@ class ActionAnalyzer:
         
         # Context cache
         self._context_cache: Dict[str, SystemContext] = {}
+        
+        # Initialize advanced caching
+        self._init_cache()
         
     def analyze_automation_data(
         self, 
@@ -201,6 +204,24 @@ class ActionAnalyzer:
         if not self.ai_provider:
             raise ValueError("AI provider is required for comprehensive analysis")
         
+        # Check if there are any valid actions to analyze
+        if parsed_data.total_actions == 0:
+            # Return empty analysis result for data with no valid actions
+            return ComprehensiveAnalysisResult(
+                overall_quality_score=0.0,
+                total_actions=0,
+                critical_actions=[],
+                auxiliary_actions=[],
+                action_results=[],
+                context_recommendations=["No valid actions found in automation data"],
+                integration_suggestions=[],
+                test_data_recommendations=[],
+                reliability_concerns=["Automation data contains no actionable steps"],
+                framework_optimizations=[],
+                similar_tests=[],
+                analysis_metadata={"skip_reason": "no_valid_actions"}
+            )
+        
         # Create analysis request
         request = AIAnalysisRequest(
             analysis_type=AnalysisType.COMPREHENSIVE,
@@ -229,6 +250,24 @@ class ActionAnalyzer:
         """
         if not self.ai_provider:
             raise ValueError("AI provider is required for comprehensive analysis")
+        
+        # Check if there are any valid actions to analyze
+        if parsed_data.total_actions == 0:
+            # Return empty analysis result for data with no valid actions
+            return ComprehensiveAnalysisResult(
+                overall_quality_score=0.0,
+                total_actions=0,
+                critical_actions=[],
+                auxiliary_actions=[],
+                action_results=[],
+                context_recommendations=["No valid actions found in automation data"],
+                integration_suggestions=[],
+                test_data_recommendations=[],
+                reliability_concerns=["Automation data contains no actionable steps"],
+                framework_optimizations=[],
+                similar_tests=[],
+                analysis_metadata={"skip_reason": "no_valid_actions"}
+            )
         
         # Create analysis request
         request = AIAnalysisRequest(
@@ -763,4 +802,144 @@ class ActionAnalyzer:
     def clear_cache(self) -> None:
         """Clear analysis cache."""
         self._analysis_cache.clear()
-        self._context_cache.clear() 
+        self._context_cache.clear()
+    
+    def _init_cache(self):
+        """Initialize advanced caching system."""
+        self._cache_ttl = timedelta(hours=1)  # 1 hour TTL
+        self._cache_timestamps = {}
+        self._cache_hit_count = {}
+        self._max_cache_size = 100
+        
+    def _generate_cache_key(
+        self,
+        parsed_data: ParsedAutomationData,
+        system_context: Optional[SystemContext],
+        target_url: Optional[str],
+        analysis_type: AnalysisType
+    ) -> str:
+        """Generate a unique cache key for the analysis request."""
+        # Create a hashable representation
+        cache_data = {
+            'analysis_type': analysis_type.value,
+            'framework': self.config.output.framework,
+            'target_url': target_url or '',
+            'steps': []
+        }
+        
+        # Add step data
+        for step in parsed_data.steps:
+            step_data = {
+                'actions': [
+                    {
+                        'type': action.action_type,
+                        'params': json.dumps(action.parameters, sort_keys=True),
+                        'selector': str(action.selector_info)
+                    }
+                    for action in step.actions
+                ]
+            }
+            cache_data['steps'].append(step_data)
+        
+        # Add context fingerprint if available
+        if system_context:
+            cache_data['context_fingerprint'] = self._create_context_fingerprint(system_context)
+        
+        # Generate hash
+        cache_str = json.dumps(cache_data, sort_keys=True)
+        return hashlib.sha256(cache_str.encode()).hexdigest()
+    
+    def _create_context_fingerprint(self, context: SystemContext) -> str:
+        """Create a lightweight fingerprint of the system context."""
+        fingerprint_parts = []
+        
+        if hasattr(context, 'project') and context.project:
+            if hasattr(context.project, 'name'):
+                fingerprint_parts.append(f"proj:{context.project.name}")
+            if hasattr(context.project, 'test_frameworks'):
+                fingerprint_parts.append(f"fw:{','.join(context.project.test_frameworks)}")
+        
+        if hasattr(context, 'existing_tests'):
+            fingerprint_parts.append(f"tests:{len(context.existing_tests)}")
+        
+        if hasattr(context, 'ui_components'):
+            fingerprint_parts.append(f"ui:{len(context.ui_components)}")
+        
+        return '|'.join(fingerprint_parts)
+    
+    def _get_from_cache(self, cache_key: str) -> Optional[Any]:
+        """Retrieve item from cache if valid."""
+        if cache_key not in self._analysis_cache:
+            return None
+        
+        # Check TTL
+        if cache_key in self._cache_timestamps:
+            timestamp = self._cache_timestamps[cache_key]
+            if datetime.now() - timestamp > self._cache_ttl:
+                # Expired
+                self._remove_from_cache(cache_key)
+                return None
+        
+        # Update hit count
+        self._cache_hit_count[cache_key] = self._cache_hit_count.get(cache_key, 0) + 1
+        
+        return self._analysis_cache[cache_key]
+    
+    def _add_to_cache(self, cache_key: str, value: Any):
+        """Add item to cache with TTL and size management."""
+        # Check cache size
+        if len(self._analysis_cache) >= self._max_cache_size:
+            self._evict_lru_item()
+        
+        # Add to cache
+        self._analysis_cache[cache_key] = value
+        self._cache_timestamps[cache_key] = datetime.now()
+        self._cache_hit_count[cache_key] = 0
+    
+    def _remove_from_cache(self, cache_key: str):
+        """Remove item from cache."""
+        if cache_key in self._analysis_cache:
+            del self._analysis_cache[cache_key]
+        if cache_key in self._cache_timestamps:
+            del self._cache_timestamps[cache_key]
+        if cache_key in self._cache_hit_count:
+            del self._cache_hit_count[cache_key]
+    
+    def _evict_lru_item(self):
+        """Evict least recently used item from cache."""
+        if not self._analysis_cache:
+            return
+        
+        # Find LRU item (oldest timestamp with lowest hit count)
+        lru_key = None
+        oldest_time = datetime.now()
+        lowest_hits = float('inf')
+        
+        for key, timestamp in self._cache_timestamps.items():
+            hits = self._cache_hit_count.get(key, 0)
+            
+            # Prioritize by hit count, then by age
+            if hits < lowest_hits or (hits == lowest_hits and timestamp < oldest_time):
+                lru_key = key
+                oldest_time = timestamp
+                lowest_hits = hits
+        
+        if lru_key:
+            self._remove_from_cache(lru_key)
+    
+    def get_cache_statistics(self) -> Dict[str, Any]:
+        """Get cache performance statistics."""
+        total_hits = sum(self._cache_hit_count.values())
+        cache_size = len(self._analysis_cache)
+        
+        return {
+            'cache_size': cache_size,
+            'max_cache_size': self._max_cache_size,
+            'total_hits': total_hits,
+            'hit_distribution': dict(self._cache_hit_count),
+            'oldest_entry_age': min(
+                (datetime.now() - ts).total_seconds()
+                for ts in self._cache_timestamps.values()
+            ) if self._cache_timestamps else 0,
+            'ttl_seconds': self._cache_ttl.total_seconds()
+        } 

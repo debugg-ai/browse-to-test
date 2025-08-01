@@ -12,7 +12,7 @@ from typing import Union, List, Dict, Optional, Any
 from pathlib import Path
 
 from ..configuration.config import Config
-from ..processing.input_parser import InputParser
+from ..processing.input_parser import InputParser, ParsedAutomationData
 from ..processing.action_analyzer import ActionAnalyzer
 from ..processing.context_collector import ContextCollector
 from ...output_langs import LanguageManager
@@ -80,7 +80,7 @@ class E2eTestConverter:
     
     def convert(
         self, 
-        automation_data: Union[List[Dict], str, Path],
+        automation_data: Union[List[Dict], str, Path, ParsedAutomationData],
         target_url: Optional[str] = None,
         context_hints: Optional[Dict[str, Any]] = None
     ) -> str:
@@ -88,7 +88,7 @@ class E2eTestConverter:
         Convert automation data to test script.
         
         Args:
-            automation_data: Browser automation data (list of steps, file path, or JSON string)
+            automation_data: Browser automation data (list of steps, file path, JSON string, or ParsedAutomationData)
             target_url: Target URL being tested (optional)
             context_hints: Additional context hints (optional)
             
@@ -100,8 +100,11 @@ class E2eTestConverter:
             RuntimeError: If conversion fails
         """
         try:
-            # Parse input data
-            parsed_data = self.input_parser.parse(automation_data)
+            # Parse input data - but only if not already parsed
+            if isinstance(automation_data, ParsedAutomationData):
+                parsed_data = automation_data
+            else:
+                parsed_data = self.input_parser.parse(automation_data)
             
             # Collect system context if enabled
             system_context = None
@@ -155,7 +158,7 @@ class E2eTestConverter:
     
     async def convert_async(
         self, 
-        automation_data: Union[List[Dict], str, Path],
+        automation_data: Union[List[Dict], str, Path, ParsedAutomationData],
         target_url: Optional[str] = None,
         context_hints: Optional[Dict[str, Any]] = None
     ) -> str:
@@ -163,7 +166,7 @@ class E2eTestConverter:
         Convert automation data to test script asynchronously.
         
         Args:
-            automation_data: Browser automation data (list of steps, file path, or JSON string)
+            automation_data: Browser automation data (list of steps, file path, JSON string, or ParsedAutomationData)
             target_url: Target URL being tested (optional)
             context_hints: Additional context hints (optional)
             
@@ -175,8 +178,11 @@ class E2eTestConverter:
             RuntimeError: If conversion fails
         """
         try:
-            # Parse input data (sync, typically fast)
-            parsed_data = self.input_parser.parse(automation_data)
+            # Parse input data (sync, typically fast) - but only if not already parsed
+            if isinstance(automation_data, ParsedAutomationData):
+                parsed_data = automation_data
+            else:
+                parsed_data = self.input_parser.parse(automation_data)
             
             # Collect system context if enabled (sync, typically fast)
             system_context = None
@@ -193,24 +199,21 @@ class E2eTestConverter:
             analysis_result = None
             if self.ai_provider and self.config.processing.analyze_actions_with_ai:
                 try:
-                    # Queue the analysis task with unique ID to avoid conflicts in parallel execution
-                    import time
-                    task_id = f"conversion_analysis_{hash(str(automation_data))}_{int(time.time() * 1000000)}"
-                    analysis_task = await queue_ai_task(
-                        task_id,
-                        self.action_analyzer.analyze_comprehensive_async,
+                    # Use direct async analysis instead of queueing to avoid deadlock
+                    # when convert_async is already running in a queued task context
+                    analysis_result = await self.action_analyzer.analyze_comprehensive_async(
                         parsed_data,
                         system_context,
-                        target_url,
-                        priority=3  # High priority for conversion analysis
+                        target_url
                     )
-                    
-                    # Get the analysis result
-                    analysis_result = await wait_for_ai_task(task_id)
                     
                 except Exception as e:
                     if self.config.debug:
                         logger.warning(f"AI analysis failed: {e}")
+            elif self.config.processing.analyze_actions_with_ai and not self.ai_provider:
+                # AI analysis is enabled but no provider available - log warning
+                if self.config.debug:
+                    logger.warning("AI analysis requested but no AI provider available")
             
             # Create plugin and generate script (sync, typically fast)
             plugin = self.plugin_registry.create_plugin(self.config.output)

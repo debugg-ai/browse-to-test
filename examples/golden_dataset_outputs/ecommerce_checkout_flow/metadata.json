@@ -1,0 +1,37 @@
+{
+  "example_name": "E-commerce Checkout Flow",
+  "framework": "playwright",
+  "language": "python",
+  "complexity": "high",
+  "features_demonstrated": [
+    "Multi-step workflow automation",
+    "Form validation and handling",
+    "Dynamic element interactions",
+    "Network request monitoring",
+    "Loading state handling",
+    "Comprehensive error handling",
+    "Screenshot capture on failure",
+    "Sensitive data masking",
+    "Responsive design testing",
+    "Cross-browser compatibility setup"
+  ],
+  "test_characteristics": {
+    "total_steps": 14,
+    "estimated_duration": "45-60 seconds",
+    "assertions_count": 15,
+    "error_scenarios_covered": 8,
+    "performance_optimizations": [
+      "Explicit waits for dynamic content",
+      "Network idle waiting",
+      "Efficient selector strategies",
+      "Parallel form filling where possible"
+    ]
+  },
+  "data_quality_indicators": {
+    "realistic_selectors": true,
+    "proper_timing_metadata": true,
+    "network_activity_tracking": true,
+    "form_validation_states": true,
+    "loading_state_handling": true
+  }
+}
