@@ -543,7 +543,7 @@ class DeprecationManager:
 # Factory function for easy migration
 def migrate_legacy_config(legacy_config: Config, preset_hint: Optional[str] = None) -> SimpleConfig:
     """
-    Convenience function to migrate legacy configuration.
+    Migrate legacy configuration to SimpleConfig.
     
     Args:
         legacy_config: Legacy Config object to migrate

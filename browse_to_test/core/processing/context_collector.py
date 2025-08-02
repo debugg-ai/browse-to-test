@@ -4,6 +4,7 @@
 import os
 import re
 import json
+import contextlib
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, Set
 from dataclasses import dataclass, field
@@ -97,7 +98,7 @@ class ContextCollector:
         # Try to get project info from package.json
         package_json = self.project_root / 'package.json'
         if package_json.exists():
-            try:
+            with contextlib.suppress(json.JSONDecodeError, FileNotFoundError):
                 with open(package_json) as f:
                     data = json.load(f)
                     project.name = data.get('name')
@@ -111,9 +112,6 @@ class ContextCollector:
                     
                     # Identify frameworks
                     project.tech_stack.extend(self._identify_frameworks_from_deps(deps))
-                    
-            except (json.JSONDecodeError, FileNotFoundError):
-                pass
         
         return project
     
@@ -270,7 +268,7 @@ class ContextCollector:
         files = []
         compiled_pattern = re.compile(pattern)
         
-        try:
+        with contextlib.suppress(Exception):
             for root, dirs, filenames in os.walk(self.project_root):
                 # Skip common non-relevant directories
                 dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['node_modules', '__pycache__', 'venv', 'env']]
@@ -281,9 +279,6 @@ class ContextCollector:
                     
                     if compiled_pattern.search(relative_path):
                         files.append(file_path)
-                        
-        except Exception:
-            pass
                 
         return files
     

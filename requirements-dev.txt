@@ -55,3 +55,6 @@ build>=0.10.0
 twine>=4.0.0
 setuptools>=68.0.0
 wheel>=0.41.0 
+
+# Memory profiling
+psutil>=5.9.0

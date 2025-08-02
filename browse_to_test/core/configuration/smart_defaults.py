@@ -413,7 +413,12 @@ class SmartDefaults:
     @staticmethod
     def _is_docker_environment() -> bool:
         """Check if running in Docker container."""
-        return os.path.exists("/.dockerenv") or os.path.exists("/proc/1/cgroup") and "docker" in open("/proc/1/cgroup").read()
+        if os.path.exists("/.dockerenv"):
+            return True
+        if os.path.exists("/proc/1/cgroup"):
+            with open("/proc/1/cgroup") as f:
+                return "docker" in f.read()
+        return False
     
     @staticmethod
     def _has_display() -> bool:
@@ -470,7 +475,7 @@ class SmartDefaults:
                         frameworks.append("playwright")
                     if "mocha" in deps:
                         frameworks.append("mocha")
-            except:
+            except (json.JSONDecodeError, OSError, IOError):
                 pass
         
         # Check Python files for testing frameworks

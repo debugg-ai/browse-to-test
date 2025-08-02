@@ -1,3 +1,4 @@
+"""Custom exception classes for test automation."""
 # Custom exception classes for test automation
 from typing import Any
 
@@ -10,6 +11,7 @@ class E2eActionError(Exception):
         self.selector = selector
         
     def __str__(self):
+        """Return string representation with action and selector details."""
         base_msg = super().__str__()
         if self.action and self.selector:
             return f"{base_msg} (Action: {self.action}, Selector: {self.selector})"

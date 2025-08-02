@@ -108,13 +108,13 @@ class ConfigAdapter:
             
             # Directory scanning settings
             scan_test_directories=simple_config.get_advanced("scan_test_directories", 
-                ["tests/", "test/", "spec/", "e2e/", "__tests__/"]),
+                                                              ["tests/", "test/", "spec/", "e2e/", "__tests__/"]),
             scan_documentation_directories=simple_config.get_advanced("scan_documentation_directories",
-                ["docs/", "documentation/", "README*"]),
+                                                                       ["docs/", "documentation/", "README*"]),
             scan_component_directories=simple_config.get_advanced("scan_component_directories",
-                ["components/", "src/components/", "lib/"]),
+                                                                   ["components/", "src/components/", "lib/"]),
             exclude_directories=simple_config.get_advanced("exclude_directories",
-                ["node_modules/", ".git/", "__pycache__/", "venv/", "env/", ".venv/"]),
+                                                            ["node_modules/", ".git/", "__pycache__/", "venv/", "env/", ".venv/"]),
             
             # Context filtering settings
             filter_context_by_url=simple_config.get_advanced("filter_context_by_url", True),

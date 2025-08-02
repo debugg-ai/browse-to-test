@@ -1,3 +1,4 @@
+"""Test configuration constants."""
 # Test configuration constants
 
 # Timeout settings (in milliseconds)

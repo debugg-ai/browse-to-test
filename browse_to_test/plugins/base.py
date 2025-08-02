@@ -207,7 +207,7 @@ class OutputPlugin(ABC):
     
     def supports_language(self, language: str) -> bool:
         """Check if this plugin supports a specific language."""
-        return language.lower() in [l.lower() for l in self.supported_languages]
+        return language.lower() in [lang.lower() for lang in self.supported_languages]
     
     def supports_config(self, config: OutputConfig) -> bool:
         """Check if this plugin supports a given configuration."""

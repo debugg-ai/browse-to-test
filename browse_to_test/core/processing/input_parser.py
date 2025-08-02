@@ -479,4 +479,4 @@ class InputParser:
                         matches = secret_pattern.findall(param_value)
                         sensitive_keys.update(matches)
         
-        return sorted(list(sensitive_keys)) 
+        return sorted(sensitive_keys) 

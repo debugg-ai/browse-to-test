@@ -370,7 +370,7 @@ async def queue_ai_task(
     **kwargs
 ) -> QueuedTask:
     """
-    Convenience function to queue an AI task using the global queue manager.
+    Queue an AI task using the global queue manager.
     
     Args:
         task_id: Unique identifier for the task
@@ -388,7 +388,7 @@ async def queue_ai_task(
 
 async def wait_for_ai_task(task_id: str, timeout: Optional[float] = None) -> Any:
     """
-    Convenience function to wait for an AI task using the global queue manager.
+    Wait for an AI task using the global queue manager.
     
     Args:
         task_id: ID of the task to wait for

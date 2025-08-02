@@ -259,7 +259,7 @@ class SimpleConfigBuilder:
     # === Progressive Disclosure for Advanced Users ===
     
     def advanced_ai(self, temperature: float = None, max_tokens: int = None, 
-                   model: str = None) -> 'SimpleConfigBuilder':
+                    model: str = None) -> 'SimpleConfigBuilder':
         """Configure advanced AI settings."""
         advanced_settings = {}
         if temperature is not None:
@@ -340,7 +340,7 @@ class SimpleConfigBuilder:
 
 def migrate_legacy_config(legacy_config: 'Config') -> SimpleConfig:
     """
-    Convenience function to migrate from legacy configuration.
+    Migrate from legacy configuration to SimpleConfig.
     
     Args:
         legacy_config: Old Config object

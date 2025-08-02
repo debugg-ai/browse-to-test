@@ -77,15 +77,19 @@ class SharedSetupConfig:
     language: str = "python"  # Will be set from OutputConfig
     
     def get_utilities_path(self, extension: str = ".py") -> Path:
+        """Get path for utilities file with specified extension."""
         return self.setup_dir / f"{self.utilities_file}{extension}"
     
     def get_config_path(self, extension: str = ".py") -> Path:
+        """Get path for config file with specified extension."""
         return self.setup_dir / f"{self.config_file}{extension}"
     
     def get_constants_path(self, extension: str = ".py") -> Path:
+        """Get path for constants file with specified extension."""
         return self.setup_dir / f"{self.constants_file}{extension}"
     
     def get_framework_helpers_path(self, extension: str = ".py") -> Path:
+        """Get path for framework helpers file with specified extension."""
         return self.setup_dir / f"{self.framework_helpers_file}{extension}"
 
 
@@ -447,7 +451,7 @@ class SharedSetupManager:
             lines.append("")
         
         # Add utilities by category
-        categories_used = set(u.category for u in self._utilities.values())
+        categories_used = {u.category for u in self._utilities.values()}
         
         for category in sorted(categories_used):
             if category in self._categories:
@@ -824,7 +828,7 @@ class SharedSetupManager:
             "total_utilities": len(self._utilities),
             "utilities_by_category": {
                 category: len([u for u in self._utilities.values() if u.category == category])
-                for category in set(u.category for u in self._utilities.values())
+                for category in {u.category for u in self._utilities.values()}
             },
             "frameworks_supported": list(self._framework_utilities.keys()),
             "generated_files": len(self._generated_files),
