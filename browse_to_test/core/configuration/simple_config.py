@@ -273,8 +273,8 @@ class SimpleConfigBuilder:
         return self
     
     def advanced_analysis(self, context_collection: bool = None,
-                         ai_analysis: bool = None, 
-                         analysis_depth: str = None) -> 'SimpleConfigBuilder':
+                          ai_analysis: bool = None, 
+                          analysis_depth: str = None) -> 'SimpleConfigBuilder':
         """Configure advanced analysis settings."""
         advanced_settings = {}
         if context_collection is not None:
@@ -354,7 +354,7 @@ def migrate_legacy_config(legacy_config: 'Config') -> SimpleConfig:
 # === Preset Factory Functions ===
 
 def fast_config(framework: str = "playwright", language: str = "python", 
-               ai_provider: str = "openai") -> SimpleConfig:
+                ai_provider: str = "openai") -> SimpleConfig:
     """Create a fast configuration preset."""
     return (SimpleConfigBuilder()
             .preset(ConfigPreset.FAST)
@@ -365,7 +365,7 @@ def fast_config(framework: str = "playwright", language: str = "python",
             .build())
 
 def balanced_config(framework: str = "playwright", language: str = "python",
-                   ai_provider: str = "openai") -> SimpleConfig:
+                    ai_provider: str = "openai") -> SimpleConfig:
     """Create a balanced configuration preset.""" 
     builder = SimpleConfigBuilder().preset(ConfigPreset.BALANCED)
     
@@ -384,7 +384,7 @@ def balanced_config(framework: str = "playwright", language: str = "python",
     return builder.build()
 
 def accurate_config(framework: str = "playwright", language: str = "python",
-                   ai_provider: str = "openai") -> SimpleConfig:
+                    ai_provider: str = "openai") -> SimpleConfig:
     """Create an accuracy-optimized configuration preset."""
     builder = SimpleConfigBuilder().preset(ConfigPreset.ACCURATE)
     
@@ -405,7 +405,7 @@ def accurate_config(framework: str = "playwright", language: str = "python",
     return builder.build()
 
 def production_config(framework: str = "playwright", language: str = "python",
-                     ai_provider: str = "openai") -> SimpleConfig:
+                      ai_provider: str = "openai") -> SimpleConfig:
     """Create a production-ready configuration preset."""
     builder = SimpleConfigBuilder().preset(ConfigPreset.PRODUCTION)
     

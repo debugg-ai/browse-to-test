@@ -84,7 +84,7 @@ class ConfigMigrator:
     
     @staticmethod
     def migrate_to_simple_config(legacy_config: Config, 
-                                preset_hint: Optional[str] = None) -> Tuple[SimpleConfig, Dict[str, Any]]:
+                                 preset_hint: Optional[str] = None) -> Tuple[SimpleConfig, Dict[str, Any]]:
         """
         Migrate legacy configuration to simplified configuration.
         
@@ -154,8 +154,8 @@ class ConfigMigrator:
     
     @staticmethod
     def migrate_config_file(file_path: Union[str, Path], 
-                           output_path: Optional[Union[str, Path]] = None,
-                           preset_hint: Optional[str] = None) -> Dict[str, Any]:
+                            output_path: Optional[Union[str, Path]] = None,
+                            preset_hint: Optional[str] = None) -> Dict[str, Any]:
         """
         Migrate a legacy configuration file to simplified format.
         
