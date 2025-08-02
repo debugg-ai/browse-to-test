@@ -1,6 +1,4 @@
-"""
-Abstract base classes for output plugins.
-"""
+"""Abstract base classes for output plugins."""
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
@@ -117,9 +115,9 @@ class OutputPlugin(ABC):
             True if incremental methods are implemented, False otherwise
         """
         return (
-            hasattr(self, 'setup_incremental_script') and
-            hasattr(self, 'add_incremental_step') and
-            hasattr(self, 'finalize_incremental_script')
+            hasattr(self, 'setup_incremental_script')
+            and hasattr(self, 'add_incremental_step')
+            and hasattr(self, 'finalize_incremental_script')
         )
     
     def setup_incremental_script(
@@ -214,8 +212,8 @@ class OutputPlugin(ABC):
     def supports_config(self, config: OutputConfig) -> bool:
         """Check if this plugin supports a given configuration."""
         return (
-            self.supports_framework(config.framework) and
-            self.supports_language(config.language)
+            self.supports_framework(config.framework)
+            and self.supports_language(config.language)
         )
     
     def _format_code(self, content: str) -> str:
@@ -256,9 +254,7 @@ class OutputPlugin(ABC):
         comment_prefix = "#"
         if self.config.language == "python":
             comment_prefix = "#"
-        elif self.config.language == "typescript":
-            comment_prefix = "//"
-        elif self.config.language == "javascript":
+        elif self.config.language in ["typescript", "javascript"]:
             comment_prefix = "//"
 
         header_lines = [

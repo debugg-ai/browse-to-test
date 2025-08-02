@@ -1,6 +1,4 @@
-"""
-Core components for the browse-to-test library.
-"""
+"""Core components for the browse-to-test library."""
 
 # Configuration 
 from .configuration import Config, AIConfig, OutputConfig, SharedSetupConfig

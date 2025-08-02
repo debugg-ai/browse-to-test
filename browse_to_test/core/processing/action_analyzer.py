@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-AI-powered action analysis and optimization with system context support.
-"""
+"""AI-powered action analysis and optimization with system context support."""
 
 import asyncio
 from typing import Dict, List, Optional, Any, Set
@@ -19,6 +17,7 @@ from ..configuration.config import Config
 @dataclass 
 class ActionAnalysisResult:
     """Result of analyzing a single action."""
+
     action_index: int
     action_type: str
     reliability_score: float  # 0.0 to 1.0
@@ -34,6 +33,7 @@ class ActionAnalysisResult:
 @dataclass
 class ComprehensiveAnalysisResult:
     """Result of comprehensive automation analysis with context."""
+
     overall_quality_score: float
     total_actions: int
     critical_actions: List[int]  # Indices of critical actions

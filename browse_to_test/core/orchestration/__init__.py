@@ -1,6 +1,4 @@
-"""
-Core orchestration components for test script generation and coordination.
-"""
+"""Core orchestration components for test script generation and coordination."""
 
 from .converter import E2eTestConverter
 from .session import SessionResult, IncrementalSession

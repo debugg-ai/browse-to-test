@@ -1,6 +1,4 @@
-"""
-Factory for creating AI provider instances.
-"""
+"""Factory for creating AI provider instances."""
 
 import logging
 from typing import Dict, List, Type

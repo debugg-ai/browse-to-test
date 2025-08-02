@@ -369,9 +369,7 @@ class PlaywrightPythonGenerator:
             lines.append(f"{indent}await wait_for_page_load_playwright(page)")
             
         elif action_type in ['click', 'fill', 'select']:
-            if action_type == 'fill':
-                lines.append(f"{indent}await try_locate_and_act_playwright(page, '{selector}', '{action_type}', '{text}')")
-            elif action_type == 'select':
+            if action_type in ['fill', 'select']:
                 lines.append(f"{indent}await try_locate_and_act_playwright(page, '{selector}', '{action_type}', '{text}')")
             else:
                 lines.append(f"{indent}await try_locate_and_act_playwright(page, '{selector}', '{action_type}')")

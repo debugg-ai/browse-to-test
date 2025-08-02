@@ -14,6 +14,7 @@ import json
 @dataclass
 class CommentStyle:
     """Configuration for language-specific comment styles."""
+
     single_line_prefix: str
     multi_line_start: str
     multi_line_end: str
@@ -219,8 +220,8 @@ class CommentManager:
         """
         return f"{self.style.inline_comment_prefix}{text}"
     
-    def step_header(self, step_number: int, description: str = "", 
-                   metadata: Optional[Dict[str, Any]] = None, indent: str = "") -> List[str]:
+    def step_header(self, step_number: int, description: str = "",
+                    metadata: Optional[Dict[str, Any]] = None, indent: str = "") -> List[str]:
         """
         Generate a detailed step header comment.
         
@@ -249,9 +250,9 @@ class CommentManager:
         
         return lines
     
-    def action_comment(self, action_type: str, target: str = "", 
-                      additional_info: Optional[Dict[str, Any]] = None, 
-                      indent: str = "") -> str:
+    def action_comment(self, action_type: str, target: str = "",
+                       additional_info: Optional[Dict[str, Any]] = None,
+                       indent: str = "") -> str:
         """
         Generate a detailed action comment.
         

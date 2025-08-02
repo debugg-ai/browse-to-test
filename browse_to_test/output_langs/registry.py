@@ -18,6 +18,7 @@ from .exceptions import LanguageNotSupportedError, FrameworkNotSupportedError
 
 class SupportedLanguage(Enum):
     """Enumeration of supported programming languages."""
+
     PYTHON = "python"
     TYPESCRIPT = "typescript"
     JAVASCRIPT = "javascript"
@@ -28,6 +29,7 @@ class SupportedLanguage(Enum):
 
 class SupportedFramework(Enum):
     """Enumeration of supported testing frameworks."""
+
     PLAYWRIGHT = "playwright"
     SELENIUM = "selenium"
     # Future frameworks (implementation pending):
@@ -38,6 +40,7 @@ class SupportedFramework(Enum):
 @dataclass
 class LanguageMetadata:
     """Metadata about a supported language."""
+
     name: str
     display_name: str
     file_extension: str

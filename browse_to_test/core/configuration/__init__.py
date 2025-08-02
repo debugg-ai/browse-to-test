@@ -1,6 +1,4 @@
-"""
-Configuration and template management components.
-"""
+"""Configuration and template management components."""
 
 from .config import Config, AIConfig, OutputConfig, SharedSetupConfig
 from .language_templates import LanguageTemplateManager, LanguageTemplate

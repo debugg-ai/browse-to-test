@@ -118,11 +118,10 @@ class IncrementalPlaywrightPlugin(PlaywrightPlugin):
             step_code.append("")
             
             # Add timing information if available
-            if step.timing_info and self.config.include_logging:
-                if 'elapsed_time' in step.timing_info:
-                    elapsed = step.timing_info['elapsed_time']
-                    step_code.append(f"            # Step completed in {elapsed:.2f}s")
-                    step_code.append("")
+            if step.timing_info and self.config.include_logging and 'elapsed_time' in step.timing_info:
+                elapsed = step.timing_info['elapsed_time']
+                step_code.append(f"            # Step completed in {elapsed:.2f}s")
+                step_code.append("")
             
             return {
                 'step_code': step_code,
@@ -348,7 +347,7 @@ class IncrementalPlaywrightPlugin(PlaywrightPlugin):
             
             # Check if action is marked as critical
             if 'critical_actions' in comp_analysis:
-                for i, critical_action_idx in enumerate(comp_analysis['critical_actions']):
+                for _i, critical_action_idx in enumerate(comp_analysis['critical_actions']):
                     if critical_action_idx == action.action_index:
                         insights.append(f"Action {action.action_type} identified as critical by AI analysis")
                         break

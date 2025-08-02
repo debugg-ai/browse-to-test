@@ -1,6 +1,4 @@
-"""
-OpenAI provider implementation.
-"""
+"""OpenAI provider implementation."""
 
 import time
 import asyncio
@@ -25,8 +23,8 @@ class OpenAIProvider(AIProvider):
         self.timeout = kwargs.get('timeout', 30)
         self.retry_attempts = kwargs.get('retry_attempts', 3)
         self.api_base_url = kwargs.get('api_base_url', 'https://api.openai.com/v1')
-        self.extra_params = {k: v for k, v in kwargs.items() 
-                           if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts', 'api_base_url']}
+        self.extra_params = {k: v for k, v in kwargs.items()
+                             if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts', 'api_base_url']}
         
         # Initialize enhanced error handling and optimization
         self.error_handler = AIErrorHandler(

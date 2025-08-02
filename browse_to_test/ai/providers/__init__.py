@@ -1,6 +1,4 @@
-"""
-AI provider implementations for different services.
-"""
+"""AI provider implementations for different services."""
 
 __all__ = []
 

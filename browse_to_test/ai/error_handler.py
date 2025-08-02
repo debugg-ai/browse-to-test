@@ -21,6 +21,7 @@ T = TypeVar('T')
 
 class ErrorType(Enum):
     """Types of errors that can occur with AI services."""
+
     RATE_LIMIT = "rate_limit"
     TIMEOUT = "timeout"
     API_ERROR = "api_error"
@@ -34,6 +35,7 @@ class ErrorType(Enum):
 @dataclass
 class ErrorContext:
     """Context about an error for better handling decisions."""
+
     error_type: ErrorType
     error_message: str
     provider: str
@@ -93,10 +95,8 @@ class ExponentialBackoffStrategy(RetryStrategy):
     def get_delay(self, context: ErrorContext) -> float:
         """Calculate exponential backoff delay with optional jitter."""
         # Special handling for rate limits
-        if context.error_type == ErrorType.RATE_LIMIT:
-            # Check if we have rate limit info in metadata
-            if 'retry_after' in context.metadata:
-                return float(context.metadata['retry_after'])
+        if context.error_type == ErrorType.RATE_LIMIT and 'retry_after' in context.metadata:
+            return float(context.metadata['retry_after'])
         
         # Calculate exponential delay
         delay = min(
@@ -336,7 +336,7 @@ class AIErrorHandler:
         model: Optional[str] = None,
         **kwargs
     ) -> T:
-        """Synchronous version of handle_with_retry."""
+        """Handle function execution with retry logic synchronously."""
         attempt = 0
         last_error = None
         

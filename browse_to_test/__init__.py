@@ -1,5 +1,5 @@
 """
-Browse-to-Test: AI-Powered Browser Automation to Test Script Converter
+Browse-to-Test: AI-Powered Browser Automation to Test Script Converter.
 
 A Python library that uses AI to convert browser automation data into test scripts
 for various testing frameworks (Playwright, Selenium, etc.).
@@ -57,7 +57,10 @@ asyncio.run(main())
 ```
 """
 
-from typing import List
+import warnings
+from pathlib import Path
+from typing import List, Union
+
 from .core.configuration.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
 from .core.orchestration.converter import E2eTestConverter
 from .core.orchestration.session import IncrementalSession, SessionResult, AsyncIncrementalSession
@@ -189,12 +192,10 @@ def list_ai_providers() -> List[str]:
 
 
 # Backward compatibility - keep old API available but mark as deprecated
-import warnings
-from typing import Union
-from pathlib import Path
+
 
 def convert_to_test_script(*args, **kwargs):
-    """Deprecated: Use convert() instead."""
+    """Use convert() instead."""
     warnings.warn(
         "convert_to_test_script() is deprecated. Use convert() instead.", 
         DeprecationWarning, 
@@ -208,7 +209,7 @@ def start_incremental_session(
     config: dict = None,
     context_hints: dict = None
 ):
-    """Deprecated: Use IncrementalSession() instead."""
+    """Use IncrementalSession() instead."""
     warnings.warn(
         "start_incremental_session() is deprecated. Use IncrementalSession() instead.", 
         DeprecationWarning, 
@@ -219,6 +220,7 @@ def start_incremental_session(
     result = session.start(target_url=target_url, context_hints=context_hints)
     return session, result
 
+
 # Export deprecated functions for backward compatibility
 __all__.extend([
     "convert_to_test_script", 
@@ -228,7 +230,7 @@ __all__.extend([
 ])
 
 def list_available_plugins():
-    """Deprecated: Use list_frameworks() instead.""" 
+    """Use list_frameworks() instead.""" 
     warnings.warn(
         "list_available_plugins() is deprecated. Use list_frameworks() instead.", 
         DeprecationWarning, 
@@ -236,8 +238,9 @@ def list_available_plugins():
     )
     return list_frameworks()
 
+
 def list_available_ai_providers():
-    """Deprecated: Use list_ai_providers() instead."""
+    """Use list_ai_providers() instead."""
     warnings.warn(
         "list_available_ai_providers() is deprecated. Use list_ai_providers() instead.", 
         DeprecationWarning, 

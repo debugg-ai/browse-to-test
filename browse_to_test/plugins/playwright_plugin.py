@@ -267,9 +267,7 @@ class PlaywrightPlugin(OutputPlugin):
         
         if action.action_type == "go_to_url":
             url = action.parameters.get("url", "")
-            if language == "typescript":
-                lines.append(f"    await page.goto('{url}');")
-            elif language == "javascript":
+            if language in ["typescript", "javascript"]:
                 lines.append(f"    await page.goto('{url}');")
             elif language == "csharp":
                 lines.append(f"            await page.GotoAsync(\"{url}\");")
@@ -279,9 +277,7 @@ class PlaywrightPlugin(OutputPlugin):
         elif action.action_type == "input_text":
             text = action.parameters.get("text", "")
             selector = action.selector_info.get("css_selector", "") if action.selector_info else ""
-            if language == "typescript":
-                lines.append(f"    await page.fill('{selector}', '{text}');")
-            elif language == "javascript":
+            if language in ["typescript", "javascript"]:
                 lines.append(f"    await page.fill('{selector}', '{text}');")
             elif language == "csharp":
                 lines.append(f"            await page.FillAsync(\"{selector}\", \"{text}\");")
@@ -290,9 +286,7 @@ class PlaywrightPlugin(OutputPlugin):
                 
         elif action.action_type in ["click_element", "click_element_by_index"]:
             selector = action.selector_info.get("css_selector", "") if action.selector_info else ""
-            if language == "typescript":
-                lines.append(f"    await page.click('{selector}');")
-            elif language == "javascript":
+            if language in ["typescript", "javascript"]:
                 lines.append(f"    await page.click('{selector}');")
             elif language == "csharp":
                 lines.append(f"            await page.ClickAsync(\"{selector}\");")
@@ -302,9 +296,7 @@ class PlaywrightPlugin(OutputPlugin):
         elif action.action_type == "wait":
             seconds = action.parameters.get("seconds", 3)
             wait_ms = int(seconds) * 1000
-            if language == "typescript":
-                lines.append(f"    await page.waitForTimeout({wait_ms});")
-            elif language == "javascript":
+            if language in ["typescript", "javascript"]:
                 lines.append(f"    await page.waitForTimeout({wait_ms});")
             elif language == "csharp":
                 lines.append(f"            await page.WaitForTimeoutAsync({wait_ms});")

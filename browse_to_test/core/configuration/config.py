@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Configuration management for the browse-to-test library.
-"""
+"""Configuration management for the browse-to-test library."""
 
 import os
 import json
@@ -18,6 +16,7 @@ from .comment_manager import CommentManager
 @dataclass
 class AIConfig:
     """Configuration for AI providers."""
+
     provider: str = "openai"
     model: str = "gpt-4"
     api_key: Optional[str] = None
@@ -32,6 +31,7 @@ class AIConfig:
 @dataclass 
 class SharedSetupConfig:
     """Configuration for shared setup generation."""
+
     enabled: bool = True
     setup_dir: str = "browse_to_test/output_langs/generated"
     utilities_file: str = "utilities.py"
@@ -47,6 +47,7 @@ class SharedSetupConfig:
 @dataclass
 class OutputConfig:
     """Configuration for output generation."""
+
     framework: str = "playwright"
     language: str = "python"
     test_type: str = "script"  # script, test, spec
@@ -159,6 +160,7 @@ class OutputConfig:
 @dataclass
 class ProcessingConfig:
     """Configuration for data processing."""
+
     analyze_actions_with_ai: bool = True
     optimize_selectors: bool = True
     validate_actions: bool = True
@@ -198,6 +200,7 @@ class ProcessingConfig:
 @dataclass
 class Config:
     """Main configuration class."""
+
     ai: AIConfig = field(default_factory=AIConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
     processing: ProcessingConfig = field(default_factory=ProcessingConfig)
@@ -533,7 +536,7 @@ class Config:
         self.processing.max_context_prompt_size = 12000
     
     def __repr__(self) -> str:
-        """String representation of config."""
+        """Return string representation of config."""
         return f"Config(provider={self.ai.provider}, framework={self.output.framework}, context={self.processing.collect_system_context})" 
 
 

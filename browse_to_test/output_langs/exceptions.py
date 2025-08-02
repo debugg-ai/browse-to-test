@@ -1,11 +1,10 @@
-"""
-Custom exceptions for the output language generation system.
-"""
+"""Custom exceptions for the output language generation system."""
 from typing import List, Optional
 
 
 class OutputLanguageError(Exception):
     """Base exception for all output language generation errors."""
+
     pass
 
 

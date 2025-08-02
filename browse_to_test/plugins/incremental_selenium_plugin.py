@@ -122,11 +122,10 @@ class IncrementalSeleniumPlugin(SeleniumPlugin):
             step_code.append(f"{indent}")
             
             # Add timing information if available
-            if step.timing_info and self.config.include_logging:
-                if 'elapsed_time' in step.timing_info:
-                    elapsed = step.timing_info['elapsed_time']
-                    step_code.append(f"{indent}# Step completed in {elapsed:.2f}s")
-                    step_code.append(f"{indent}")
+            if step.timing_info and self.config.include_logging and 'elapsed_time' in step.timing_info:
+                elapsed = step.timing_info['elapsed_time']
+                step_code.append(f"{indent}# Step completed in {elapsed:.2f}s")
+                step_code.append(f"{indent}")
             
             return {
                 'step_code': step_code,

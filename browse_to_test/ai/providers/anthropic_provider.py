@@ -1,6 +1,4 @@
-"""
-Anthropic (Claude) provider implementation.
-"""
+"""Anthropic (Claude) provider implementation."""
 
 import time
 import asyncio
@@ -24,8 +22,8 @@ class AnthropicProvider(AIProvider):
         self.max_tokens = kwargs.get('max_tokens', 4000)
         self.timeout = kwargs.get('timeout', 30)
         self.retry_attempts = kwargs.get('retry_attempts', 3)
-        self.extra_params = {k: v for k, v in kwargs.items() 
-                           if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts']}
+        self.extra_params = {k: v for k, v in kwargs.items()
+                             if k not in ['model', 'temperature', 'max_tokens', 'timeout', 'retry_attempts']}
         
         # Initialize enhanced error handling and optimization
         self.error_handler = AIErrorHandler(

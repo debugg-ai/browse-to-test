@@ -332,24 +332,20 @@ class LanguageManager:
             action_type = step['type'].lower()
             
             # Validate action-specific requirements
-            if action_type in ['click', 'fill', 'select', 'assert_visible']:
-                if 'selector' not in step or not step['selector'].strip():
-                    issues.append(f"Step {step_num}: Missing or empty 'selector' for {action_type} action")
+            if action_type in ['click', 'fill', 'select', 'assert_visible'] and ('selector' not in step or not step['selector'].strip()):
+                issues.append(f"Step {step_num}: Missing or empty 'selector' for {action_type} action")
             
-            if action_type in ['fill', 'select']:
-                if 'text' not in step or step['text'] is None:
-                    issues.append(f"Step {step_num}: Missing 'text' field for {action_type} action")
+            if action_type in ['fill', 'select'] and ('text' not in step or step['text'] is None):
+                issues.append(f"Step {step_num}: Missing 'text' field for {action_type} action")
             
-            if action_type == 'navigate':
-                if 'url' not in step or not step['url'].strip():
-                    issues.append(f"Step {step_num}: Missing or empty 'url' for navigate action")
+            if action_type == 'navigate' and ('url' not in step or not step['url'].strip()):
+                issues.append(f"Step {step_num}: Missing or empty 'url' for navigate action")
             
             # Check for potentially problematic selectors
             if 'selector' in step:
                 selector = step['selector']
-                if '//' in selector:  # Likely XPath
-                    if self.framework == 'playwright' and not selector.startswith('xpath='):
-                        issues.append(f"Step {step_num}: XPath selector should be prefixed with 'xpath=' for Playwright")
+                if '//' in selector and self.framework == 'playwright' and not selector.startswith('xpath='):  # Likely XPath
+                    issues.append(f"Step {step_num}: XPath selector should be prefixed with 'xpath=' for Playwright")
         
         return issues
     

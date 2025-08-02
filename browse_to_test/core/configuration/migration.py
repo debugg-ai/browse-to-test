@@ -366,8 +366,8 @@ class ConfigMigrator:
                 complexity += 1
         
         # Custom directories
-        if (processing_config.scan_test_directories != 
-            ["tests/", "test/", "spec/", "e2e/", "__tests__/"]):
+        if (processing_config.scan_test_directories
+            != ["tests/", "test/", "spec/", "e2e/", "__tests__/"]):
             features.append("custom_scan_directories")
             complexity += 2
         
@@ -387,14 +387,14 @@ class ConfigMigrator:
             return "fast"
         
         # Accurate preset indicators
-        if (has_context and has_ai_analysis and 
-            analysis_depth == "deep" and max_tokens >= 6000):
+        if (has_context and has_ai_analysis
+            and analysis_depth == "deep" and max_tokens >= 6000):
             return "accurate"
         
         # Production preset indicators
-        if (legacy_config.output.include_error_handling and 
-            legacy_config.output.mask_sensitive_data and
-            legacy_config.output.include_logging):
+        if (legacy_config.output.include_error_handling
+            and legacy_config.output.mask_sensitive_data
+            and legacy_config.output.include_logging):
             return "production"
         
         # Default to balanced
@@ -438,12 +438,12 @@ class ConfigMigrator:
             overrides["max_tokens"] = legacy_config.ai.max_tokens
         
         # Check processing settings
-        if (legacy_config.processing.collect_system_context != 
-            preset_defaults.get("enable_context_collection", True)):
+        if (legacy_config.processing.collect_system_context
+            != preset_defaults.get("enable_context_collection", True)):
             overrides["enable_context_collection"] = legacy_config.processing.collect_system_context
         
-        if (legacy_config.processing.analyze_actions_with_ai != 
-            preset_defaults.get("enable_ai_analysis", True)):
+        if (legacy_config.processing.analyze_actions_with_ai
+            != preset_defaults.get("enable_ai_analysis", True)):
             overrides["enable_ai_analysis"] = legacy_config.processing.analyze_actions_with_ai
         
         # Check output settings
@@ -514,9 +514,7 @@ class ConfigMigrator:
 
 
 class DeprecationManager:
-    """
-    Manages deprecation warnings and migration guidance for legacy APIs.
-    """
+    """Manages deprecation warnings and migration guidance for legacy APIs."""
     
     @staticmethod
     def warn_legacy_config_usage(feature_name: str, replacement: str):

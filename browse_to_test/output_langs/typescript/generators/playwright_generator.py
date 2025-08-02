@@ -306,9 +306,7 @@ class PlaywrightTypescriptGenerator:
             lines.append(f"{indent}await page.goto('{url}');")
             
         elif action_type in ['click', 'fill', 'select']:
-            if action_type == 'fill':
-                lines.append(f"{indent}await tryLocateAndActPlaywright(page, '{selector}', '{action_type}', '{text}');")
-            elif action_type == 'select':
+            if action_type in ['fill', 'select']:
                 lines.append(f"{indent}await tryLocateAndActPlaywright(page, '{selector}', '{action_type}', '{text}');")
             else:
                 lines.append(f"{indent}await tryLocateAndActPlaywright(page, '{selector}', '{action_type}');")

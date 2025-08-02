@@ -1,6 +1,4 @@
-"""
-JavaScript code generators for different testing frameworks.
-"""
+"""JavaScript code generators for different testing frameworks."""
 
 from .playwright_generator import PlaywrightJavascriptGenerator
 

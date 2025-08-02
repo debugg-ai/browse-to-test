@@ -14,10 +14,12 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 from enum import Enum
+from browse_to_test.core.configuration.config import Config
 
 
 class ConfigPreset(Enum):
     """Pre-configured settings for common use cases."""
+
     FAST = "fast"           # Speed-optimized, minimal analysis
     BALANCED = "balanced"   # Good balance of speed and accuracy  
     ACCURATE = "accurate"   # Accuracy-optimized, comprehensive analysis
@@ -32,6 +34,7 @@ class SimpleConfig:
     Only essential options are exposed at the top level.
     Advanced options are available through progressive disclosure.
     """
+
     # Core settings (80% of users only need these)
     framework: str = "playwright"
     language: str = "python" 

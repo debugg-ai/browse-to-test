@@ -274,9 +274,8 @@ class SharedSetupManager:
                 imports = ["import { Page } from '@playwright/test'"]
             # Add more TypeScript imports as needed
         
-        elif language == "javascript":
-            if framework == "playwright":
-                imports = ["const { Page } = require('@playwright/test')"]
+        elif language == "javascript" and framework == "playwright":
+            imports = ["const { Page } = require('@playwright/test')"]
             # Add more JavaScript imports as needed
         
         # Add more language-specific imports as needed
@@ -443,10 +442,7 @@ class SharedSetupManager:
             all_imports.update(imports)
         
         # Add imports (language-specific)
-        if all_imports and language == "python":
-            lines.extend(sorted(all_imports))
-            lines.append("")
-        elif all_imports and language in ["typescript", "javascript"]:
+        if all_imports and (language == "python" or language in ["typescript", "javascript"]):
             lines.extend(sorted(all_imports))
             lines.append("")
         
@@ -474,9 +470,7 @@ class SharedSetupManager:
                     lines.extend(["", ""])
         
         # Add language-specific file footer
-        if language == "csharp":
-            lines.append("}")
-        elif language == "java":
+        if language in ["csharp", "java"]:
             lines.append("}")
         
         # Write file
@@ -534,7 +528,7 @@ class SharedSetupManager:
                 
                 # Add framework utilities if they exist
                 if self._framework_utilities:
-                    for framework, utilities in self._framework_utilities.items():
+                    for _framework, utilities in self._framework_utilities.items():
                         lines.append(f"export {{ {', '.join(utilities)} }} from './{self.config.framework_helpers_file}';")
             
             index_path.write_text('\n'.join(lines))
@@ -671,10 +665,7 @@ class SharedSetupManager:
                 imports = utility.get_imports_for_language(language)
                 framework_imports.update(imports)
             
-            if framework_imports and language == "python":
-                lines.extend(sorted(framework_imports))
-                lines.append("")
-            elif framework_imports and language in ["typescript", "javascript"]:
+            if framework_imports and (language == "python" or language in ["typescript", "javascript"]):
                 lines.extend(sorted(framework_imports))
                 lines.append("")
             
@@ -690,9 +681,7 @@ class SharedSetupManager:
                     lines.extend(["", ""])
         
         # Add language-specific file footer
-        if language == "csharp":
-            lines.append("}")
-        elif language == "java":
+        if language in ["csharp", "java"]:
             lines.append("}")
         
         helpers_path.write_text('\n'.join(lines))

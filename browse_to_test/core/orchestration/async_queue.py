@@ -1,6 +1,4 @@
-"""
-Async queue manager for sequential AI processing while allowing parallel non-AI work.
-"""
+"""Async queue manager for sequential AI processing while allowing parallel non-AI work."""
 
 import asyncio
 import logging
@@ -14,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class TaskStatus(Enum):
     """Status of tasks in the queue."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -24,6 +23,7 @@ class TaskStatus(Enum):
 @dataclass
 class QueuedTask:
     """A task in the async queue."""
+
     id: str
     callable_func: Callable[..., Awaitable[Any]]
     args: tuple = field(default_factory=tuple)

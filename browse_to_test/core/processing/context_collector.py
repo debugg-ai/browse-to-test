@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Context collector for gathering system and test information to enhance AI analysis.
-"""
+"""Context collector for gathering system and test information to enhance AI analysis."""
 
 import os
 import re
@@ -17,6 +15,7 @@ from ..configuration.config import Config
 @dataclass
 class TestFileInfo:
     """Information about an existing test file."""
+
     file_path: str
     framework: str
     language: str
@@ -32,6 +31,7 @@ class TestFileInfo:
 @dataclass
 class ProjectContext:
     """Overall project context information."""
+
     project_root: str
     name: Optional[str] = None
     description: Optional[str] = None
@@ -44,6 +44,7 @@ class ProjectContext:
 @dataclass
 class SystemContext:
     """Complete system context for AI analysis."""
+
     project: ProjectContext
     existing_tests: List[TestFileInfo] = field(default_factory=list)
     documentation: Dict[str, str] = field(default_factory=dict)

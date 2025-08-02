@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BatchConfig:
     """Configuration for batch processing."""
+
     enabled: bool = True
     max_batch_size: int = 5
     batch_timeout: float = 0.5  # seconds
@@ -42,6 +43,7 @@ class BatchConfig:
 @dataclass
 class OptimizationMetrics:
     """Metrics for tracking optimization effectiveness."""
+
     total_steps: int = 0
     ai_calls_made: int = 0
     ai_calls_saved: int = 0

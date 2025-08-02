@@ -1,6 +1,4 @@
-"""
-Plugin registry for managing output plugins.
-"""
+"""Plugin registry for managing output plugins."""
 
 import logging
 from typing import Dict, List, Type, Optional
@@ -100,7 +98,7 @@ class PluginRegistry:
         else:
             # Try to find plugin that supports the framework
             plugin_class = None
-            for plugin_name, plugin_cls in self._plugins.items():
+            for _plugin_name, plugin_cls in self._plugins.items():
                 try:
                     # Create temporary instance to check support
                     temp_instance = plugin_cls(config)
@@ -305,7 +303,7 @@ class PluginRegistry:
     def _get_supported_frameworks(self) -> List[str]:
         """Get all supported frameworks across all plugins."""
         frameworks = set()
-        for plugin_name, plugin_class in self._plugins.items():
+        for _plugin_name, plugin_class in self._plugins.items():
             try:
                 from ..core.config import OutputConfig
                 temp_config = OutputConfig()
@@ -327,7 +325,7 @@ class PluginRegistry:
         Returns:
             True if combination is supported, False otherwise
         """
-        for plugin_name, plugin_class in self._plugins.items():
+        for _plugin_name, plugin_class in self._plugins.items():
             try:
                 from ..core.config import OutputConfig
                 temp_config = OutputConfig(framework=framework, language=language)

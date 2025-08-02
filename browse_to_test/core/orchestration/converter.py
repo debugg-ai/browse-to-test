@@ -210,10 +210,9 @@ class E2eTestConverter:
                 except Exception as e:
                     if self.config.debug:
                         logger.warning(f"AI analysis failed: {e}")
-            elif self.config.processing.analyze_actions_with_ai and not self.ai_provider:
+            elif self.config.processing.analyze_actions_with_ai and not self.ai_provider and self.config.debug:
                 # AI analysis is enabled but no provider available - log warning
-                if self.config.debug:
-                    logger.warning("AI analysis requested but no AI provider available")
+                logger.warning("AI analysis requested but no AI provider available")
             
             # Create plugin and generate script (sync, typically fast)
             plugin = self.plugin_registry.create_plugin(self.config.output)

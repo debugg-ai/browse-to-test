@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BatchableRequest:
     """A request that can be batched with others."""
+
     id: str
     request: AIAnalysisRequest
     priority: int = 0
@@ -60,6 +61,7 @@ class BatchableRequest:
 @dataclass
 class BatchResult:
     """Result of a batch AI request."""
+
     request_id: str
     response: Optional[AIResponse] = None
     error: Optional[Exception] = None

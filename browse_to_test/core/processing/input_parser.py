@@ -215,9 +215,9 @@ class InputParser:
             # Check if it looks like a file path - be more restrictive
             # Must not start with [ or { (JSON indicators) and should be a reasonable file path
             is_potential_file = (
-                not data.strip().startswith(('[', '{')) and
-                len(data) < 500 and  # File paths are usually not very long
-                (data.endswith('.json') or ('/' in data and not 'http' in data))
+                not data.strip().startswith(('[', '{'))
+                and len(data) < 500  # File paths are usually not very long
+                and (data.endswith('.json') or ('/' in data and 'http' not in data))
             )
             
             if is_potential_file:
@@ -255,8 +255,8 @@ class InputParser:
             step_metadata = step_data['metadata'].copy()
         
         # Also include any other fields that aren't model_output, state, or metadata
-        other_fields = {key: value for key, value in step_data.items() 
-                       if key not in ['model_output', 'state', 'metadata']}
+        other_fields = {key: value for key, value in step_data.items()
+                        if key not in ['model_output', 'state', 'metadata']}
         
         if other_fields:
             if step_metadata is None:
@@ -447,11 +447,10 @@ class InputParser:
                     )
                 
                 # Check for empty parameters on actions that typically need them
-                if action.action_type in ['go_to_url', 'input_text', 'search_google']:
-                    if not action.parameters:
-                        issues.append(
-                            f"{action_prefix}: Action '{action.action_type}' has no parameters"
-                        )
+                if action.action_type in ['go_to_url', 'input_text', 'search_google'] and not action.parameters:
+                    issues.append(
+                        f"{action_prefix}: Action '{action.action_type}' has no parameters"
+                    )
         
         return issues
     
@@ -475,7 +474,7 @@ class InputParser:
         for step in parsed_data.steps:
             for action in step.actions:
                 # Check all string values in parameters
-                for param_name, param_value in action.parameters.items():
+                for _param_name, param_value in action.parameters.items():
                     if isinstance(param_value, str):
                         matches = secret_pattern.findall(param_value)
                         sensitive_keys.update(matches)

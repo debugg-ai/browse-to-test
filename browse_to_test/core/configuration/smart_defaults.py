@@ -389,9 +389,9 @@ class SmartDefaults:
             "project_root": str(project_root),
             "testing_frameworks": testing_frameworks,
             "ci_systems": ci_systems,
-            "has_existing_tests": len(list(project_root.glob("**/test*.py"))) + 
-                                 len(list(project_root.glob("**/*.test.js"))) +
-                                 len(list(project_root.glob("**/*.spec.ts"))) > 0,
+            "has_existing_tests": len(list(project_root.glob("**/test*.py")))
+                                 + len(list(project_root.glob("**/*.test.js")))
+                                 + len(list(project_root.glob("**/*.spec.ts"))) > 0,
             "recommended_output_dir": SmartDefaults._get_recommended_output_dir(project_root, project_type),
             "sensitive_patterns": SmartDefaults._get_sensitive_patterns(project_type),
         }

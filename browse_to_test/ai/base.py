@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Base classes for AI provider integration.
-"""
+"""Base classes for AI provider integration."""
 
 import asyncio
 import aiohttp
@@ -23,6 +21,7 @@ class AIProviderError(Exception):
 
 class AnalysisType(Enum):
     """Types of AI analysis that can be performed."""
+
     CONVERSION = "conversion"
     OPTIMIZATION = "optimization"
     VALIDATION = "validation"
@@ -34,6 +33,7 @@ class AnalysisType(Enum):
 @dataclass
 class AIResponse:
     """Response from an AI provider."""
+
     content: str
     model: str
     provider: str
@@ -45,6 +45,7 @@ class AIResponse:
 @dataclass
 class AIAnalysisRequest:
     """Request for AI analysis with context support."""
+
     analysis_type: AnalysisType
     automation_data: List[Dict[str, Any]]
     target_framework: str
@@ -56,7 +57,6 @@ class AIAnalysisRequest:
     
     def to_prompt(self) -> str:
         """Generate AI prompt based on analysis type and available context."""
-        
         if self.analysis_type == AnalysisType.CONVERSION:
             return self._generate_conversion_prompt()
         elif self.analysis_type == AnalysisType.OPTIMIZATION:
@@ -321,7 +321,7 @@ Please provide:
                 # Extract common component patterns
                 all_components = []
                 all_props = []
-                for comp_file, comp_info in list(self.system_context.ui_components.items())[:5]:
+                for _comp_file, comp_info in list(self.system_context.ui_components.items())[:5]:
                     if isinstance(comp_info, dict):
                         all_components.extend(comp_info.get('component_names', []))
                         all_props.extend(comp_info.get('props', []))
@@ -414,8 +414,8 @@ Please provide:
         
         # Add framework-specific patterns from existing tests
         if hasattr(self.system_context, 'existing_tests'):
-            framework_tests = [test for test in self.system_context.existing_tests 
-                             if test.framework == self.target_framework]
+            framework_tests = [test for test in self.system_context.existing_tests
+                               if test.framework == self.target_framework]
             
             if framework_tests:
                 context_info += f"This project has {len(framework_tests)} existing {self.target_framework} tests.\n"
@@ -435,7 +435,7 @@ Please provide:
 
 class AIProvider(ABC):
     """Abstract base class for AI providers."""
-    
+
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         self.api_key = api_key
         self.config = kwargs
@@ -452,7 +452,6 @@ class AIProvider(ABC):
     
     def analyze_with_context(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Perform context-aware analysis using the AI provider."""
-        
         # Generate appropriate system prompt based on analysis type
         system_prompt = self._generate_system_prompt(request)
         
@@ -474,7 +473,6 @@ class AIProvider(ABC):
     
     async def analyze_with_context_async(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Perform context-aware analysis using the AI provider asynchronously."""
-        
         # Generate appropriate system prompt based on analysis type
         system_prompt = self._generate_system_prompt(request)
         
@@ -496,7 +494,6 @@ class AIProvider(ABC):
     
     def _generate_system_prompt(self, request: AIAnalysisRequest) -> str:
         """Generate system prompt based on analysis type."""
-        
         base_prompt = f"""You are an expert test automation engineer specializing in {request.target_framework} and browser test automation. You help convert browser automation data into high-quality, maintainable test scripts."""
         
         if request.analysis_type == AnalysisType.INTELLIGENT_ANALYSIS:
