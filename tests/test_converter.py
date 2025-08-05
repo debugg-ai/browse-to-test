@@ -406,7 +406,7 @@ class TestE2eTestConverterIntegration:
         """Test E2eTestConverter with a real configuration."""
         config = ConfigBuilder() \
             .framework("playwright") \
-            .ai_provider("openai", model="gpt-4") \
+            .ai_provider("openai", model="gpt-4.1-mini") \
             .language("python") \
             .include_assertions(True) \
             .enable_context_collection(False) \

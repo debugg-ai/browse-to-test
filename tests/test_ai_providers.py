@@ -146,10 +146,10 @@ class TestAIProviderError:
     
     def test_error_with_provider_info(self):
         """Test error with provider and model info."""
-        error = AIProviderError("Test error", provider="openai", model="gpt-4")
+        error = AIProviderError("Test error", provider="openai", model="gpt-4.1-mini")
         assert str(error) == "Test error"
         assert error.provider == "openai"
-        assert error.model == "gpt-4"
+        assert error.model == "gpt-4.1-mini"
 
 
 class TestAIAnalysisRequest:

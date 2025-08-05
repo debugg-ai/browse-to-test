@@ -150,7 +150,7 @@ class SimpleConfigBuilder:
                 "include_screenshots": False,
             },
             ConfigPreset.BALANCED: {
-                "ai_model": "gpt-4",
+                "ai_model": "gpt-4.1-mini",
                 "ai_temperature": 0.1,
                 "max_tokens": 4000,
                 "enable_context_collection": True,
@@ -159,7 +159,7 @@ class SimpleConfigBuilder:
                 "include_screenshots": False,
             },
             ConfigPreset.ACCURATE: {
-                "ai_model": "gpt-4",
+                "ai_model": "gpt-4.1-mini",
                 "ai_temperature": 0.05,
                 "max_tokens": 8000,
                 "enable_context_collection": True,
@@ -170,7 +170,7 @@ class SimpleConfigBuilder:
                 "include_screenshots": True,
             },
             ConfigPreset.PRODUCTION: {
-                "ai_model": "gpt-4",
+                "ai_model": "gpt-4.1-mini",
                 "ai_temperature": 0.1,
                 "max_tokens": 4000,
                 "enable_context_collection": True,
@@ -208,7 +208,7 @@ class SimpleConfigBuilder:
     
     # === AI Provider Shortcuts ===
     
-    def with_openai(self, api_key: Optional[str] = None, model: str = "gpt-4") -> 'SimpleConfigBuilder':
+    def with_openai(self, api_key: Optional[str] = None, model: str = "gpt-4.1-mini") -> 'SimpleConfigBuilder':
         """Configure OpenAI provider."""
         self._config.ai_provider = "openai"
         if api_key:
@@ -224,7 +224,7 @@ class SimpleConfigBuilder:
         self._config.advanced(ai_model="claude-3-sonnet-20240229")
         return self
     
-    def with_azure_openai(self, api_key: str, endpoint: str, model: str = "gpt-4") -> 'SimpleConfigBuilder':
+    def with_azure_openai(self, api_key: str, endpoint: str, model: str = "gpt-4.1-mini") -> 'SimpleConfigBuilder':
         """Configure Azure OpenAI provider."""
         self._config.ai_provider = "azure"
         self._config.api_key = api_key

@@ -132,7 +132,7 @@ import browse_to_test as btt
 # Build custom configuration with fluent interface
 config = btt.ConfigBuilder() \
     .framework("playwright") \
-    .ai_provider("openai", model="gpt-4") \
+    .ai_provider("openai", model="gpt-4.1-mini") \
     .language("python") \
     .include_assertions(True) \
     .include_error_handling(True) \
@@ -201,7 +201,7 @@ import browse_to_test as btt
 config = btt.Config(
     ai=btt.AIConfig(
         provider="openai",
-        model="gpt-4",
+        model="gpt-4.1-mini",
     ),
     output=btt.OutputConfig(
         framework="playwright",
@@ -310,7 +310,7 @@ config = btt.Config(
     # AI Provider Settings
     ai=btt.AIConfig(
         provider="openai",          # openai, anthropic, azure, local
-        model="gpt-4",              # Provider-specific model
+        model="gpt-4.1-mini",              # Provider-specific model
         temperature=0.1,            # Generation randomness (0-2)
         max_tokens=4000,            # Maximum response tokens
         api_key="your-key",         # API key (or use env vars)

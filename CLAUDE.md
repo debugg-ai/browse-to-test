@@ -74,7 +74,7 @@ Uses a builder pattern for clean configuration:
 ```python
 config = btt.ConfigBuilder() \
     .framework("playwright") \
-    .ai_provider("openai", model="gpt-4") \
+    .ai_provider("openai", model="gpt-4.1-mini") \
     .language("python") \
     .include_assertions(True) \
     .build()

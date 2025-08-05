@@ -175,7 +175,7 @@ def test_config_building():
         config = btt.ConfigBuilder()\\
             .framework("playwright")\\
             .language("typescript")\\
-            .ai_provider("openai", model="gpt-4")\\
+            .ai_provider("openai", model="gpt-4.1-mini")\\
             .build()
         
         print("✅ Config building successful")
@@ -219,7 +219,7 @@ def test_converter():
         config = btt.ConfigBuilder()\\
             .framework("playwright")\\
             .language("typescript")\\
-            .ai_provider("openai", model="gpt-4")\\
+            .ai_provider("openai", model="gpt-4.1-mini")\\
             .build()
         
         converter = btt.E2eTestConverter(config)

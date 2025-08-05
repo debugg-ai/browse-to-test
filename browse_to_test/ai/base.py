@@ -3,6 +3,8 @@
 
 import asyncio
 import aiohttp
+import logging
+import time
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass, field
@@ -433,6 +435,9 @@ Please provide:
         return context_info
 
 
+logger = logging.getLogger(__name__)
+
+
 class AIProvider(ABC):
     """Abstract base class for AI providers."""
 
@@ -452,42 +457,82 @@ class AIProvider(ABC):
     
     def analyze_with_context(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Perform context-aware analysis using the AI provider."""
+        start_time = time.time()
+        
         # Generate appropriate system prompt based on analysis type
         system_prompt = self._generate_system_prompt(request)
         
         # Generate the main prompt
         prompt = request.to_prompt()
         
+        # Calculate total characters for logging
+        total_chars = len(prompt) + (len(system_prompt) if system_prompt else 0)
+        
+        logger.info(f"📊 AI context analysis starting - "
+                   f"Type: {request.analysis_type.value}, "
+                   f"Framework: {request.target_framework}, "
+                   f"Characters: {total_chars:,}, "
+                   f"Has context: {'Yes' if request.system_context else 'No'}")
+        
         # Make the AI call
         response = self.generate(prompt, system_prompt, **kwargs)
+        
+        end_time = time.time()
+        analysis_time = end_time - start_time
+        
+        logger.info(f"✅ AI context analysis completed - "
+                   f"Time: {analysis_time:.2f}s, "
+                   f"Type: {request.analysis_type.value}")
         
         # Add metadata about the analysis
         response.metadata.update({
             'analysis_type': request.analysis_type.value,
             'target_framework': request.target_framework,
             'has_context': request.system_context is not None,
-            'context_summary': request._format_system_context_summary() if request.system_context else None
+            'context_summary': request._format_system_context_summary() if request.system_context else None,
+            'analysis_time': analysis_time,
+            'input_chars': total_chars
         })
         
         return response
     
     async def analyze_with_context_async(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Perform context-aware analysis using the AI provider asynchronously."""
+        start_time = time.time()
+        
         # Generate appropriate system prompt based on analysis type
         system_prompt = self._generate_system_prompt(request)
         
         # Generate the main prompt
         prompt = request.to_prompt()
         
+        # Calculate total characters for logging
+        total_chars = len(prompt) + (len(system_prompt) if system_prompt else 0)
+        
+        logger.info(f"📊 AI async context analysis starting - "
+                   f"Type: {request.analysis_type.value}, "
+                   f"Framework: {request.target_framework}, "
+                   f"Characters: {total_chars:,}, "
+                   f"Has context: {'Yes' if request.system_context else 'No'}")
+        
         # Make the AI call
         response = await self.generate_async(prompt, system_prompt, **kwargs)
+        
+        end_time = time.time()
+        analysis_time = end_time - start_time
+        
+        logger.info(f"✅ AI async context analysis completed - "
+                   f"Time: {analysis_time:.2f}s, "
+                   f"Type: {request.analysis_type.value}")
         
         # Add metadata about the analysis
         response.metadata.update({
             'analysis_type': request.analysis_type.value,
             'target_framework': request.target_framework,
             'has_context': request.system_context is not None,
-            'context_summary': request._format_system_context_summary() if request.system_context else None
+            'context_summary': request._format_system_context_summary() if request.system_context else None,
+            'analysis_time': analysis_time,
+            'input_chars': total_chars
         })
         
         return response

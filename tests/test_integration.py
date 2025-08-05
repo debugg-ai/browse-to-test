@@ -143,7 +143,7 @@ class TestEndToEndWorkflows:
             # Build complex configuration
             config = btt.ConfigBuilder() \
                 .framework("playwright") \
-                .ai_provider("openai", model="gpt-4", api_key="test-key") \
+                .ai_provider("openai", model="gpt-4.1-mini", api_key="test-key") \
                 .language("typescript") \
                 .include_assertions(True) \
                 .include_error_handling(True) \
@@ -162,7 +162,7 @@ class TestEndToEndWorkflows:
             assert result == "# Config-driven test"
             assert converter.config.output.framework == "playwright"
             assert converter.config.ai.provider == "openai"
-            assert converter.config.ai.model == "gpt-4"
+            assert converter.config.ai.model == "gpt-4.1-mini"
             assert converter.config.output.language == "typescript"
             assert converter.config.output.include_assertions is True
             assert converter.config.ai.temperature == 0.3
@@ -395,7 +395,7 @@ class TestRealWorldScenarios:
         # Build a complex configuration
         config = btt.ConfigBuilder() \
             .framework("playwright") \
-            .ai_provider("openai", model="gpt-4") \
+            .ai_provider("openai", model="gpt-4.1-mini") \
             .language("typescript") \
             .include_assertions(True) \
             .include_error_handling(True) \
@@ -425,7 +425,7 @@ class TestRealWorldScenarios:
             
             # Verify config hasn't changed
             assert converter.config.output.framework == "playwright"
-            assert converter.config.ai.model == "gpt-4"
+            assert converter.config.ai.model == "gpt-4.1-mini"
             assert converter.config.output.language == "typescript"
             assert converter.config.ai.temperature == 0.2
 

@@ -279,7 +279,7 @@ class ConfigMigrator:
         complexity = 0
         
         # Check for non-default values
-        defaults = {"provider": "openai", "model": "gpt-4", "temperature": 0.1, "max_tokens": 4000}
+        defaults = {"provider": "openai", "model": "gpt-4.1-mini", "temperature": 0.1, "max_tokens": 4000}
         
         for attr, default in defaults.items():
             if hasattr(ai_config, attr) and getattr(ai_config, attr) != default:

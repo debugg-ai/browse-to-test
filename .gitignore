@@ -9,3 +9,4 @@ examples/example_outputs/
 /build
 build/
 dist/
+/examples/output

@@ -140,7 +140,7 @@ def main():
     basic_config = btt.Config(
         ai=btt.AIConfig(
             provider="openai",
-            model="gpt-4",
+            model="gpt-4.1-mini",
             temperature=0.1
         ),
         output=btt.OutputConfig(
@@ -171,7 +171,7 @@ def main():
     context_config = btt.Config(
         ai=btt.AIConfig(
             provider="openai",
-            model="gpt-4",
+            model="gpt-4.1-mini",
             temperature=0.1
         ),
         output=btt.OutputConfig(
