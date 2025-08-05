@@ -10,3 +10,6 @@ examples/example_outputs/
 build/
 dist/
 /examples/output
+*.wgw0
+.coverage
+.coverage*

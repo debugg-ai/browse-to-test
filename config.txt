@@ -1,0 +1,50 @@
+{
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "api_key": null,
+    "temperature": 0.1,
+    "max_tokens": 4000,
+    "timeout": 30,
+    "retry_attempts": 3,
+    "base_url": null,
+    "extra_params": {}
+  },
+  "output": {
+    "framework": "playwright",
+    "language": "python",
+    "include_assertions": true,
+    "include_error_handling": true,
+    "include_waits": true,
+    "include_logging": false,
+    "include_screenshots": false,
+    "add_comments": true,
+    "test_timeout": 30000,
+    "test_type": "script",
+    "browser_options": {},
+    "sensitive_data_keys": [
+      "password",
+      "pass",
+      "pwd",
+      "secret",
+      "token",
+      "key",
+      "auth",
+      "api_key",
+      "email",
+      "username",
+      "credit_card",
+      "cc",
+      "card_number",
+      "ssn",
+      "social"
+    ]
+  },
+  "processing": {
+    "enable_context_collection": true,
+    "enable_ai_analysis": true,
+    "mask_sensitive_data": true,
+    "strict_mode": false,
+    "enable_final_script_analysis": false
+  }
+}

@@ -16,8 +16,8 @@ from typing import List, Dict, Any
 import functools
 
 import browse_to_test as btt
-from browse_to_test.ai.base import AIResponse, AIProviderError, AIAnalysisRequest
-from browse_to_test.core.orchestration.async_queue import get_global_queue_manager, reset_global_queue_manager
+from browse_to_test.ai.unified import AIResponse, AIProviderError, AIAnalysisRequest
+from browse_to_test.core.executor import get_global_queue_manager, reset_global_queue_manager
 
 
 def async_timeout(timeout_seconds=30):
@@ -465,7 +465,7 @@ class TestAsyncEndToEndIntegration:
             session = btt.AsyncIncrementalSession(config)
             
             # Start session
-            start_result = await session.start(target_url="https://app.example.com")
+            start_result = await session.start_async(target_url="https://app.example.com")
             assert start_result.success
             
             # Add steps incrementally with completion waiting (simplified)
@@ -555,7 +555,7 @@ class TestAsyncErrorHandlingIntegration:
         
         with patch('browse_to_test.ai.factory.AIProviderFactory.create_provider', return_value=provider):
             session = btt.AsyncIncrementalSession(config)
-            await session.start()
+            await session.start_async()
             
             # Add some successful steps
             for i, step in enumerate(realistic_automation_flow[:2]):
@@ -607,7 +607,7 @@ class TestAsyncErrorHandlingIntegration:
                 btt.ConfigBuilder().framework("playwright").ai_provider("openai").build()
             )
             
-            await session.start()
+            await session.start_async()
             
             # Add step that will timeout
             result = await session.add_step_async(
@@ -647,7 +647,7 @@ class TestAsyncPerformanceIntegration:
             session = btt.AsyncIncrementalSession(config)
             
             try:
-                await session.start()
+                await session.start_async()
                 
                 # Queue all steps rapidly
                 queue_start = time.time()
@@ -719,7 +719,7 @@ class TestAsyncPerformanceIntegration:
             session = btt.AsyncIncrementalSession(config)
             
             try:
-                await session.start()
+                await session.start_async()
                 
                 # Process steps in batches to simulate real usage
                 all_task_ids = []
@@ -774,7 +774,7 @@ class TestAsyncPerformanceIntegration:
             with patch('browse_to_test.ai.factory.AIProviderFactory.create_provider', return_value=provider):
                 session = btt.AsyncIncrementalSession(config)
                 try:
-                    await session.start(target_url=f"https://example{session_id}.com")
+                    await session.start_async(target_url=f"https://example{session_id}.com")
                     
                     # Queue steps
                     task_ids = []

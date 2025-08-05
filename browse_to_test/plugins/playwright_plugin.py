@@ -9,9 +9,10 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from .base import OutputPlugin, GeneratedTestScript, PluginError
-from ..core.configuration.config import OutputConfig
+from ..core.config import Config as OutputConfig
 from ..core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
-from ..core.configuration.language_templates import LanguageTemplateManager
+from ..core.config import LanguageTemplateManager
+from ..security.url_validator import sanitize_url_for_testing, is_safe_url
 
 
 logger = logging.getLogger(__name__)
@@ -117,6 +118,8 @@ class PlaywrightPlugin(OutputPlugin):
             "headless": framework_config.get("headless", False),
             "viewport_width": framework_config.get("viewport_width", 1280),
             "viewport_height": framework_config.get("viewport_height", 720),
+            "window_width": framework_config.get("viewport_width", 1280),  # Alias for compatibility
+            "window_height": framework_config.get("viewport_height", 720),  # Alias for compatibility
             "timeout": framework_config.get("timeout", 30000),
             "include_assertions": self.config.include_assertions,
             "include_waits": self.config.include_waits,
@@ -267,6 +270,13 @@ class PlaywrightPlugin(OutputPlugin):
         
         if action.action_type == "go_to_url":
             url = action.parameters.get("url", "")
+            # Security: Validate and sanitize URL to prevent JavaScript injection
+            if not is_safe_url(url):
+                self.logger.warning(f"Unsafe URL detected and sanitized: {url}")
+                url = sanitize_url_for_testing(url)
+                comment_prefix = "//" if language in ["typescript", "javascript", "csharp", "java"] else "#"
+                lines.append(f"    {comment_prefix} Original URL was unsafe and has been sanitized for security")
+            
             if language in ["typescript", "javascript"]:
                 lines.append(f"    await page.goto('{url}');")
             elif language == "csharp":
@@ -309,7 +319,7 @@ class PlaywrightPlugin(OutputPlugin):
         
         return lines
     
-    def _generate_imports(self) -> List[str]:
+    def _generate_imports(self, include_test_framework: bool = True) -> List[str]:
         """Generate import statements."""
         imports = [
             "import asyncio",
@@ -320,11 +330,21 @@ class PlaywrightPlugin(OutputPlugin):
             "import urllib.parse",
             "from playwright.async_api import async_playwright, Page, BrowserContext",
             "from dotenv import load_dotenv",
+        ]
+        
+        # Add test framework imports for initial script generation
+        if include_test_framework:
+            imports.extend([
+                "import pytest",
+                "",
+            ])
+        
+        imports.extend([
             "",
             "# Load environment variables",
             "load_dotenv(override=True)",
             "",
-        ]
+        ])
         
         if self.config.include_error_handling:
             imports.extend([
@@ -418,9 +438,9 @@ class PlaywrightPlugin(OutputPlugin):
             "        locator = page.locator(selector).first",
             "        ",
             "        if action_type == 'click':",
-            "            await locator.click(timeout=10000)",
+            f"            await locator.click(timeout={self.config.test_timeout})",
             "        elif action_type == 'fill' and text is not None:",
-            "            await locator.fill(text, timeout=10000)",
+            f"            await locator.fill(text, timeout={self.config.test_timeout})",
             "        else:",
             "            raise ValueError(f'Unknown action type: {action_type}')",
             "        ",
@@ -534,9 +554,9 @@ class PlaywrightPlugin(OutputPlugin):
         
         if action.action_type == "go_to_url":
             return self._generate_go_to_url(action, step_info)
-        elif action.action_type == "input_text":
+        elif action.action_type in ["input_text", "fill"]:
             return self._generate_input_text(action, step_info)
-        elif action.action_type in ["click_element", "click_element_by_index"]:
+        elif action.action_type in ["click_element", "click_element_by_index", "click"]:
             return self._generate_click_element(action, step_info)
         elif action.action_type == "scroll_down":
             return self._generate_scroll(action, step_info, "down")
@@ -554,17 +574,28 @@ class PlaywrightPlugin(OutputPlugin):
             return [f"            # Unsupported action: {action.action_type} ({step_info})"]
     
     def _generate_go_to_url(self, action: ParsedAction, step_info: str) -> List[str]:
-        """Generate go_to_url action code."""
+        """Generate go_to_url action code with security validation."""
         url = action.parameters.get("url", "")
         if not url:
             return [f"            # Skipping go_to_url: missing URL ({step_info})"]
         
-        lines = []
+        # Security: Validate and sanitize URL to prevent JavaScript injection
+        if not is_safe_url(url):
+            self.logger.warning(f"Unsafe URL detected and sanitized: {url}")
+            sanitized_url = sanitize_url_for_testing(url)
+            lines = [
+                f"            # Original URL was unsafe and has been sanitized for security",
+                f"            # Using safe placeholder URL instead",
+            ]
+        else:
+            sanitized_url = url
+            lines = []
+        
         if self.config.include_logging:
-            lines.append(f"            print(f'Navigating to: {url} ({step_info})')")
+            lines.append(f"            print(f'Navigating to: {sanitized_url} ({step_info})')")
         
         lines.extend([
-            f"            await page.goto({repr(url)}, timeout={self.get_template_variables()['timeout']})",
+            f"            await page.goto({repr(sanitized_url)}, timeout={self.get_template_variables()['timeout']})",
             f"            await page.wait_for_load_state('load')",
         ])
         
@@ -574,7 +605,7 @@ class PlaywrightPlugin(OutputPlugin):
         if self.config.include_assertions:
             lines.extend([
                 f"            # Verify navigation",
-                f"            assert '{url}' in page.url, f'Navigation failed. Expected {url}, got {{page.url}}'",
+                f"            assert '{sanitized_url}' in page.url, f'Navigation failed. Expected {sanitized_url}, got {{page.url}}'",
             ])
         
         return lines
@@ -586,7 +617,7 @@ class PlaywrightPlugin(OutputPlugin):
             return [f"            # Skipping input_text: missing selector or text ({step_info})"]
         
         selector = self._get_best_selector(action.selector_info)
-        clean_text = self._handle_sensitive_data(text)
+        clean_text = self._handle_sensitive_data(text, selector)
         
         lines = []
         if self.config.include_logging:
@@ -674,9 +705,120 @@ class PlaywrightPlugin(OutputPlugin):
         
         return lines
     
+    def generate_initial_script(self, target_url=None, config=None):
+        """
+        Generate initial script for incremental session.
+        """
+        lines = []
+        
+        # Add imports
+        lines.extend(self._generate_imports())
+        
+        # Add sensitive data configuration
+        lines.extend(self._generate_sensitive_data_config())
+        
+        # Add helper functions
+        lines.extend(self._generate_helper_functions())
+        
+        # Add main test function start
+        lines.extend([
+            "async def run_test():",
+            "    \"\"\"Main test function.\"\"\"",
+            "    exit_code = 0",
+            "    start_time = None",
+            "    try:",
+            "        start_time = asyncio.get_event_loop().time()",
+            "        async with async_playwright() as p:",
+            "            print('Starting chromium browser...')",
+        ])
+        
+        # Add browser setup
+        template_vars = self.get_template_variables()
+        lines.extend([
+            "            browser = await p.chromium.launch(",
+            f"                headless={template_vars['headless']},",
+            "                timeout=30000,",
+            "            )",
+            "",
+            "            context = await browser.new_context(",
+            f"                viewport={{'width': {template_vars['window_width']}, 'height': {template_vars['window_height']}}},",
+            "            )",
+            "",
+            "            page = await context.new_page()",
+            "            print('Browser context created')",
+            "",
+        ])
+        
+        # Navigate to target URL if provided
+        if target_url:
+            lines.extend([
+                f"            # Step 1",
+                f"            await page.goto({repr(target_url)}, timeout=30000)",
+                "            await page.wait_for_load_state('load')",
+                "            await page.wait_for_timeout(1000)",
+                "            # Verify navigation",
+                f"            assert {repr(target_url)} in page.url, f'Navigation failed. Expected {target_url}, got {{page.url}}'",
+                "",
+            ])
+        
+        return "\n".join(lines)
+    
+    def append_step_to_script(self, current_script, step, config=None):
+        """
+        Append a step to existing script for incremental session.
+        """
+        indent = "            "
+        
+        # Generate step actions
+        step_lines = []
+        step_lines.append(f"{indent}# Step {step.step_index + 1}")
+        
+        for action in step.actions:
+            step_lines.extend(self._generate_action_code(action, step.step_index, indent))
+        
+        step_lines.append(f"{indent}")
+        
+        # Insert before the closing of try block
+        step_code = "\n".join(step_lines)
+        return current_script + "\n" + step_code
+    
+    def finalize_script(self, script, config=None):
+        """
+        Finalize the complete script for incremental session.
+        """
+        lines = [script]
+        
+        # Add closing and cleanup
+        lines.extend([
+            "            print('Test completed successfully')",
+            "            await context.close()",
+            "            await browser.close()",
+            "            print('Browser closed')",
+            "    except E2eActionError as e:",
+            "        print(f'Test failed: {e}', file=sys.stderr)",
+            "        exit_code = 1",
+            "    except Exception as e:",
+            "        print(f'Unexpected error: {e}', file=sys.stderr)",
+            "        traceback.print_exc()",
+            "        exit_code = 1",
+            "    finally:",
+            "        if start_time:",
+            "            elapsed = asyncio.get_event_loop().time() - start_time",
+            "            print(f'Test execution time: {elapsed:.2f} seconds')",
+            "        if exit_code != 0:",
+            "            sys.exit(exit_code)",
+        ])
+        
+        # Add entry point
+        lines.extend(self._generate_entry_point())
+        
+        final_content = "\n".join(lines)
+        return self._add_header_comment(self._format_code(final_content))
+    
     def _generate_entry_point(self) -> List[str]:
         """Generate script entry point."""
         return [
+            "",
             "if __name__ == '__main__':",
             "    if os.name == 'nt':",
             "        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())",
@@ -687,12 +829,65 @@ class PlaywrightPlugin(OutputPlugin):
         """Get the best selector from selector info."""
         # Prefer CSS selector for maintainability, fall back to XPath
         if "css_selector" in selector_info and selector_info["css_selector"]:
-            return selector_info["css_selector"]
+            selector = selector_info["css_selector"]
+            return self._sanitize_selector(selector)
         elif "xpath" in selector_info and selector_info["xpath"]:
             xpath = selector_info["xpath"]
             # Remove xpath= prefix if present
             if xpath.startswith("xpath="):
                 xpath = xpath[6:]
-            return f"xpath={xpath}"
+            sanitized_xpath = self._sanitize_selector(xpath)
+            return f"xpath={sanitized_xpath}"
         else:
-            return "body"  # Fallback selector 
+            return "body"  # Fallback selector
+    
+    def _sanitize_selector(self, selector: str) -> str:
+        """Sanitize selectors to prevent injection attacks."""
+        import re
+        
+        # Security: Remove dangerous patterns from selectors
+        dangerous_patterns = [
+            r'javascript:',           # JavaScript URLs
+            r'on\w+\s*=',            # Event handlers like onclick=, onload=
+            r'<script[^>]*>',        # Script tags  
+            r'</script>',            # Script closing tags
+        ]
+        
+        sanitized = selector
+        for pattern in dangerous_patterns:
+            sanitized = re.sub(pattern, '[SANITIZED]', sanitized, flags=re.IGNORECASE)
+        
+        return sanitized
+    
+    # Methods expected by the unified executor
+    def generate_script(self, steps, context, config):
+        """Generate script from steps (compatibility method)."""
+        # Create a mock ParsedAutomationData object
+        from ..core.processing.input_parser import ParsedAutomationData
+        parsed_data = ParsedAutomationData(steps=steps)
+        
+        result = self.generate_test_script(
+            parsed_data=parsed_data,
+            context_hints=context
+        )
+        return result.content
+    
+    async def generate_script_async(self, steps, context, config):
+        """Generate script asynchronously (compatibility method)."""
+        # For now, just call the sync version
+        return self.generate_script(steps, context, config)
+    
+    
+    def append_step_to_script(self, current_script, step, config):
+        """Append a step to existing script."""
+        # Simple implementation - just add comments for now
+        return current_script + f"\n        # Step {step.step_index}: {len(step.actions)} action(s)\n"
+    
+    async def append_step_to_script_async(self, current_script, step, config):
+        """Append a step to script asynchronously."""
+        return self.append_step_to_script(current_script, step, config)
+    
+    def finalize_script(self, script, config):
+        """Finalize the script."""
+        # Just return the script as-is for now
+        return script 

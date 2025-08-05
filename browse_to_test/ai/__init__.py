@@ -1,21 +1,24 @@
 """
 AI interface layer for the browse-to-test library.
 
-Provides abstractions for different AI providers and models.
+Provides unified, simplified abstractions for different AI providers and models.
 """
 
-from .base import AIProvider, AIResponse, AIProviderError, AIAnalysisRequest, AnalysisType
+from .unified import AIProvider, AIResponse, AIProviderError, OpenAIProvider, AnthropicProvider, get_optimized_prompt
 from .factory import AIProviderFactory
-from .providers.openai_provider import OpenAIProvider
-from .providers.anthropic_provider import AnthropicProvider
+
+# Import from unified module
+from .unified import AIAnalysisRequest, AnalysisType
 
 __all__ = [
     "AIProvider",
-    "AIResponse",
+    "AIResponse", 
     "AIProviderError",
-    "AIAnalysisRequest",
-    "AnalysisType", 
     "AIProviderFactory",
     "OpenAIProvider",
     "AnthropicProvider",
+    "get_optimized_prompt",
+    # Backward compatibility
+    "AIAnalysisRequest",
+    "AnalysisType",
 ] 

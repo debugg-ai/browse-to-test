@@ -90,79 +90,79 @@ def test_sync_session_qa():
     except Exception as e:
         print(f"   ❌ Sync session test failed: {e}")
 
-# @pytest.mark.asyncio
-# async def test_async_session_qa():
-#     """Test async session with optional QA analysis."""
-#     print("\n🧪 Testing async session with QA analysis...")
+@pytest.mark.asyncio
+async def test_async_session_qa():
+    """Test async session with optional QA analysis."""
+    print("\n🧪 Testing async session with QA analysis...")
     
-#     # Mock the AI provider and related components to avoid real API calls
-#     with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class, \
-#          patch('browse_to_test.ai.factory.AIProviderFactory') as mock_ai_factory:
+    # Mock the AI provider and related components to avoid real API calls
+    with patch('browse_to_test.core.executor.session.E2eTestConverter') as mock_converter_class, \
+         patch('browse_to_test.ai.factory.AIProviderFactory') as mock_ai_factory:
         
-#         # Setup mocks
-#         mock_converter = MagicMock()
-#         mock_converter.convert.return_value = "# Generated Playwright test script\nfrom playwright.sync_api import sync_playwright\n\ndef test_example():\n    pass"
-#         mock_converter.validate_data.return_value = []
-#         mock_converter_class.return_value = mock_converter
+        # Setup mocks
+        mock_converter = MagicMock()
+        mock_converter.convert.return_value = "# Generated Playwright test script\nfrom playwright.sync_api import sync_playwright\n\ndef test_example():\n    pass"
+        mock_converter.validate_data.return_value = []
+        mock_converter_class.return_value = mock_converter
         
-#         mock_ai_provider = MagicMock()
-#         mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider
+        mock_ai_provider = MagicMock()
+        mock_ai_factory.return_value.create_provider.return_value = mock_ai_provider
         
-#         # Create config with fast mode (default)
-#         config = (
-#             btt.ConfigBuilder()
-#             .framework("playwright")
-#             .ai_provider("openai", model="gpt-4.1-mini")
-#             .language("python")
-#             .debug(False)
-#             .build()
-#         )
+        # Create config with fast mode (default)
+        config = (
+            btt.ConfigBuilder()
+            .framework("playwright")
+            .ai_provider("openai", model="gpt-4.1-mini")
+            .language("python")
+            .debug(False)
+            .build()
+        )
         
-#         print(f"   Final analysis enabled: {config.processing.enable_final_script_analysis}")
+        print(f"   Final analysis enabled: {config.processing.enable_final_script_analysis}")
         
-#         # Create session and generate script
-#         session = btt.AsyncIncrementalSession(config)
-#         await session.start(target_url="https://example.com")
+        # Create session and generate script
+        session = btt.AsyncIncrementalSession(config)
+        await session.start_async(target_url="https://example.com")
         
-#         # Add steps
-#         for step_data in SAMPLE_AUTOMATION_DATA:
-#             await session.add_step_async(step_data, wait_for_completion=False)
+        # Add steps
+        for step_data in SAMPLE_AUTOMATION_DATA:
+            await session.add_step_async(step_data, wait_for_completion=False)
         
-#         # Wait for all tasks and finalize with timeout
-#         result = await asyncio.wait_for(session.wait_for_all_tasks(), timeout=40)
-#         await asyncio.wait_for(session.finalize_async(), timeout=40)
+        # Wait for all tasks and finalize with timeout
+        result = await asyncio.wait_for(session.wait_for_all_tasks(), timeout=40)
+        await asyncio.wait_for(session.finalize_async(), timeout=40)
         
-#         print(f"   ✅ Fast script generated: {len(result.current_script)} characters")
+        print(f"   ✅ Fast script generated: {len(result.current_script)} characters")
         
-#         # Mock the analyze_script_quality_async method to return success
-#         mock_qa_result = btt.core.orchestration.session.SessionResult(
-#             success=True,
-#             current_script="# Optimized Playwright test script\nfrom playwright.sync_api import sync_playwright\n\ndef test_example_optimized():\n    pass",
-#             step_count=3,
-#             metadata={
-#                 'quality_analysis_completed': True,
-#                 'analysis_duration': 0.1,
-#                 'original_script_chars': len(result.current_script),
-#                 'analyzed_script_chars': 200,
-#                 'original_script_lines': 4,
-#                 'analyzed_script_lines': 4,
-#                 'improvement_detected': True
-#             }
-#         )
+        # Mock the analyze_script_quality_async method to return success
+        mock_qa_result = btt.core.orchestration.session.SessionResult(
+            success=True,
+            current_script="# Optimized Playwright test script\nfrom playwright.sync_api import sync_playwright\n\ndef test_example_optimized():\n    pass",
+            step_count=3,
+            metadata={
+                'quality_analysis_completed': True,
+                'analysis_duration': 0.1,
+                'original_script_chars': len(result.current_script),
+                'analyzed_script_chars': 200,
+                'original_script_lines': 4,
+                'analyzed_script_lines': 4,
+                'improvement_detected': True
+            }
+        )
         
-#         with patch.object(session, 'analyze_script_quality_async', return_value=mock_qa_result):
-#             # Now perform optional QA analysis
-#             print("   🔍 Performing optional script quality analysis...")
-#             qa_result = await asyncio.wait_for(session.analyze_script_quality_async(timeout=40), timeout=40)
+        with patch.object(session, 'analyze_script_quality_async', return_value=mock_qa_result):
+            # Now perform optional QA analysis
+            print("   🔍 Performing optional script quality analysis...")
+            qa_result = await asyncio.wait_for(session.analyze_script_quality_async(timeout=40), timeout=40)
             
-#             assert qa_result.success, f"QA analysis should succeed, got: {qa_result.validation_issues}"
-#             print(f"   ✅ QA analysis completed!")
-#             print(f"   📊 Metadata: {qa_result.metadata}")
+            assert qa_result.success, f"QA analysis should succeed, got: {qa_result.validation_issues}"
+            print(f"   ✅ QA analysis completed!")
+            print(f"   📊 Metadata: {qa_result.metadata}")
             
-#             # Verify QA metadata
-#             assert 'quality_analysis_completed' in qa_result.metadata
-#             assert qa_result.metadata['quality_analysis_completed'] is True
-#             assert 'improvement_detected' in qa_result.metadata
+            # Verify QA metadata
+            assert 'quality_analysis_completed' in qa_result.metadata
+            assert qa_result.metadata['quality_analysis_completed'] is True
+            assert 'improvement_detected' in qa_result.metadata
 
 @pytest.mark.asyncio
 async def test_async_session_qa_timeout_handling():
@@ -182,7 +182,7 @@ async def test_async_session_qa_timeout_handling():
 def test_sync_session_qa_unit():
     """Unit test for sync session QA functionality."""
     # Mock components to avoid real API calls
-    with patch('browse_to_test.core.orchestration.session.E2eTestConverter') as mock_converter_class:
+    with patch('browse_to_test.core.executor.session.E2eTestConverter') as mock_converter_class:
         
         mock_converter = MagicMock()
         mock_converter.convert.return_value = "# Generated Playwright test script\nfrom playwright.sync_api import sync_playwright\n\ndef test_example():\n    pass"

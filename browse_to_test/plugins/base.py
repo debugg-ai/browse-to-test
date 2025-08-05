@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from ..core.processing.input_parser import ParsedAutomationData, ParsedStep
-from ..core.configuration.config import OutputConfig
+from ..core.config import Config as OutputConfig
 
 
 @dataclass
@@ -199,6 +199,85 @@ class OutputPlugin(ABC):
         """
         raise NotImplementedError(f"Plugin {self.plugin_name} does not support incremental script generation")
     
+    # Compatibility methods for executor interface
+    
+    def generate_script(self, steps, context=None, config=None):
+        """
+        Generate test script (executor compatibility method).
+        
+        This method bridges the executor interface with the plugin interface.
+        For backward compatibility with tests, this method can also be overridden directly.
+        """
+        # Check if this method has been mocked or overridden directly
+        # If so, the mock/override should handle everything
+        
+        # Convert steps to ParsedAutomationData format if needed
+        if hasattr(steps, '__iter__') and not isinstance(steps, ParsedAutomationData):
+            # Assume it's a list of steps
+            parsed_data = ParsedAutomationData(steps=list(steps))
+        else:
+            parsed_data = steps
+        
+        # Call the main plugin method
+        result = self.generate_test_script(
+            parsed_data=parsed_data,
+            analysis_results=None,
+            system_context=context,
+            context_hints=None
+        )
+        
+        # Handle both string returns (from mocks) and object returns (from real implementations)
+        if isinstance(result, str):
+            return result
+        elif hasattr(result, 'content'):
+            return result.content
+        else:
+            return str(result)
+    
+    async def generate_script_async(self, steps, context=None, config=None):
+        """
+        Generate test script asynchronously (executor compatibility method).
+        
+        Default implementation calls synchronous version.
+        Subclasses can override for true async behavior.
+        """
+        return self.generate_script(steps, context, config)
+    
+    def generate_initial_script(self, target_url=None, config=None):
+        """
+        Generate initial script template (incremental session compatibility).
+        
+        Default implementation returns empty script.
+        Subclasses should override for framework-specific initial setup.
+        """
+        return ""
+    
+    def append_step_to_script(self, current_script, step, config=None):
+        """
+        Append a step to existing script (incremental session compatibility).
+        
+        Default implementation returns current script unchanged.
+        Subclasses should override for incremental functionality.
+        """
+        return current_script
+    
+    async def append_step_to_script_async(self, current_script, step, config=None):
+        """
+        Append a step to existing script asynchronously.
+        
+        Default implementation calls synchronous version.
+        """
+        return self.append_step_to_script(current_script, step, config)
+    
+    def finalize_script(self, script, config=None):
+        """
+        Finalize the complete script (incremental session compatibility).
+        
+        Default implementation returns script unchanged.
+        Subclasses should override for final processing.
+        """
+        return script
+    
     # Helper methods
     
     def supports_framework(self, framework: str) -> bool:
@@ -271,12 +350,13 @@ class OutputPlugin(ABC):
         
         return '\n'.join(header_lines) + content
     
-    def _handle_sensitive_data(self, text: str) -> str:
+    def _handle_sensitive_data(self, text: str, selector: str = None) -> str:
         """
         Handle sensitive data placeholders in text.
         
         Args:
             text: Text that may contain sensitive data placeholders
+            selector: Optional selector context for better sensitive data detection
             
         Returns:
             Text with appropriate handling applied
@@ -302,14 +382,35 @@ class OutputPlugin(ABC):
         
         processed_text = re.sub(pattern, replace_secret, text)
         
+        # Security: Sanitize potential XSS attempts in text content
+        xss_patterns = [
+            r'<script[^>]*>.*?</script>',  # Script tags
+            r'javascript:',               # JavaScript URLs  
+            r'on\w+\s*=',                # Event handlers like onclick=
+            r'<iframe[^>]*>.*?</iframe>', # Iframe tags
+        ]
+        
+        for xss_pattern in xss_patterns:
+            if re.search(xss_pattern, processed_text, re.IGNORECASE | re.DOTALL):
+                # Replace with safe placeholder
+                processed_text = re.sub(xss_pattern, '[SANITIZED_CONTENT]', processed_text, flags=re.IGNORECASE | re.DOTALL)
+        
         # Only check for sensitive keywords if no placeholders were replaced
         # This prevents masking placeholder syntax like <secret>password</secret>
         if processed_text == text and self.config.sensitive_data_keys:
             for sensitive_key in self.config.sensitive_data_keys:
                 # Check if the sensitive key is contained in the text (case-insensitive)
-                if sensitive_key.lower() in processed_text.lower():
-                    # Mask the sensitive data
-                    processed_text = "***REDACTED***"
+                text_matches = sensitive_key.lower() in processed_text.lower()
+                # Also check if the sensitive key is in the selector context
+                selector_matches = selector and sensitive_key.lower() in selector.lower()
+                
+                if text_matches or selector_matches:
+                    # For selector-based matching, use placeholder format for template processing
+                    if selector_matches and not text_matches:
+                        processed_text = f"<secret>{sensitive_key}</secret>"
+                    else:
+                        # For text-based matching, use direct redaction
+                        processed_text = "***REDACTED***"
                     break
         
         return processed_text 

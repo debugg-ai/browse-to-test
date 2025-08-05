@@ -5,8 +5,8 @@ import warnings
 from unittest.mock import Mock, patch, MagicMock
 
 import browse_to_test as btt
-from browse_to_test.core.orchestration.converter import E2eTestConverter
-from browse_to_test.core.orchestration.session import IncrementalSession
+from browse_to_test.core.executor import BTTExecutor as E2eTestConverter
+from browse_to_test.core.executor import IncrementalSession
 
 
 class TestSimplifiedAPI:
@@ -14,8 +14,13 @@ class TestSimplifiedAPI:
 
     def test_convert_simple_usage(self, sample_automation_data):
         """Test the basic convert() function with minimal parameters."""
-        with patch.object(E2eTestConverter, 'convert') as mock_convert:
-            mock_convert.return_value = "Generated test script"
+        with patch('browse_to_test.BTTExecutor') as mock_executor_class:
+            mock_executor = Mock()
+            mock_result = Mock()
+            mock_result.success = True
+            mock_result.script = "Generated test script"
+            mock_executor.execute.return_value = mock_result
+            mock_executor_class.return_value = mock_executor
             
             result = btt.convert(
                 sample_automation_data,
@@ -24,12 +29,17 @@ class TestSimplifiedAPI:
             )
             
             assert result == "Generated test script"
-            mock_convert.assert_called_once()
+            mock_executor.execute.assert_called_once()
     
     def test_convert_with_language(self, sample_automation_data):
         """Test convert() with language parameter."""
-        with patch.object(E2eTestConverter, 'convert') as mock_convert:
-            mock_convert.return_value = "TypeScript test script"
+        with patch('browse_to_test.BTTExecutor') as mock_executor_class:
+            mock_executor = Mock()
+            mock_result = Mock()
+            mock_result.success = True
+            mock_result.script = "TypeScript test script"
+            mock_executor.execute.return_value = mock_result
+            mock_executor_class.return_value = mock_executor
             
             result = btt.convert(
                 sample_automation_data,
@@ -40,13 +50,19 @@ class TestSimplifiedAPI:
             
             assert result == "TypeScript test script"
             # Verify the config was built correctly
-            args, kwargs = mock_convert.call_args
+            args, kwargs = mock_executor.execute.call_args
             assert len(args) == 1  # automation_data
     
     def test_convert_with_kwargs(self, sample_automation_data):
         """Test convert() with additional keyword arguments."""
-        with patch.object(E2eTestConverter, 'convert') as mock_convert:
-            mock_convert.return_value = "Enhanced test script"
+        # Mock at the execute level since that's what the new implementation uses
+        with patch('browse_to_test.BTTExecutor') as mock_executor_class:
+            mock_executor = Mock()
+            mock_result = Mock()
+            mock_result.success = True
+            mock_result.script = "Enhanced test script"
+            mock_executor.execute.return_value = mock_result
+            mock_executor_class.return_value = mock_executor
             
             result = btt.convert(
                 sample_automation_data,
@@ -59,7 +75,7 @@ class TestSimplifiedAPI:
             )
             
             assert result == "Enhanced test script"
-            mock_convert.assert_called_once()
+            mock_executor.execute.assert_called_once()
     
     def test_convert_error_handling(self, sample_automation_data):
         """Test convert() error handling."""
@@ -209,9 +225,14 @@ class TestAPIIntegration:
         """Test that convert() and IncrementalSession produce similar results."""
         mock_script = "Generated script content"
         
-        # Test regular convert
-        with patch.object(E2eTestConverter, 'convert') as mock_convert:
-            mock_convert.return_value = mock_script
+        # Test regular convert - mock at BTTExecutor level
+        with patch('browse_to_test.BTTExecutor') as mock_executor_class:
+            mock_executor = Mock()
+            mock_result = Mock()
+            mock_result.success = True
+            mock_result.script = mock_script
+            mock_executor.execute.return_value = mock_result
+            mock_executor_class.return_value = mock_executor
             
             regular_result = btt.convert(sample_automation_data, framework="playwright")
             
@@ -247,8 +268,7 @@ class TestErrorHandlingScenarios:
     
     def test_convert_with_invalid_language(self, sample_automation_data):
         """Test convert() with invalid language."""
-        from browse_to_test.output_langs.exceptions import LanguageNotSupportedError
-        with pytest.raises(LanguageNotSupportedError, match="Language 'invalid_lang' is not supported"):
+        with pytest.raises(ValueError, match="Unsupported language 'invalid_lang'"):
             btt.convert(sample_automation_data, framework="playwright", language="invalid_lang")
     
     def test_convert_with_empty_data(self):
@@ -263,11 +283,9 @@ class TestErrorHandlingScenarios:
         """Test convert() with malformed automation data."""
         malformed_data = [{"invalid": "structure"}]
         
-        with patch.object(E2eTestConverter, 'convert') as mock_convert:
-            mock_convert.side_effect = RuntimeError("Failed to convert automation data")
-            
-            with pytest.raises(RuntimeError, match="Failed to convert automation data"):
-                btt.convert(malformed_data, framework="playwright")
+        # Test with actual malformed data - should get parsing error
+        with pytest.raises(RuntimeError, match="Conversion failed.*missing required.*model_output.*field"):
+            btt.convert(malformed_data, framework="playwright")
     
     def test_list_frameworks_failure(self):
         """Test list_frameworks() when registry fails."""

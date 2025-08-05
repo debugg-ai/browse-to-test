@@ -11,8 +11,8 @@ from browse_to_test.core.processing.action_analyzer import (
 )
 from browse_to_test.core.processing.input_parser import ParsedAutomationData, ParsedStep, ParsedAction
 from browse_to_test.core.processing.context_collector import SystemContext, ProjectContext, TestFileInfo
-from browse_to_test.core.configuration.config import Config, ProcessingConfig
-from browse_to_test.ai.base import AIProvider, AIResponse, AnalysisType
+from browse_to_test.core.config import Config, ProcessingConfig
+from browse_to_test.ai.unified import AIProvider, AIResponse, AnalysisType
 
 
 class TestActionAnalysisResult:

@@ -3,7 +3,7 @@
 import logging
 from typing import Dict, List, Type, Optional
 from .base import OutputPlugin, PluginError
-from ..core.configuration.config import OutputConfig
+from ..core.config import Config as OutputConfig
 
 
 logger = logging.getLogger(__name__)
@@ -32,22 +32,8 @@ class PluginRegistry:
         except ImportError as e:
             logger.warning(f"Selenium plugin not available: {e}")
         
-        # Register incremental plugins
-        try:
-            from .incremental_playwright_plugin import IncrementalPlaywrightPlugin
-            self.register_plugin("incremental_playwright", IncrementalPlaywrightPlugin)
-            # Also register as default for playwright when incremental is requested
-            self.register_plugin("playwright_incremental", IncrementalPlaywrightPlugin)
-        except ImportError as e:
-            logger.warning(f"Incremental Playwright plugin not available: {e}")
-        
-        try:
-            from .incremental_selenium_plugin import IncrementalSeleniumPlugin
-            self.register_plugin("incremental_selenium", IncrementalSeleniumPlugin)
-            # Also register as default for selenium when incremental is requested
-            self.register_plugin("selenium_incremental", IncrementalSeleniumPlugin)
-        except ImportError as e:
-            logger.warning(f"Incremental Selenium plugin not available: {e}")
+        # Register incremental support (handled by main plugins now)
+        # Incremental functionality is now integrated into the main plugins
         
         # Register other plugins if available
         # TODO: Implement these plugins when ready

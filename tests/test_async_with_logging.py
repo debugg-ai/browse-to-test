@@ -102,7 +102,7 @@ async def test_with_ai_enabled():
     try:
         # Start session
         print(f"\n⏰ {time.strftime('%H:%M:%S')} - Starting session...")
-        result = await asyncio.wait_for(session.start("https://debugg.ai"), timeout=30.0)
+        result = await asyncio.wait_for(session.start_async("https://debugg.ai"), timeout=30.0)
         
         if not result.success:
             print(f"❌ Session start failed: {result.validation_issues}")

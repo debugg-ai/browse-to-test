@@ -21,7 +21,7 @@ logging.basicConfig(
 
 # Enable debug logging for specific modules
 logging.getLogger('browse_to_test.ai').setLevel(logging.INFO)
-logging.getLogger('browse_to_test.core.orchestration').setLevel(logging.INFO)
+logging.getLogger('browse_to_test.core.executor').setLevel(logging.INFO)
 logging.getLogger('browse_to_test.core.processing').setLevel(logging.INFO)
 
 print("🚀 Testing Enhanced Logging System")
@@ -92,7 +92,7 @@ async def test_async_session():
         session = btt.AsyncIncrementalSession(config)
         
         # Start session
-        result = await asyncio.wait_for(session.start("https://example.com"), timeout=10.0)
+        result = await asyncio.wait_for(session.start_async("https://example.com"), timeout=10.0)
         if not result.success:
             print(f"❌ Session start failed: {result.validation_issues}")
             return False

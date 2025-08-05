@@ -1,26 +1,14 @@
-"""Core orchestration components for test script generation and coordination."""
+"""Backward compatibility module for orchestration components."""
 
-from .converter import E2eTestConverter
-from .session import SessionResult, IncrementalSession
-from .async_queue import (
-    AsyncQueueManager,
-    QueuedTask,
-    TaskStatus,
-    get_global_queue_manager,
-    reset_global_queue_manager,
-    queue_ai_task,
-    wait_for_ai_task,
-)
+# Re-export components that were moved to executor
+from ..executor import SessionResult, IncrementalSession, BTTExecutor
+
+# Import session submodule to make it available
+from . import session
 
 __all__ = [
-    "E2eTestConverter",
     "SessionResult",
-    "IncrementalSession",
-    "AsyncQueueManager",
-    "QueuedTask", 
-    "TaskStatus",
-    "get_global_queue_manager",
-    "reset_global_queue_manager",
-    "queue_ai_task",
-    "wait_for_ai_task",
-] 
+    "IncrementalSession", 
+    "BTTExecutor",
+    "session"
+]

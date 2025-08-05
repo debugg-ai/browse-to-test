@@ -9,9 +9,9 @@ import pytest
 from unittest.mock import Mock, patch
 
 import browse_to_test as btt
-from browse_to_test.core.configuration.config import Config, ConfigBuilder, ProcessingConfig
+from browse_to_test.core.config import Config, ConfigBuilder, ProcessingConfig
 from browse_to_test.core.processing.input_parser import InputParser
-from browse_to_test.core.orchestration.converter import E2eTestConverter
+from browse_to_test.core.executor import BTTExecutor as E2eTestConverter
 from browse_to_test.plugins.base import OutputPlugin
 
 
