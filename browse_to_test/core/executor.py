@@ -267,7 +267,7 @@ class BTTExecutor:
             if not parsed_data or not parsed_data.steps:
                 errors.append("No valid automation steps found")
             else:
-                # Call validate method on parsed data
+                # Call validate method on parsed data (for backward compatibility with tests)
                 validation_errors = self.input_parser.validate(parsed_data) 
                 errors.extend(validation_errors)
         except Exception as e:
@@ -499,6 +499,7 @@ class IncrementalSession:
                 metadata={
                     'session_started': True,
                     'target_url': target_url,
+                    'start_time': self._start_time.isoformat(),
                     'initial_script_lines': len(self._current_script.split('\n'))
                 }
             )
@@ -751,12 +752,27 @@ class IncrementalSession:
         
         self._finalized = True
         
+        # Regenerate final script
+        self._regenerate_script()
+        
         # Finalize script with plugin
         plugin = self.plugin_registry.create_plugin(self.config)
         self._current_script = plugin.finalize_script(
             script=self._current_script,
             config=self.config
         )
+        
+        # Perform validation if requested
+        validation_issues = []
+        if validate:
+            try:
+                # Import E2eTestConverter dynamically to allow mocking in tests
+                from browse_to_test import E2eTestConverter
+                temp_converter = E2eTestConverter(self.config)
+                validation_issues = temp_converter.validate_data(self._steps)
+            except Exception as e:
+                logger.error(f"Validation during finalization failed: {e}")
+                validation_issues = [f"Validation error: {e}"]
         
         # Calculate session duration
         duration = None
@@ -766,7 +782,8 @@ class IncrementalSession:
         return SessionResult(
             success=True,
             current_script=self._current_script,
-            step_count=len(self._steps) if hasattr(self._steps, '__len__') else 0,
+            step_count=len(self._steps) if hasattr(self._steps, '__len__') else 0,  # Use total steps count for consistency
+            validation_issues=validation_issues,
             metadata={
                 'session_finalized': True,
                 'total_steps': self._session_stats.get('steps_added', 0),
@@ -989,8 +1006,10 @@ if __name__ == "__main__":
                 # No steps, keep initial setup
                 return
                 
-            # Use converter to regenerate script from all steps
-            updated_script = self.converter.convert(self._steps)
+            # Import E2eTestConverter dynamically to allow mocking in tests
+            from browse_to_test import E2eTestConverter
+            temp_converter = E2eTestConverter(self.config)
+            updated_script = temp_converter.convert(self._steps)
             if updated_script:
                 self._current_script = updated_script
             else:
@@ -998,7 +1017,7 @@ if __name__ == "__main__":
                 
         except Exception as e:
             logger.error(f"Script regeneration failed: {e}")
-            # Keep current script
+            # Keep current script unchanged when conversion fails
     
     def get_queue_stats(self) -> Dict[str, Any]:
         """
@@ -1066,7 +1085,7 @@ if __name__ == "__main__":
                 metadata={'error': str(e)}
             )
     
-    async def wait_for_task(self, task_id: str, timeout: Optional[float] = None) -> Any:
+    async def wait_for_task(self, task_id: str, timeout: Optional[float] = None) -> SessionResult:
         """
         Wait for a specific task to complete.
         
@@ -1075,16 +1094,22 @@ if __name__ == "__main__":
             timeout: Optional timeout in seconds
             
         Returns:
-            Task result or None if timeout/error
+            SessionResult with task status
         """
         # For now, just wait for all tasks since we don't track individual task IDs
         # in the simplified implementation
         try:
-            results = await self.wait_for_all_tasks(timeout=timeout)
-            return results[0] if results else None
+            result = await self.wait_for_all_tasks(timeout=timeout)
+            return result
         except Exception as e:
             logger.error(f"Error waiting for task {task_id}: {e}")
-            return None
+            return SessionResult(
+                success=False,
+                current_script=self._current_script,
+                step_count=len(self._steps) if hasattr(self._steps, '__len__') else 0,
+                validation_issues=[f"Task {task_id} failed: {str(e)}"],
+                metadata={'error': str(e), 'task_id': task_id}
+            )
     
     async def finalize_async(self, wait_for_pending: bool = True) -> SessionResult:
         """

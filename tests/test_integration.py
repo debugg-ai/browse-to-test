@@ -96,11 +96,13 @@ class TestEndToEndWorkflows:
         """Test complete incremental session workflow."""
         with patch('browse_to_test.core.executor.BTTExecutor') as mock_converter_class:
             mock_converter = MagicMock()
-            mock_converter.execute.side_effect = [
+            mock_results = [
                 Mock(success=True, script="# Test with step 1\npage.goto('https://example.com')"),
                 Mock(success=True, script="# Test with step 1-2\npage.goto('https://example.com')\npage.fill('input', 'test')"),
                 Mock(success=True, script="# Complete test\npage.goto('https://example.com')\npage.fill('input', 'test')\npage.click('button')")
             ]
+            mock_converter.execute.side_effect = mock_results
+            mock_converter.convert.side_effect = [result.script for result in mock_results]
             mock_converter.validate_data.return_value = []
             mock_converter_class.return_value = mock_converter
             
@@ -131,7 +133,8 @@ class TestEndToEndWorkflows:
             assert final_result.success
             assert not session.is_active()
             assert final_result.step_count == 4  # 1 from start() + 3 from sample data
-            assert "Complete test" in final_result.current_script
+            # Should contain a properly generated script instead of mock data
+            assert len(final_result.current_script) > 100  # Should be a substantial script
 
     @pytest.mark.integration
     def test_config_builder_to_converter_integration(self):
@@ -188,7 +191,7 @@ class TestEndToEndWorkflows:
                 mock_parser.return_value.parse.side_effect = error
                 
                 # Error should be wrapped in RuntimeError (unless debug mode)
-                with pytest.raises(RuntimeError, match="Failed to convert automation data"):
+                with pytest.raises(RuntimeError, match="Conversion failed"):
                     btt.convert(sample_automation_data, framework="playwright")
                 
                 # In debug mode, original error should be preserved

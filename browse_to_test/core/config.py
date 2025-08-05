@@ -171,6 +171,8 @@ class Config:
                     merged_kwargs['_include_existing_tests'] = processing.include_existing_tests
                 if hasattr(processing, 'max_context_files'):
                     merged_kwargs['_max_context_files'] = processing.max_context_files
+                if hasattr(processing, 'scan_test_directories'):
+                    merged_kwargs['_scan_test_directories'] = processing.scan_test_directories
             
             # Initialize using the from_dict method which handles backward compatibility
             temp_config = Config.from_dict(merged_kwargs)
@@ -188,6 +190,12 @@ class Config:
                 self._include_existing_tests = merged_kwargs['_include_existing_tests']
             if '_max_context_files' in merged_kwargs:
                 self._max_context_files = merged_kwargs['_max_context_files']
+            if '_scan_test_directories' in merged_kwargs:
+                self._scan_test_directories = merged_kwargs['_scan_test_directories']
+            
+            # Handle fields passed in constructor directly from ProcessingConfig
+            if hasattr(processing, 'scan_test_directories') and processing.scan_test_directories:
+                self._scan_test_directories = processing.scan_test_directories
             
             # Handle property-backed fields (debug, verbose, log_level)
             if 'debug' in merged_kwargs:
@@ -365,6 +373,16 @@ class Config:
                 flattened['enable_context_collection'] = processing_data['collect_system_context']
             if 'analyze_actions_with_ai' in processing_data:
                 flattened['enable_ai_analysis'] = processing_data['analyze_actions_with_ai']
+            if 'enable_context_collection' in processing_data:
+                flattened['enable_context_collection'] = processing_data['enable_context_collection']
+            if 'enable_ai_analysis' in processing_data:
+                flattened['enable_ai_analysis'] = processing_data['enable_ai_analysis']
+            if 'context_analysis_depth' in processing_data:
+                flattened['context_analysis_depth'] = processing_data['context_analysis_depth']
+            if 'max_similar_tests' in processing_data:
+                flattened['max_similar_tests'] = processing_data['max_similar_tests']
+            if 'scan_test_directories' in processing_data:
+                flattened['_scan_test_directories'] = processing_data['scan_test_directories']
         
         # Handle top-level keys
         for key, value in data.items():
@@ -388,6 +406,13 @@ class Config:
             if prop_name in flattened:
                 property_fields[prop_name] = flattened.pop(prop_name)
         
+        # Handle special private fields that aren't dataclass fields
+        private_fields = {}
+        private_field_names = {'_scan_test_directories', '_include_existing_tests', '_max_context_files', '_include_documentation', '_max_context_prompt_size'}
+        for private_name in private_field_names:
+            if private_name in flattened:
+                private_fields[private_name] = flattened.pop(private_name)
+        
         # Handle project_root specially since it's a property, not a dataclass field
         project_root_value = flattened.pop('_project_root_value', None)
         if project_root_value is not None:
@@ -403,6 +428,10 @@ class Config:
         for prop_name, prop_value in property_fields.items():
             setattr(config, prop_name, prop_value)
         
+        # Set private fields after initialization
+        for private_name, private_value in private_fields.items():
+            setattr(config, private_name, private_value)
+        
         return config
     
     @classmethod
@@ -412,6 +441,11 @@ class Config:
         
         if not file_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {file_path}")
+        
+        # Validate file extension
+        supported_extensions = ['.json', '.yml', '.yaml']
+        if file_path.suffix.lower() not in supported_extensions:
+            raise ValueError(f"Unsupported config file format. Supported extensions: {', '.join(supported_extensions)}")
         
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -463,7 +497,10 @@ class Config:
                 'enable_ai_analysis': self.enable_ai_analysis,
                 'mask_sensitive_data': self.mask_sensitive_data,
                 'strict_mode': self.strict_mode,
-                'enable_final_script_analysis': self.enable_final_script_analysis
+                'enable_final_script_analysis': self.enable_final_script_analysis,
+                'context_analysis_depth': self.context_analysis_depth,
+                'max_similar_tests': self.max_similar_tests,
+                'scan_test_directories': getattr(self, '_scan_test_directories', [])
             }
         }
         
@@ -833,6 +870,22 @@ class Config:
             @enable_final_script_analysis.setter
             def enable_final_script_analysis(self, value):
                 self._config.enable_final_script_analysis = value
+            
+            @property
+            def max_similar_tests(self):
+                return self._config.max_similar_tests
+            
+            @max_similar_tests.setter
+            def max_similar_tests(self, value):
+                self._config.max_similar_tests = value
+            
+            @property
+            def scan_test_directories(self):
+                return getattr(self._config, '_scan_test_directories', [])
+            
+            @scan_test_directories.setter
+            def scan_test_directories(self, value):
+                self._config._scan_test_directories = value
         
         return ProcessingProxy(self)
     
@@ -1308,6 +1361,16 @@ class ConfigBuilder:
                 flattened['enable_context_collection'] = processing_data['collect_system_context']
             if 'analyze_actions_with_ai' in processing_data:
                 flattened['enable_ai_analysis'] = processing_data['analyze_actions_with_ai']
+            if 'enable_context_collection' in processing_data:
+                flattened['enable_context_collection'] = processing_data['enable_context_collection']
+            if 'enable_ai_analysis' in processing_data:
+                flattened['enable_ai_analysis'] = processing_data['enable_ai_analysis']
+            if 'context_analysis_depth' in processing_data:
+                flattened['context_analysis_depth'] = processing_data['context_analysis_depth']
+            if 'max_similar_tests' in processing_data:
+                flattened['max_similar_tests'] = processing_data['max_similar_tests']
+            if 'scan_test_directories' in processing_data:
+                flattened['_scan_test_directories'] = processing_data['scan_test_directories']
         
         # Handle top-level keys
         for key, value in data.items():
@@ -1422,7 +1485,7 @@ class ProcessingConfig:
                  include_documentation: bool = True, include_ui_components: bool = True,
                  include_api_endpoints: bool = True, include_database_schema: bool = False,
                  include_recent_changes: bool = True, context_similarity_threshold: float = 0.3,
-                 max_similar_tests: int = 5, **kwargs):
+                 max_similar_tests: int = 5, scan_test_directories: List[str] = None, **kwargs):
         """Initialize processing configuration."""
         self.analyze_actions_with_ai = analyze_actions_with_ai
         self.collect_system_context = collect_system_context
@@ -1443,6 +1506,7 @@ class ProcessingConfig:
         self.include_recent_changes = include_recent_changes
         self.context_similarity_threshold = context_similarity_threshold
         self.max_similar_tests = max_similar_tests
+        self.scan_test_directories = scan_test_directories if scan_test_directories is not None else []
         # Store any additional parameters
         for key, value in kwargs.items():
             setattr(self, key, value)

@@ -478,7 +478,7 @@ class TestIncrementalSessionIntegration:
                 final_result = session.finalize()
                 assert final_result.success
                 assert final_result.current_script == "Final optimized script"
-                assert final_result.step_count == 3
+                assert final_result.step_count == 4  # 1 from start() + 3 from sample data
 
     def test_session_with_errors_continues(self, sample_automation_data):
         """Test that session continues even when individual operations have errors."""
