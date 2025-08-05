@@ -18,7 +18,7 @@ class AIConfig:
     """Configuration for AI providers."""
 
     provider: str = "openai"
-    model: str = "gpt-4"
+    model: str = "gpt-4.1-mini"
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     temperature: float = 0.1
@@ -167,6 +167,7 @@ class ProcessingConfig:
     strict_mode: bool = False
     cache_ai_responses: bool = True
     max_cache_size: int = 1000
+    enable_final_script_analysis: bool = False  # Skip final AI analysis by default for performance
     
     # Context collection settings
     collect_system_context: bool = True
@@ -586,6 +587,11 @@ class ConfigBuilder:
     def enable_ai_analysis(self, enabled: bool = True) -> 'ConfigBuilder':
         """Enable or disable AI analysis."""
         self._config.processing.analyze_actions_with_ai = enabled
+        return self
+    
+    def enable_final_script_analysis(self, enabled: bool = True) -> 'ConfigBuilder':
+        """Enable or disable final script analysis (for performance tuning)."""
+        self._config.processing.enable_final_script_analysis = enabled
         return self
     
     def include_assertions(self, include: bool = True) -> 'ConfigBuilder':

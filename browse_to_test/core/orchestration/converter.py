@@ -52,13 +52,24 @@ class E2eTestConverter:
         
         # Initialize AI provider if enabled
         self.ai_provider = None
+        self.ai_provider_error = None
         if config.processing.analyze_actions_with_ai:
             try:
                 factory = AIProviderFactory()
                 self.ai_provider = factory.create_provider(config.ai)
             except Exception as e:
+                # Store the error for better user feedback
+                self.ai_provider_error = str(e)
+                
+                # Always log AI provider initialization failures (not just in debug mode)
+                if "not supported" in str(e).lower() or "validation failed" in str(e).lower():
+                    logger.error(f"❌ AI Provider Configuration Error: {e}")
+                    logger.error(f"💡 Please check that your AI model '{config.ai.model}' is supported by provider '{config.ai.provider}'")
+                else:
+                    logger.error(f"❌ Failed to initialize AI provider '{config.ai.provider}': {e}")
+                
                 if config.debug:
-                    logger.warning(f"Failed to initialize AI provider: {e}")
+                    logger.debug(f"Full AI provider error details: {e}")
                     
         # Initialize action analyzer
         self.action_analyzer = ActionAnalyzer(self.ai_provider, config)
@@ -210,9 +221,12 @@ class E2eTestConverter:
                 except Exception as e:
                     if self.config.debug:
                         logger.warning(f"AI analysis failed: {e}")
-            elif self.config.processing.analyze_actions_with_ai and not self.ai_provider and self.config.debug:
-                # AI analysis is enabled but no provider available - log warning
-                logger.warning("AI analysis requested but no AI provider available")
+            elif self.config.processing.analyze_actions_with_ai and not self.ai_provider:
+                # AI analysis is enabled but no provider available - log warning with reason
+                if self.ai_provider_error:
+                    logger.warning(f"⚠️  AI analysis requested but provider initialization failed: {self.ai_provider_error}")
+                else:
+                    logger.warning("⚠️  AI analysis requested but no AI provider available")
             
             # Create plugin and generate script (sync, typically fast)
             plugin = self.plugin_registry.create_plugin(self.config.output)

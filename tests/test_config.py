@@ -20,7 +20,7 @@ class TestAIConfig:
         """Test default configuration values."""
         config = AIConfig()
         assert config.provider == "openai"
-        assert config.model == "gpt-4"
+        assert config.model == "gpt-4.1-mini"
         assert config.api_key is None
         assert config.temperature == 0.1
         assert config.max_tokens == 4000
@@ -50,10 +50,10 @@ class TestAIConfig:
 
     @pytest.mark.parametrize("provider,model", [
         ("openai", "gpt-3.5-turbo"),
-        ("openai", "gpt-4"),
+        ("openai", "gpt-4.1-mini"),
         ("anthropic", "claude-3-sonnet"),
         ("anthropic", "claude-3-haiku"),
-        ("azure", "gpt-4"),
+        ("azure", "gpt-4.1-mini"),
         ("local", "llama2"),
     ])
     def test_provider_model_combinations(self, provider, model):
@@ -338,7 +338,7 @@ class TestConfig:
 
         config = Config.from_dict(config_dict)
         assert config.ai.provider == "anthropic"
-        assert config.ai.model == "gpt-4"  # Default value
+        assert config.ai.model == "gpt-4.1-mini" # Default value
         assert config.ai.temperature == 0.1  # Default value
         assert config.debug is True
         assert config.log_level == "INFO"  # Default value
@@ -355,7 +355,7 @@ class TestConfig:
     def test_from_file_json(self):
         """Test loading config from JSON file."""
         config_data = {
-            "ai": {"provider": "openai", "model": "gpt-4"},
+            "ai": {"provider": "openai", "model": "gpt-4.1-mini"},
             "output": {"framework": "playwright", "language": "python"},
             "debug": True
         }
@@ -367,7 +367,7 @@ class TestConfig:
         try:
             config = Config.from_file(temp_file)
             assert config.ai.provider == "openai"
-            assert config.ai.model == "gpt-4"
+            assert config.ai.model == "gpt-4.1-mini"
             assert config.output.framework == "playwright"
             assert config.debug is True
         finally:
@@ -504,7 +504,7 @@ class TestConfig:
     def test_save_to_file_json(self):
         """Test saving config to JSON file."""
         config = Config(
-            ai=AIConfig(provider="openai", model="gpt-4"),
+            ai=AIConfig(provider="openai", model="gpt-4.1-mini"),
             debug=True
         )
 
@@ -519,7 +519,7 @@ class TestConfig:
                 saved_data = json.load(f)
             
             assert saved_data["ai"]["provider"] == "openai"
-            assert saved_data["ai"]["model"] == "gpt-4"
+            assert saved_data["ai"]["model"] == "gpt-4.1-mini"
             assert saved_data["debug"] is True
         finally:
             os.unlink(temp_file)
@@ -609,7 +609,7 @@ class TestConfig:
         
         assert config.ai.provider == "anthropic"
         assert config.ai.temperature == 0.5
-        assert config.ai.model == "gpt-4"  # Unchanged
+        assert config.ai.model == "gpt-4.1-mini" # Unchanged
         assert config.output.framework == "selenium"
         assert config.output.language == "python"  # Unchanged
         assert config.debug is True

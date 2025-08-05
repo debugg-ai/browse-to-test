@@ -29,11 +29,11 @@ class TestConfigBuilder:
     def test_ai_provider_with_model_and_key(self):
         """Test setting AI provider with model and API key."""
         config = ConfigBuilder() \
-            .ai_provider("openai", model="gpt-4", api_key="test-key") \
+            .ai_provider("openai", model="gpt-4.1-mini", api_key="test-key") \
             .build()
         
         assert config.ai.provider == "openai"
-        assert config.ai.model == "gpt-4"
+        assert config.ai.model == "gpt-4.1-mini"
         assert config.ai.api_key == "test-key"
 
     def test_language_setting(self):
@@ -171,7 +171,7 @@ class TestConfigBuilder:
         """Test building config from keyword arguments."""
         config = ConfigBuilder().from_kwargs(
             api_key="test-key",
-            model="gpt-4",
+            model="gpt-4.1-mini",
             temperature=0.3,
             timeout=25000,
             include_assertions=True,
@@ -182,7 +182,7 @@ class TestConfigBuilder:
         ).build()
         
         assert config.ai.api_key == "test-key"
-        assert config.ai.model == "gpt-4"
+        assert config.ai.model == "gpt-4.1-mini"
         assert config.ai.temperature == 0.3
         assert config.output.test_timeout == 25000
         assert config.output.include_assertions is True
@@ -213,7 +213,7 @@ class TestConfigBuilder:
         """Test a complex configuration using all builder methods."""
         config = ConfigBuilder() \
             .framework("playwright") \
-            .ai_provider("openai", model="gpt-4", api_key="sk-test") \
+            .ai_provider("openai", model="gpt-4.1-mini", api_key="sk-test") \
             .language("typescript") \
             .include_assertions(True) \
             .include_error_handling(True) \
@@ -229,7 +229,7 @@ class TestConfigBuilder:
         # Verify all settings
         assert config.output.framework == "playwright"
         assert config.ai.provider == "openai"
-        assert config.ai.model == "gpt-4"
+        assert config.ai.model == "gpt-4.1-mini"
         assert config.ai.api_key == "sk-test"
         assert config.output.language == "typescript"
         assert config.output.include_assertions is True

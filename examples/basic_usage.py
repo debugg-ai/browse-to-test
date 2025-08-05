@@ -193,7 +193,7 @@ def advanced_example():
     # Create custom configuration using ConfigBuilder
     config = btt.ConfigBuilder() \
         .framework("playwright") \
-        .ai_provider("openai", model="gpt-4") \
+        .ai_provider("openai", model="gpt-4.1-mini") \
         .language("python") \
         .include_assertions(True) \
         .include_error_handling(True) \

@@ -139,12 +139,12 @@ class ConfigAdapter:
     def _get_default_model(provider: str) -> str:
         """Get default model for AI provider."""
         defaults = {
-            "openai": "gpt-4",
+            "openai": "gpt-4.1-mini",
             "anthropic": "claude-3-sonnet-20240229",
-            "azure": "gpt-4",
+            "azure": "gpt-4.1-mini",
             "google": "gemini-pro"
         }
-        return defaults.get(provider, "gpt-4")
+        return defaults.get(provider, "gpt-4.1-mini")
     
     @staticmethod
     def from_legacy_config(legacy_config: Config) -> SimpleConfig:

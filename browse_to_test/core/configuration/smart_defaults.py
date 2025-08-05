@@ -202,9 +202,9 @@ class SmartDefaults:
         """
         defaults = {
             "openai": {
-                "default_model": "gpt-4",
+                "default_model": "gpt-4.1-mini",
                 "fast_model": "gpt-3.5-turbo",
-                "accurate_model": "gpt-4",
+                "accurate_model": "gpt-4.1-mini",
                 "max_tokens": 4000,
                 "temperature": 0.1,
                 "supports_function_calling": True,
@@ -226,7 +226,7 @@ class SmartDefaults:
                 "recommended_for": ["analysis", "complex_reasoning", "code_review"]
             },
             "azure": {
-                "default_model": "gpt-4",
+                "default_model": "gpt-4.1-mini",
                 "fast_model": "gpt-35-turbo",
                 "accurate_model": "gpt-4-32k",
                 "max_tokens": 4000,

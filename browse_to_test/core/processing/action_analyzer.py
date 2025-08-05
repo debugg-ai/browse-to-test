@@ -2,6 +2,8 @@
 """AI-powered action analysis and optimization with system context support."""
 
 import asyncio
+import logging
+import time
 from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -12,6 +14,9 @@ from ...ai.base import AIProvider, AIAnalysisRequest, AnalysisType
 from .input_parser import ParsedAutomationData, ParsedAction
 from .context_collector import ContextCollector, SystemContext
 from ..configuration.config import Config
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass 
@@ -201,6 +206,12 @@ class ActionAnalyzer:
         
         This is the main entry point for AI-powered analysis.
         """
+        analysis_start_time = time.time()
+        logger.info(f"🔍 Starting comprehensive analysis - "
+                   f"Steps: {len(parsed_data.steps)}, "
+                   f"Actions: {parsed_data.total_actions}, "
+                   f"Has context: {'Yes' if system_context else 'No'}")
+        
         if not self.ai_provider:
             raise ValueError("AI provider is required for comprehensive analysis")
         
@@ -235,7 +246,14 @@ class ActionAnalyzer:
         response = self.ai_provider.analyze_with_context(request)
         
         # Parse response into structured result
-        return self._parse_comprehensive_response(response, parsed_data)
+        result = self._parse_comprehensive_response(response, parsed_data)
+        
+        analysis_end_time = time.time()
+        analysis_duration = analysis_end_time - analysis_start_time
+        logger.info(f"✅ Comprehensive analysis completed in {analysis_duration:.2f}s - "
+                   f"Quality score: {result.overall_quality_score:.2f}")
+        
+        return result
     
     async def analyze_comprehensive_async(
         self,
@@ -248,6 +266,12 @@ class ActionAnalyzer:
         
         This is the main entry point for AI-powered analysis.
         """
+        analysis_start_time = time.time()
+        logger.info(f"🔍 Starting async comprehensive analysis - "
+                   f"Steps: {len(parsed_data.steps)}, "
+                   f"Actions: {parsed_data.total_actions}, "
+                   f"Has context: {'Yes' if system_context else 'No'}")
+        
         if not self.ai_provider:
             raise ValueError("AI provider is required for comprehensive analysis")
         
@@ -282,7 +306,14 @@ class ActionAnalyzer:
         response = await self.ai_provider.analyze_with_context_async(request)
         
         # Parse response into structured result
-        return self._parse_comprehensive_response(response, parsed_data)
+        result = self._parse_comprehensive_response(response, parsed_data)
+        
+        analysis_end_time = time.time()
+        analysis_duration = analysis_end_time - analysis_start_time
+        logger.info(f"✅ Async comprehensive analysis completed in {analysis_duration:.2f}s - "
+                   f"Quality score: {result.overall_quality_score:.2f}")
+        
+        return result
     
     async def _perform_intelligent_analysis_async(
         self,

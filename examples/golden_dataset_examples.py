@@ -2374,7 +2374,7 @@ class AdvancedBrowseToTestDemo:
         config = btt.simple_builder() \\
             .preset("balanced") \\
             .for_playwright("python") \\
-            .with_openai("gpt-4") \\
+            .with_openai("gpt-4.1-mini") \\
             .timeout(30) \\
             .include_assertions(True) \\
             .include_error_handling(True) \\

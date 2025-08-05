@@ -3,10 +3,14 @@
 import time
 import asyncio
 import aiohttp
+import logging
 from typing import Dict, List, Optional, Any
 from ..base import AIProvider, AIResponse, AIProviderError
 from ..error_handler import AIErrorHandler, ExponentialBackoffStrategy, ErrorType
 from ..prompt_optimizer import PromptOptimizer, PromptTemplate
+
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(AIProvider):
@@ -77,11 +81,9 @@ class OpenAIProvider(AIProvider):
     def supported_models(self) -> List[str]:
         """Return list of supported models."""
         return [
-            "gpt-4",
-            "gpt-4-turbo",
-            "gpt-4-turbo-preview",
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-16k",
+            "gpt-4.1",
+            "gpt-4.1-mini",
+            "gpt-4o-mini",
         ]
     
     def validate_config(self) -> List[str]:
@@ -96,7 +98,7 @@ class OpenAIProvider(AIProvider):
         
         # Validate model
         if self.model not in self.supported_models:
-            errors.append(f"Model '{self.model}' not supported. Supported models: {', '.join(self.supported_models)}")
+            errors.append(f"Model '{self.model}' is not supported by OpenAI provider. Supported models: {', '.join(self.supported_models)}")
         
         # Validate parameters
         if self.temperature < 0 or self.temperature > 2:
@@ -131,6 +133,10 @@ class OpenAIProvider(AIProvider):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
+        # Calculate message character counts for logging
+        total_chars = len(prompt) + (len(system_prompt) if system_prompt else 0)
+        logger.info(f"🔄 OpenAI API call starting - Model: {self.model}, Characters: {total_chars:,}")
+        
         # Merge any additional parameters
         generation_params = {
             "model": self.model,
@@ -148,10 +154,22 @@ class OpenAIProvider(AIProvider):
             )
             
             end_time = time.time()
+            response_time = end_time - start_time
             
             # Extract response data
             content = response.choices[0].message.content
             usage = response.usage
+            
+            # Log completion details
+            response_chars = len(content) if content else 0
+            prompt_tokens = usage.prompt_tokens if usage else 0
+            completion_tokens = usage.completion_tokens if usage else 0
+            total_tokens = usage.total_tokens if usage else 0
+            
+            logger.info(f"✅ OpenAI API call completed - "
+                       f"Time: {response_time:.2f}s, "
+                       f"Response chars: {response_chars:,}, "
+                       f"Tokens: {total_tokens:,} ({prompt_tokens:,} prompt + {completion_tokens:,} completion)")
             
             return AIResponse(
                 content=content,
@@ -162,13 +180,18 @@ class OpenAIProvider(AIProvider):
                 metadata={
                     "prompt_tokens": usage.prompt_tokens if usage else None,
                     "completion_tokens": usage.completion_tokens if usage else None,
-                    "response_time": end_time - start_time,
+                    "response_time": response_time,
                     "response_id": response.id,
                     "created": response.created,
+                    "input_chars": total_chars,
+                    "output_chars": response_chars,
                 }
             )
             
         except Exception as e:
+            end_time = time.time()
+            error_time = end_time - start_time
+            
             # Handle OpenAI-specific errors
             if hasattr(self.openai, 'OpenAIError') and isinstance(e, self.openai.OpenAIError):
                 if hasattr(e, 'code'):
@@ -177,6 +200,11 @@ class OpenAIProvider(AIProvider):
                     error_msg = f"OpenAI API error: {e}"
             else:
                 error_msg = f"OpenAI request failed: {e}"
+            
+            logger.error(f"❌ OpenAI sync API call failed - "
+                        f"Time: {error_time:.2f}s, "
+                        f"Input chars: {total_chars:,}, "
+                        f"Error: {error_msg}")
             
             raise AIProviderError(
                 error_msg,
@@ -208,6 +236,10 @@ class OpenAIProvider(AIProvider):
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
+        # Calculate message character counts for logging
+        total_chars = len(prompt) + (len(system_prompt) if system_prompt else 0)
+        logger.info(f"🔄 OpenAI async API call starting - Model: {self.model}, Characters: {total_chars:,}")
+        
         # Merge any additional parameters
         generation_params = {
             "model": self.model,
@@ -225,10 +257,22 @@ class OpenAIProvider(AIProvider):
             )
             
             end_time = time.time()
+            response_time = end_time - start_time
             
             # Extract response data
             content = response.choices[0].message.content
             usage = response.usage
+            
+            # Log completion details
+            response_chars = len(content) if content else 0
+            prompt_tokens = usage.prompt_tokens if usage else 0
+            completion_tokens = usage.completion_tokens if usage else 0
+            total_tokens = usage.total_tokens if usage else 0
+            
+            logger.info(f"✅ OpenAI async API call completed - "
+                       f"Time: {response_time:.2f}s, "
+                       f"Response chars: {response_chars:,}, "
+                       f"Tokens: {total_tokens:,} ({prompt_tokens:,} prompt + {completion_tokens:,} completion)")
             
             return AIResponse(
                 content=content,
@@ -239,13 +283,18 @@ class OpenAIProvider(AIProvider):
                 metadata={
                     "prompt_tokens": usage.prompt_tokens if usage else None,
                     "completion_tokens": usage.completion_tokens if usage else None,
-                    "response_time": end_time - start_time,
+                    "response_time": response_time,
                     "response_id": response.id,
                     "created": response.created,
+                    "input_chars": total_chars,
+                    "output_chars": response_chars,
                 }
             )
             
         except Exception as e:
+            end_time = time.time()
+            error_time = end_time - start_time
+            
             # Handle OpenAI-specific errors
             if hasattr(self.openai, 'OpenAIError') and isinstance(e, self.openai.OpenAIError):
                 if hasattr(e, 'code'):
@@ -254,6 +303,11 @@ class OpenAIProvider(AIProvider):
                     error_msg = f"OpenAI API error: {e}"
             else:
                 error_msg = f"OpenAI request failed: {e}"
+            
+            logger.error(f"❌ OpenAI async API call failed - "
+                        f"Time: {error_time:.2f}s, "
+                        f"Input chars: {total_chars:,}, "
+                        f"Error: {error_msg}")
             
             raise AIProviderError(
                 error_msg,

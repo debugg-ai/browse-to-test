@@ -60,7 +60,7 @@ class RealisticMockAIProvider:
         content = self._get_response_content(prompt)
         return AIResponse(
             content=content,
-            model="mock-gpt-4",
+            model="mock-gpt-4.1-mini",
             provider="mock-openai",
             tokens_used=len(prompt.split()) + len(content.split()),
             metadata={'response_time': self.response_delay}
@@ -79,7 +79,7 @@ class RealisticMockAIProvider:
         content = self._get_response_content(prompt)
         return AIResponse(
             content=content,
-            model="mock-gpt-4",
+            model="mock-gpt-4.1-mini",
             provider="mock-openai",
             tokens_used=len(prompt.split()) + len(content.split()),
             metadata={'response_time': self.response_delay}
@@ -99,7 +99,7 @@ class RealisticMockAIProvider:
         content = f"Analysis completed for {len(request.automation_data)} actions"
         return AIResponse(
             content=content,
-            model="mock-gpt-4",
+            model="mock-gpt-4.1-mini",
             provider="mock-openai",
             tokens_used=150,
             metadata={
@@ -176,7 +176,7 @@ Analysis for automation data:
 """
         return AIResponse(
             content=response_content,
-            model="mock-gpt-4",
+            model="mock-gpt-4.1-mini",
             provider="mock-openai",
             tokens_used=150
         )
@@ -185,7 +185,7 @@ Analysis for automation data:
         return True
     
     def get_model_info(self) -> Dict[str, Any]:
-        return {"name": "mock-gpt-4", "provider": "mock-openai"}
+        return {"name": "mock-gpt-4.1-mini", "provider": "mock-openai"}
 
 
 @pytest.fixture
