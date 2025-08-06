@@ -272,13 +272,51 @@ class Config:
     
     def _validate(self):
         """Validate configuration settings."""
-        # Validate language - be more lenient during construction, strict during validate()
+        # Enhanced language validation with better error messages
         if self.language and self.language not in self._language_metadata:
             available = list(self._language_metadata.keys())
             # For backward compatibility, allow common languages not yet implemented
             common_languages = ['java', 'csharp', 'ruby', 'go']
             if self.language not in common_languages:
-                raise ValueError(f"Unsupported language '{self.language}'. Available: {available}")
+                # Create helpful error message with suggestions
+                error_msg = f"Unsupported language '{self.language}'. Available: {available}"
+                
+                # Add framework-specific suggestions if available
+                try:
+                    from ..output_langs.registry import LanguageRegistry
+                    registry = LanguageRegistry()
+                    
+                    # Check if the language is supported but framework combination is invalid
+                    if registry.is_language_supported(self.language):
+                        frameworks_for_lang = registry.get_frameworks_for_language(self.language)
+                        if self.framework not in frameworks_for_lang:
+                            error_msg += f". Note: '{self.language}' is supported but not with framework '{self.framework}'. Supported frameworks for {self.language}: {frameworks_for_lang}"
+                    else:
+                        # Suggest alternatives based on framework
+                        langs_for_framework = registry.get_languages_for_framework(self.framework)
+                        if langs_for_framework:
+                            error_msg += f". For framework '{self.framework}', try: {langs_for_framework}"
+                            
+                except ImportError:
+                    pass  # Registry not available, use basic error
+                    
+                raise ValueError(error_msg)
+        
+        # Validate framework-language combination more thoroughly
+        if self.language in self._language_metadata and self.framework:
+            try:
+                from ..output_langs.registry import LanguageRegistry
+                registry = LanguageRegistry()
+                
+                # Check if combination is valid
+                if not registry.is_combination_supported(self.language, self.framework):
+                    frameworks_for_lang = registry.get_frameworks_for_language(self.language)
+                    raise ValueError(
+                        f"Framework '{self.framework}' is not supported for language '{self.language}'. "
+                        f"Supported frameworks for {self.language}: {frameworks_for_lang}"
+                    )
+            except ImportError:
+                pass  # Registry not available, skip detailed validation
         
         # Validate timeout
         if self.test_timeout <= 0:
@@ -548,6 +586,94 @@ class Config:
     def get_language_metadata(self) -> Dict[str, str]:
         """Get metadata for current language."""
         return self._language_metadata.get(self.language, {})
+    
+    @staticmethod
+    def detect_language_from_filename(filename: str) -> str:
+        """
+        Auto-detect language from file extension.
+        
+        Args:
+            filename: Output filename with extension
+            
+        Returns:
+            Detected language string
+        """
+        filename_lower = filename.lower()
+        
+        if filename_lower.endswith('.py'):
+            return 'python'
+        elif filename_lower.endswith('.ts'):
+            return 'typescript' 
+        elif filename_lower.endswith('.js'):
+            return 'javascript'
+        elif filename_lower.endswith('.java'):
+            return 'java'
+        elif filename_lower.endswith('.cs'):
+            return 'csharp'
+        else:
+            return 'python'  # Default fallback
+    
+    @staticmethod
+    def get_optimal_framework_for_language(language: str) -> str:
+        """
+        Get the recommended framework for a language.
+        
+        Args:
+            language: Programming language
+            
+        Returns:
+            Recommended framework
+        """
+        try:
+            from ..output_langs.registry import LanguageRegistry
+            registry = LanguageRegistry()
+            
+            frameworks = registry.get_frameworks_for_language(language)
+            
+            # Prefer playwright if available
+            if 'playwright' in frameworks:
+                return 'playwright'
+            elif 'selenium' in frameworks:
+                return 'selenium'
+            elif frameworks:
+                return frameworks[0]  # Return first available
+            else:
+                return 'playwright'  # Safe default
+                
+        except Exception:
+            return 'playwright'  # Safe default
+    
+    def validate_and_suggest_alternatives(self) -> tuple:
+        """
+        Validate current configuration and suggest alternatives if invalid.
+        
+        Returns:
+            (is_valid: bool, message: str, suggestions: dict)
+        """
+        try:
+            self._validate()
+            return (True, f"✓ Configuration is valid: {self.language} + {self.framework}", {})
+        except ValueError as e:
+            suggestions = {}
+            
+            try:
+                from ..output_langs.registry import LanguageRegistry
+                registry = LanguageRegistry()
+                
+                # Suggest optimal framework for current language
+                if registry.is_language_supported(self.language):
+                    optimal_framework = self.get_optimal_framework_for_language(self.language)
+                    suggestions['recommended_framework'] = optimal_framework
+                
+                # Suggest alternative languages for current framework
+                langs_for_framework = registry.get_languages_for_framework(self.framework)
+                if langs_for_framework:
+                    suggestions['alternative_languages'] = langs_for_framework
+                    
+            except ImportError:
+                pass
+                
+            return (False, str(e), suggestions)
     
     # Backward compatibility properties for old tests
     @property
@@ -1180,6 +1306,19 @@ class ConfigBuilder:
     def language(self, language: str) -> 'ConfigBuilder':
         """Set target language."""
         self._data['language'] = language
+        return self
+    
+    def auto_detect_language(self, output_filename: str) -> 'ConfigBuilder':
+        """Auto-detect language from output filename extension."""
+        detected_language = Config.detect_language_from_filename(output_filename)
+        self._data['language'] = detected_language
+        return self
+    
+    def optimize_for_language(self, language: str) -> 'ConfigBuilder':
+        """Set language and auto-select optimal framework for it."""
+        optimal_framework = Config.get_optimal_framework_for_language(language)
+        self._data['language'] = language
+        self._data['framework'] = optimal_framework
         return self
     
     def ai_provider(self, provider: str, model: Optional[str] = None, 

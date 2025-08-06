@@ -79,11 +79,9 @@ class TestSimplifiedAPI:
     
     def test_convert_error_handling(self, sample_automation_data):
         """Test convert() error handling."""
-        with patch.object(E2eTestConverter, '__init__') as mock_init:
-            mock_init.side_effect = ValueError("Configuration error")
-            
-            with pytest.raises(ValueError, match="Configuration error"):
-                btt.convert(sample_automation_data, framework="invalid")
+        # Test with invalid framework that will trigger validation error
+        with pytest.raises(ValueError, match="Framework 'invalid' is not supported for language 'python'"):
+            btt.convert(sample_automation_data, framework="invalid")
     
     def test_convert_with_config_builder_validation_error(self, sample_automation_data):
         """Test convert() when ConfigBuilder validation fails."""
@@ -262,8 +260,7 @@ class TestErrorHandlingScenarios:
     
     def test_convert_with_invalid_framework(self, sample_automation_data):
         """Test convert() with invalid framework."""
-        from browse_to_test.output_langs.exceptions import FrameworkNotSupportedError
-        with pytest.raises(FrameworkNotSupportedError, match="Framework 'invalid_framework' is not supported"):
+        with pytest.raises(ValueError, match="Framework 'invalid_framework' is not supported for language 'python'"):
             btt.convert(sample_automation_data, framework="invalid_framework")
     
     def test_convert_with_invalid_language(self, sample_automation_data):

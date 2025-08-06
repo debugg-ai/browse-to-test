@@ -302,7 +302,7 @@ class TestConfig:
                 "temperature": 0.5
             },
             "output": {
-                "framework": "cypress",
+                "framework": "playwright",
                 "language": "typescript",
                 "include_assertions": False
             },
@@ -318,7 +318,7 @@ class TestConfig:
         assert config.ai.provider == "openai"
         assert config.ai.model == "gpt-3.5-turbo"
         assert config.ai.temperature == 0.5
-        assert config.output.framework == "cypress"
+        assert config.output.framework == "playwright"
         assert config.output.language == "typescript"
         assert config.output.include_assertions is False
         assert config.processing.analyze_actions_with_ai is False
@@ -429,7 +429,7 @@ class TestConfig:
             "BROWSE_TO_TEST_AI_PROVIDER": "anthropic",
             "BROWSE_TO_TEST_AI_MODEL": "claude-3-haiku",
             "BROWSE_TO_TEST_AI_TEMPERATURE": "0.7",
-            "BROWSE_TO_TEST_OUTPUT_FRAMEWORK": "cypress",
+            "BROWSE_TO_TEST_OUTPUT_FRAMEWORK": "playwright",
             "BROWSE_TO_TEST_OUTPUT_LANGUAGE": "typescript",
             "BROWSE_TO_TEST_OUTPUT_INCLUDE_ASSERTIONS": "false",
             "BROWSE_TO_TEST_PROCESSING_ANALYZE_WITH_AI": "false",
@@ -444,7 +444,7 @@ class TestConfig:
             assert config.ai.provider == "anthropic"
             assert config.ai.model == "claude-3-haiku"
             assert config.ai.temperature == 0.7
-            assert config.output.framework == "cypress"
+            assert config.output.framework == "playwright"
             assert config.output.language == "typescript"
             assert config.output.include_assertions is False
             assert config.processing.analyze_actions_with_ai is False

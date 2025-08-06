@@ -1005,8 +1005,36 @@ class IncrementalSession:
         
     
     def _get_playwright_initial_script(self) -> str:
-        """Get basic Playwright initial script."""
-        return '''from playwright.sync_api import sync_playwright
+        """Get basic Playwright initial script based on language."""
+        language = self.config.language
+        
+        if language == "typescript":
+            return '''import { test, expect, Page, BrowserContext } from '@playwright/test';
+
+test('automated test', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Test steps will be added here
+
+  await context.close();
+});
+'''
+        elif language == "javascript":
+            return '''const { test, expect } = require('@playwright/test');
+
+test('automated test', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Test steps will be added here
+
+  await context.close();
+});
+'''
+        else:
+            # Default to Python
+            return '''from playwright.sync_api import sync_playwright
 import os
 import asyncio
 
@@ -1095,8 +1123,11 @@ if __name__ == "__main__":
             reliability_score = ai_metadata.get('reliability_score', 'unknown')
             ai_model = ai_metadata.get('ai_model', 'unknown')
             
-            # Create informative comment about AI analysis
-            comment = f"        # AI Analysis: reliability={reliability_score}, model={ai_model}"
+            # Create informative comment about AI analysis (language-aware)
+            if self.config.language in ["typescript", "javascript"]:
+                comment = f"        // AI Analysis: reliability={reliability_score}, model={ai_model}"
+            else:
+                comment = f"        # AI Analysis: reliability={reliability_score}, model={ai_model}"
             
             # Insert the comment into the current script
             lines = self._current_script.split('\n')

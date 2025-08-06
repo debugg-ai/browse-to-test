@@ -709,6 +709,23 @@ class PlaywrightPlugin(OutputPlugin):
         """
         Generate initial script for incremental session.
         """
+        # Use the config passed in or fall back to self.config
+        active_config = config or self.config
+        language = active_config.language
+        
+        # Generate language-specific initial script
+        if language == "python":
+            return self._generate_initial_script_python(target_url, active_config)
+        elif language == "typescript":
+            return self._generate_initial_script_typescript(target_url, active_config)
+        elif language == "javascript":
+            return self._generate_initial_script_javascript(target_url, active_config)
+        else:
+            # Fallback to Python for unsupported languages
+            return self._generate_initial_script_python(target_url, active_config)
+    
+    def _generate_initial_script_python(self, target_url=None, config=None):
+        """Generate initial Python script for incremental session."""
         lines = []
         
         # Add imports
@@ -763,10 +780,102 @@ class PlaywrightPlugin(OutputPlugin):
         
         return "\n".join(lines)
     
+    def _generate_initial_script_typescript(self, target_url=None, config=None):
+        """Generate initial TypeScript script for incremental session."""
+        lines = []
+        
+        # TypeScript imports
+        lines.extend([
+            "import { test, expect, Page, BrowserContext } from '@playwright/test';",
+            "",
+        ])
+        
+        # Test function start
+        lines.extend([
+            "test('automated test', async ({ browser }) => {",
+            "  const context = await browser.newContext();",
+            "  const page = await context.newPage();",
+            "",
+        ])
+        
+        # Navigate to target URL if provided
+        if target_url:
+            escaped_url = target_url.replace('/', '\\/')
+            lines.extend([
+                f"  // Step 1: Navigate to {target_url}",
+                f"  await page.goto('{target_url}', {{ timeout: 30000 }});",
+                "  await page.waitForLoadState('load');",
+                "  await page.waitForTimeout(1000);",
+                f"  await expect(page).toHaveURL(new RegExp('{escaped_url}'));",
+                "",
+            ])
+        
+        # Add closing for future steps
+        lines.extend([
+            "  // Additional steps will be added here",
+            "",
+        ])
+        
+        return "\n".join(lines)
+    
+    def _generate_initial_script_javascript(self, target_url=None, config=None):
+        """Generate initial JavaScript script for incremental session.""" 
+        lines = []
+        
+        # JavaScript imports
+        lines.extend([
+            "const { test, expect } = require('@playwright/test');",
+            "",
+        ])
+        
+        # Test function start
+        lines.extend([
+            "test('automated test', async ({ browser }) => {",
+            "  const context = await browser.newContext();",
+            "  const page = await context.newPage();",
+            "",
+        ])
+        
+        # Navigate to target URL if provided
+        if target_url:
+            escaped_url = target_url.replace('/', '\\/')
+            lines.extend([
+                f"  // Step 1: Navigate to {target_url}",
+                f"  await page.goto('{target_url}', {{ timeout: 30000 }});",
+                "  await page.waitForLoadState('load');",
+                "  await page.waitForTimeout(1000);",
+                f"  await expect(page).toHaveURL(new RegExp('{escaped_url}'));",
+                "",
+            ])
+        
+        # Add closing for future steps
+        lines.extend([
+            "  // Additional steps will be added here",
+            "",
+        ])
+        
+        return "\n".join(lines)
+    
     def append_step_to_script(self, current_script, step, config=None):
         """
         Append a step to existing script for incremental session.
         """
+        # Use the config passed in or fall back to self.config
+        active_config = config or self.config
+        language = active_config.language
+        
+        if language == "python":
+            return self._append_step_to_script_python(current_script, step, active_config)
+        elif language == "typescript":
+            return self._append_step_to_script_typescript(current_script, step, active_config)
+        elif language == "javascript":
+            return self._append_step_to_script_javascript(current_script, step, active_config)
+        else:
+            # Fallback to Python
+            return self._append_step_to_script_python(current_script, step, active_config)
+    
+    def _append_step_to_script_python(self, current_script, step, config=None):
+        """Append step to Python script."""
         indent = "            "
         
         # Generate step actions
@@ -782,10 +891,128 @@ class PlaywrightPlugin(OutputPlugin):
         step_code = "\n".join(step_lines)
         return current_script + "\n" + step_code
     
+    def _append_step_to_script_typescript(self, current_script, step, config=None):
+        """Append step to TypeScript script."""
+        indent = "  "
+        
+        # Generate step actions for TypeScript
+        step_lines = []
+        step_lines.append(f"{indent}// Step {step.step_index + 1}")
+        
+        for action in step.actions:
+            step_lines.extend(self._generate_action_code_typescript(action, step.step_index, indent))
+        
+        step_lines.append(f"{indent}")
+        
+        # Insert before the closing brace
+        step_code = "\n".join(step_lines)
+        return current_script + "\n" + step_code
+    
+    def _append_step_to_script_javascript(self, current_script, step, config=None):
+        """Append step to JavaScript script."""
+        indent = "  "
+        
+        # Generate step actions for JavaScript
+        step_lines = []
+        step_lines.append(f"{indent}// Step {step.step_index + 1}")
+        
+        for action in step.actions:
+            step_lines.extend(self._generate_action_code_javascript(action, step.step_index, indent))
+        
+        step_lines.append(f"{indent}")
+        
+        # Insert before the closing brace
+        step_code = "\n".join(step_lines)
+        return current_script + "\n" + step_code
+    
+    def _generate_action_code_typescript(self, action, step_index, indent="  "):
+        """Generate TypeScript code for an action."""
+        lines = []
+        
+        if action.action_type == "go_to_url":
+            lines.append(f"{indent}await page.goto('{action.url}', {{ timeout: 30000 }});")
+            lines.append(f"{indent}await page.waitForLoadState('load');")
+            
+        elif action.action_type == "click_element":
+            if action.selector:
+                lines.append(f"{indent}await page.click('{action.selector}');")
+            elif action.xpath:
+                lines.append(f"{indent}await page.locator('xpath={action.xpath}').click();")
+                
+        elif action.action_type == "type_text":
+            if action.selector:
+                lines.append(f"{indent}await page.fill('{action.selector}', '{action.text}');")
+            elif action.xpath:
+                lines.append(f"{indent}await page.locator('xpath={action.xpath}').fill('{action.text}');")
+                
+        elif action.action_type == "wait":
+            if hasattr(action, 'seconds') and action.seconds:
+                lines.append(f"{indent}await page.waitForTimeout({int(action.seconds * 1000)});")
+            else:
+                lines.append(f"{indent}await page.waitForTimeout(1000);")
+                
+        elif action.action_type == "scroll":
+            lines.append(f"{indent}await page.mouse.wheel(0, 500);")
+            
+        else:
+            lines.append(f"{indent}// TODO: Handle {action.action_type}")
+        
+        return lines
+    
+    def _generate_action_code_javascript(self, action, step_index, indent="  "):
+        """Generate JavaScript code for an action."""
+        lines = []
+        
+        if action.action_type == "go_to_url":
+            lines.append(f"{indent}await page.goto('{action.url}', {{ timeout: 30000 }});")
+            lines.append(f"{indent}await page.waitForLoadState('load');")
+            
+        elif action.action_type == "click_element":
+            if action.selector:
+                lines.append(f"{indent}await page.click('{action.selector}');")
+            elif action.xpath:
+                lines.append(f"{indent}await page.locator('xpath={action.xpath}').click();")
+                
+        elif action.action_type == "type_text":
+            if action.selector:
+                lines.append(f"{indent}await page.fill('{action.selector}', '{action.text}');")
+            elif action.xpath:
+                lines.append(f"{indent}await page.locator('xpath={action.xpath}').fill('{action.text}');")
+                
+        elif action.action_type == "wait":
+            if hasattr(action, 'seconds') and action.seconds:
+                lines.append(f"{indent}await page.waitForTimeout({int(action.seconds * 1000)});")
+            else:
+                lines.append(f"{indent}await page.waitForTimeout(1000);")
+                
+        elif action.action_type == "scroll":
+            lines.append(f"{indent}await page.mouse.wheel(0, 500);")
+            
+        else:
+            lines.append(f"{indent}// TODO: Handle {action.action_type}")
+        
+        return lines
+    
     def finalize_script(self, script, config=None):
         """
         Finalize the complete script for incremental session.
         """
+        # Use the config passed in or fall back to self.config
+        active_config = config or self.config
+        language = active_config.language
+        
+        if language == "python":
+            return self._finalize_script_python(script, active_config)
+        elif language == "typescript":
+            return self._finalize_script_typescript(script, active_config)
+        elif language == "javascript":
+            return self._finalize_script_javascript(script, active_config)
+        else:
+            # Fallback to Python
+            return self._finalize_script_python(script, active_config)
+    
+    def _finalize_script_python(self, script, config=None):
+        """Finalize Python script."""
         lines = [script]
         
         # Add closing and cleanup
@@ -814,6 +1041,34 @@ class PlaywrightPlugin(OutputPlugin):
         
         final_content = "\n".join(lines)
         return self._add_header_comment(self._format_code(final_content))
+    
+    def _finalize_script_typescript(self, script, config=None):
+        """Finalize TypeScript script."""
+        lines = [script]
+        
+        # Add closing
+        lines.extend([
+            "  console.log('Test completed successfully');",
+            "  await context.close();",
+            "});",
+        ])
+        
+        final_content = "\n".join(lines)
+        return self._add_header_comment(final_content)
+    
+    def _finalize_script_javascript(self, script, config=None):
+        """Finalize JavaScript script."""
+        lines = [script]
+        
+        # Add closing
+        lines.extend([
+            "  console.log('Test completed successfully');",
+            "  await context.close();",
+            "});",
+        ])
+        
+        final_content = "\n".join(lines)
+        return self._add_header_comment(final_content)
     
     def _generate_entry_point(self) -> List[str]:
         """Generate script entry point."""
@@ -878,16 +1133,10 @@ class PlaywrightPlugin(OutputPlugin):
         return self.generate_script(steps, context, config)
     
     
-    def append_step_to_script(self, current_script, step, config):
-        """Append a step to existing script."""
-        # Simple implementation - just add comments for now
-        return current_script + f"\n        # Step {step.step_index}: {len(step.actions)} action(s)\n"
+    # This method is removed - using the language-aware version defined earlier
     
     async def append_step_to_script_async(self, current_script, step, config):
         """Append a step to script asynchronously."""
         return self.append_step_to_script(current_script, step, config)
     
-    def finalize_script(self, script, config):
-        """Finalize the script."""
-        # Just return the script as-is for now
-        return script 
+    # This method is removed - using the language-aware version defined earlier 

@@ -239,8 +239,8 @@ async def example_2_async_incremental_session():
         session = btt.create_session(
             framework="playwright",
             ai_provider="openai", 
+            language="typescript",
             ai_model="gpt-4o-mini",
-            language="python",
             include_assertions=True,
             include_error_handling=True,
             enable_ai_analysis=True,
@@ -302,7 +302,7 @@ async def example_2_async_incremental_session():
         if final_result.success:
             # Save the final script
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = OUTPUT_DIR / f"async_incremental_session_{timestamp}.py"
+            output_file = OUTPUT_DIR / f"async_incremental_session_{timestamp}.ts"
             with open(output_file, 'w') as f:
                 f.write(final_result.current_script)
             

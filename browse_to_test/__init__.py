@@ -119,6 +119,7 @@ def convert(
     framework: str = "playwright",
     ai_provider: str = "openai",
     language: str = "python",
+    output_file: str = None,
     **kwargs
 ) -> str:
     """
@@ -131,6 +132,7 @@ def convert(
         framework: Target test framework ('playwright', 'selenium', etc.)
         ai_provider: AI provider to use ('openai', 'anthropic', etc.)  
         language: Target language ('python', 'typescript', etc.)
+        output_file: Optional output filename (language auto-detected from extension)
         **kwargs: Additional configuration options
         
     Returns:
@@ -140,7 +142,17 @@ def convert(
         >>> automation_data = [{"model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]}}]
         >>> script = convert(automation_data, framework="playwright", ai_provider="openai")
         >>> print(script)
+        
+        >>> # Auto-detect language from output file
+        >>> script = convert(automation_data, output_file="test.ts")  # Will use TypeScript
     """
+    # Auto-detect language from output file if provided and language not explicitly set
+    if output_file and language == "python":  # Default language
+        from .core.config import Config
+        detected_language = Config.detect_language_from_filename(output_file)
+        if detected_language != "python":  # Only change if detection found something different
+            language = detected_language
+    
     config = ConfigBuilder() \
         .framework(framework) \
         .ai_provider(ai_provider) \
@@ -151,6 +163,17 @@ def convert(
     
     # Enable strict mode for better validation in the simple API
     config.strict_mode = True
+    
+    # Validate configuration and provide helpful error messages
+    is_valid, message, suggestions = config.validate_and_suggest_alternatives()
+    if not is_valid:
+        error_msg = f"Configuration validation failed: {message}"
+        if suggestions:
+            if 'recommended_framework' in suggestions:
+                error_msg += f"\nRecommended: framework='{suggestions['recommended_framework']}'"
+            if 'alternative_languages' in suggestions:
+                error_msg += f"\nAlternative languages for {framework}: {suggestions['alternative_languages']}"
+        raise ValueError(error_msg)
     
     # Validate input data
     if not automation_data:
@@ -170,6 +193,7 @@ async def convert_async(
     framework: str = "playwright",
     ai_provider: str = "openai",
     language: str = "python",
+    output_file: str = None,
     **kwargs
 ) -> str:
     """
@@ -184,6 +208,7 @@ async def convert_async(
         framework: Target test framework ('playwright', 'selenium', etc.')
         ai_provider: AI provider to use ('openai', 'anthropic', etc.)  
         language: Target language ('python', 'typescript', etc.)
+        output_file: Optional output filename (language auto-detected from extension)
         **kwargs: Additional configuration options
         
     Returns:
@@ -193,7 +218,17 @@ async def convert_async(
         >>> automation_data = [{"model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]}}]
         >>> script = await convert_async(automation_data, framework="playwright", ai_provider="openai")
         >>> print(script)
+        
+        >>> # Auto-detect language from output file
+        >>> script = await convert_async(automation_data, output_file="test.js")  # Will use JavaScript
     """
+    # Auto-detect language from output file if provided and language not explicitly set
+    if output_file and language == "python":  # Default language
+        from .core.config import Config
+        detected_language = Config.detect_language_from_filename(output_file)
+        if detected_language != "python":  # Only change if detection found something different
+            language = detected_language
+    
     config = ConfigBuilder() \
         .framework(framework) \
         .ai_provider(ai_provider) \
@@ -204,6 +239,17 @@ async def convert_async(
     
     # Enable strict mode for better validation in the simple API
     config.strict_mode = True
+    
+    # Validate configuration and provide helpful error messages
+    is_valid, message, suggestions = config.validate_and_suggest_alternatives()
+    if not is_valid:
+        error_msg = f"Configuration validation failed: {message}"
+        if suggestions:
+            if 'recommended_framework' in suggestions:
+                error_msg += f"\nRecommended: framework='{suggestions['recommended_framework']}'"
+            if 'alternative_languages' in suggestions:
+                error_msg += f"\nAlternative languages for {framework}: {suggestions['alternative_languages']}"
+        raise ValueError(error_msg)
     
     # Validate input data
     if not automation_data:
