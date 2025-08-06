@@ -23,6 +23,10 @@ import json
 from pathlib import Path
 import browse_to_test as btt
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Create output directory
 OUTPUT_DIR = Path(__file__).parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)

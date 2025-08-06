@@ -512,9 +512,22 @@ class InputParser:
     
     def parse_single_step(self, step_data):
         """Parse a single step for incremental sessions."""
+        # If it's already a ParsedStep, return it
+        if hasattr(step_data, 'step_index') and hasattr(step_data, 'actions'):
+            return step_data
+        
+        # If it's a dictionary, parse it
         if isinstance(step_data, dict):
             # Parse as a single step with index 0
             return self._parse_step(step_data, 0)
-        else:
-            # Already parsed, return as-is
-            return step_data 
+        
+        # Check if it's a dictionary-like object with standard automation data keys
+        try:
+            # Check for required keys to identify the data structure
+            if all(key in step_data for key in ['model_output', 'state', 'metadata']):
+                return self._parse_step(dict(step_data), 0)
+        except Exception:
+            pass
+        
+        # If none of the above, raise a helpful error
+        raise ValueError(f"Unable to parse step data of type {type(step_data)}. Expected a dictionary or a pre-parsed step.")

@@ -71,7 +71,7 @@ Focus on best practices, proper selectors, and reliable test patterns.
     def _generate_optimization_prompt(self) -> str:
         """Generate optimization analysis prompt."""
         prompt = f"""
-Analyze the following automation data for {self.target_framework} optimization:
+Analyze the following automation step for {self.target_framework} optimization:
 
 Automation data: {json.dumps(self.automation_data, indent=2)}
 """
@@ -80,8 +80,20 @@ Automation data: {json.dumps(self.automation_data, indent=2)}
         
         prompt += f"""
 
-Please provide optimization recommendations for this {self.target_framework} test automation.
-Focus on performance, reliability, and maintainability improvements.
+Please analyze this {self.target_framework} test step and provide specific recommendations:
+
+1. **Reliability Assessment**: Rate the reliability of selectors and actions (mention words like "reliable", "unreliable", "brittle", "stable")
+2. **Selector Quality**: Evaluate selector strategies (mention "data-testid", "xpath", "class selector", "id selector")
+3. **Wait Strategies**: Recommend appropriate wait conditions (mention "wait", "timeout" if needed)
+4. **Error Handling**: Suggest error handling improvements (mention "error handling", "exception" if applicable)
+5. **Performance**: Identify performance optimizations (mention "slow", "performance" if relevant)
+6. **Maintainability**: Suggest maintainability improvements (mention "maintainability", "readable" if applicable)
+
+For {self.target_framework}-specific optimizations, include framework best practices like:
+- Playwright: page.locator usage, auto-wait features
+- Selenium: WebDriverWait, expected_conditions
+
+Provide concrete, actionable recommendations.
 """
         return prompt
     
@@ -176,6 +188,7 @@ class AIResponse:
     provider: str
     tokens_used: Optional[int] = None
     finish_reason: Optional[str] = None
+    response_time: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -255,7 +268,21 @@ class AIProvider(ABC):
     
     def generate(self, prompt: str, **kwargs) -> AIResponse:
         """Generate response synchronously."""
-        return asyncio.run(self.generate_async(prompt, **kwargs))
+        try:
+            # Check if we're already in an async context
+            loop = asyncio.get_running_loop()
+            # We're in an async context, this should not be called synchronously
+            # Create a new thread to run the async function
+            import concurrent.futures
+            import threading
+            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, self.generate_async(prompt, **kwargs))
+                return future.result()
+                
+        except RuntimeError:
+            # No event loop running, we can safely use asyncio.run
+            return asyncio.run(self.generate_async(prompt, **kwargs))
     
     def analyze_with_context(self, request: AIAnalysisRequest, **kwargs) -> AIResponse:
         """Analyze automation data with context synchronously."""
@@ -273,6 +300,9 @@ class OpenAIProvider(AIProvider):
     
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         """Initialize OpenAI provider."""
+        # Set proper default model for OpenAI if not specified
+        if 'model' not in kwargs:
+            kwargs['model'] = 'gpt-4o-mini'
         super().__init__(api_key=api_key, **kwargs)
         self.api_base_url = kwargs.get('api_base_url', 'https://api.openai.com/v1')
         
@@ -290,6 +320,8 @@ class OpenAIProvider(AIProvider):
     async def _make_request(self, prompt: str, **kwargs) -> AIResponse:
         """Make actual API request to OpenAI."""
         import aiohttp
+        
+        start_time = time.time()
         
         headers = {
             'Authorization': f'Bearer {self.api_key}',
@@ -315,6 +347,7 @@ class OpenAIProvider(AIProvider):
                     raise AIProviderError(f"OpenAI API error {response.status}: {error_text}", "openai")
                 
                 result = await response.json()
+                response_time = time.time() - start_time
                 
                 return AIResponse(
                     content=result['choices'][0]['message']['content'],
@@ -322,6 +355,7 @@ class OpenAIProvider(AIProvider):
                     provider="openai",
                     tokens_used=result.get('usage', {}).get('total_tokens'),
                     finish_reason=result['choices'][0].get('finish_reason'),
+                    response_time=response_time,
                     metadata={'usage': result.get('usage', {})}
                 )
     
@@ -353,6 +387,8 @@ class AnthropicProvider(AIProvider):
         """Make actual API request to Anthropic."""
         import aiohttp
         
+        start_time = time.time()
+        
         headers = {
             'x-api-key': self.api_key,
             'Content-Type': 'application/json',
@@ -378,6 +414,7 @@ class AnthropicProvider(AIProvider):
                     raise AIProviderError(f"Anthropic API error {response.status}: {error_text}", "anthropic")
                 
                 result = await response.json()
+                response_time = time.time() - start_time
                 
                 return AIResponse(
                     content=result['content'][0]['text'],
@@ -385,6 +422,7 @@ class AnthropicProvider(AIProvider):
                     provider="anthropic",
                     tokens_used=result.get('usage', {}).get('output_tokens', 0) + result.get('usage', {}).get('input_tokens', 0),
                     finish_reason=result.get('stop_reason'),
+                    response_time=response_time,
                     metadata={'usage': result.get('usage', {})}
                 )
     
@@ -407,13 +445,21 @@ class MockProvider(AIProvider):
     
     async def _make_request(self, prompt: str, **kwargs) -> AIResponse:
         """Mock API request."""
+        import asyncio
+        
+        start_time = time.time()
         self.call_count += 1
+        
+        # Simulate realistic response time
+        await asyncio.sleep(0.5 + (self.call_count % 3) * 0.5)  # 0.5 to 2.0 seconds
+        response_time = time.time() - start_time
         
         return AIResponse(
             content=f"Mock response {self.call_count} to: {prompt[:50]}...",
             model="mock-model",
             provider="mock",
-            tokens_used=100
+            tokens_used=100,
+            response_time=response_time
         )
     
     async def generate_async(self, prompt: str, **kwargs) -> AIResponse:

@@ -26,151 +26,150 @@ from pathlib import Path
 from datetime import datetime
 import browse_to_test as btt
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Create output directory
 OUTPUT_DIR = Path(__file__).parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
+# Use the same automation data structure as the async example
+EXAMPLE_AUTOMATION_DATA = [
+    {
+        "model_output": {
+            "thinking": "Starting by navigating to the target homepage to begin verification process.",
+            "action": [{"go_to_url": {"url": "https://debugg.ai"}}],
+        },
+        "result": [
+            {
+                "is_done": False,
+                "success": True,
+                "error": None,
+                "long_term_memory": "Successfully navigated to homepage and found Sandbox header text visible.",
+            }
+        ],
+        "state": {
+            "url": "https://debugg.ai",
+            "title": "Debugg AI - AI-Powered Testing Platform",
+            "interacted_element": [],
+        },
+        "metadata": {
+            "step_start_time": 1753997156.1953292,
+            "step_end_time": 1753997203.220958,
+            "step_number": 1,
+        },
+    },
+    {
+        "model_output": {
+            "thinking": "Now I need to locate and click on the main navigation or header element.",
+            "action": [{"click_element": {"index": 0}}],
+        },
+        "result": [
+            {
+                "is_done": False,
+                "success": True,
+                "error": None,
+                "long_term_memory": "Clicked on header element to explore the page structure.",
+            }
+        ],
+        "state": {
+            "url": "https://debugg.ai",
+            "title": "Debugg AI - AI-Powered Testing Platform",
+            "interacted_element": [
+                {
+                    "xpath": "//header//h1",
+                    "css_selector": "header h1",
+                    "text_content": "Debugg AI",
+                    "attributes": {"class": "text-2xl font-bold text-gray-900"},
+                }
+            ],
+        },
+        "metadata": {
+            "step_start_time": 1753997350.8411188,
+            "step_end_time": 1753997369.5740314,
+            "step_number": 2,
+        },
+    },
+    {
+        "model_output": {
+            "thinking": "Let me wait a moment for any dynamic content to load completely.",
+            "action": [{"wait": {"seconds": 2}}],
+        },
+        "result": [
+            {
+                "is_done": False,
+                "success": True,
+                "error": None,
+                "long_term_memory": "Waited for page to fully load before proceeding.",
+            }
+        ],
+        "state": {
+            "url": "https://debugg.ai",
+            "title": "Debugg AI - AI-Powered Testing Platform",
+            "interacted_element": [],
+        },
+        "metadata": {
+            "step_start_time": 1753997372.2532299,
+            "step_end_time": 1753997391.3151274,
+            "step_number": 3,
+        },
+    },
+    {
+        "model_output": {
+            "thinking": "Let me scroll down to explore more content on the page.",
+            "action": [{"scroll": {"direction": "down", "amount": 500}}],
+        },
+        "result": [
+            {
+                "is_done": False,
+                "success": True,
+                "error": None,
+                "long_term_memory": "Scrolled down the page to view additional content.",
+            }
+        ],
+        "state": {
+            "url": "https://debugg.ai",
+            "title": "Debugg AI - AI-Powered Testing Platform",
+            "interacted_element": [],
+        },
+        "metadata": {
+            "step_start_time": 1753997394.1183739,
+            "step_end_time": 1753997414.787713,
+            "step_number": 4,
+        },
+    },
+    {
+        "model_output": {
+            "thinking": "Task completed successfully. I have explored the website structure and interactions.",
+            "action": [{"done": {}}],
+        },
+        "result": [
+            {
+                "is_done": True,
+                "success": True,
+                "error": None,
+                "long_term_memory": "Successfully completed website exploration and interaction testing.",
+            }
+        ],
+        "state": {
+            "url": "https://debugg.ai",
+            "title": "Debugg AI - AI-Powered Testing Platform",
+            "interacted_element": [],
+        },
+        "metadata": {
+            "step_start_time": 1753997419.0800045,
+            "step_end_time": 1753997442.0409794,
+            "step_number": 5,
+        },
+    },
+]
+
+
 def create_step_sequence():
     """Create a sequence of steps that might happen during live automation."""
-    return [
-        {
-            "model_output": {
-                "action": [{"go_to_url": {"url": "https://shop.example.com"}}]
-            },
-            "state": {
-                "url": "https://shop.example.com",
-                "title": "Example Shop - Home",
-                "interacted_element": []
-            },
-            "metadata": {
-                "step_start_time": time.time(),
-                "step_end_time": time.time() + 2,
-                "step_number": 1
-            }
-        },
-        {
-            "model_output": {
-                "action": [{"click_element": {"index": 0}}]
-            },
-            "state": {
-                "url": "https://shop.example.com/products",
-                "title": "Products - Example Shop",
-                "interacted_element": [{
-                    "xpath": "//nav//a[contains(text(), 'Products')]",
-                    "css_selector": "nav a[href='/products']",
-                    "highlight_index": 0,
-                    "attributes": {
-                        "href": "/products",
-                        "class": "nav-link"
-                    },
-                    "text_content": "Products"
-                }]
-            },
-            "metadata": {
-                "step_start_time": time.time() + 2,
-                "step_end_time": time.time() + 4,
-                "step_number": 2
-            }
-        },
-        {
-            "model_output": {
-                "action": [{"click_element": {"index": 0}}]
-            },
-            "state": {
-                "url": "https://shop.example.com/products/laptop-pro",
-                "title": "Laptop Pro - Example Shop",
-                "interacted_element": [{
-                    "xpath": "//div[@class='product-card'][1]//button",
-                    "css_selector": ".product-card:first-child button",
-                    "highlight_index": 0,
-                    "attributes": {
-                        "class": "btn btn-primary product-btn",
-                        "data-product-id": "laptop-pro"
-                    },
-                    "text_content": "View Details"
-                }]
-            },
-            "metadata": {
-                "step_start_time": time.time() + 4,
-                "step_end_time": time.time() + 6,
-                "step_number": 3
-            }
-        },
-        {
-            "model_output": {
-                "action": [{"click_element": {"index": 0}}]
-            },
-            "state": {
-                "url": "https://shop.example.com/cart",
-                "title": "Shopping Cart - Example Shop",
-                "interacted_element": [{
-                    "xpath": "//button[contains(@class, 'add-to-cart')]",
-                    "css_selector": ".add-to-cart-btn",
-                    "highlight_index": 0,
-                    "attributes": {
-                        "class": "btn btn-success add-to-cart-btn",
-                        "data-product-id": "laptop-pro"
-                    },
-                    "text_content": "Add to Cart"
-                }]
-            },
-            "metadata": {
-                "step_start_time": time.time() + 6,
-                "step_end_time": time.time() + 8,
-                "step_number": 4
-            }
-        },
-        {
-            "model_output": {
-                "action": [{"input_text": {"index": 0, "text": "2"}}]
-            },
-            "state": {
-                "url": "https://shop.example.com/cart",
-                "title": "Shopping Cart - Example Shop",
-                "interacted_element": [{
-                    "xpath": "//input[@name='quantity']",
-                    "css_selector": "input[name='quantity']",
-                    "highlight_index": 0,
-                    "attributes": {
-                        "name": "quantity",
-                        "type": "number",
-                        "min": "1",
-                        "value": "1"
-                    }
-                }]
-            },
-            "metadata": {
-                "step_start_time": time.time() + 8,
-                "step_end_time": time.time() + 10,
-                "step_number": 5
-            }
-        },
-        {
-            "model_output": {
-                "action": [{"click_element": {"index": 0}}]
-            },
-            "state": {
-                "url": "https://shop.example.com/checkout",
-                "title": "Checkout - Example Shop",
-                "interacted_element": [{
-                    "xpath": "//button[contains(@class, 'checkout-btn')]",
-                    "css_selector": ".checkout-btn",
-                    "highlight_index": 0,
-                    "attributes": {
-                        "class": "btn btn-primary checkout-btn",
-                        "type": "submit"
-                    },
-                    "text_content": "Proceed to Checkout"
-                }]
-            },
-            "metadata": {
-                "step_start_time": time.time() + 10,
-                "step_end_time": time.time() + 12,
-                "step_number": 6
-            }
-        }
-    ]
+    return EXAMPLE_AUTOMATION_DATA
 
 
 def example_1_basic_incremental_session():
@@ -180,15 +179,18 @@ def example_1_basic_incremental_session():
     steps = create_step_sequence()
     
     try:
-        # Create session using the new API
+        # Create session using the new API with AI analysis enabled
         session = btt.create_session(
             framework="playwright",
             ai_provider="openai",
-            language="python"
+            ai_model="gpt-4o-mini", 
+            language="python",
+            enable_ai_analysis=True,
+            enable_final_script_analysis=True
         )
         
         # Start the session
-        result = session.start(target_url="https://shop.example.com")
+        result = session.start(target_url="https://debugg.ai")
         print(f"✓ Session started: {result.success}")
         if not result.success:
             print(f"✗ Startup failed: {result.validation_issues}")
@@ -196,10 +198,11 @@ def example_1_basic_incremental_session():
         
         print(f"  Initial script: {len(result.current_script.splitlines())} lines")
         
-        # Add steps one by one
+        # Add steps one by one (individual step dictionaries, not full automation data)
         for i, step in enumerate(steps, 1):
             print(f"  Adding step {i}...")
-            result = session.add_step(step)
+            # Pass individual step dictionary to add_step
+            result = session.add_step(step, wait_for_completion=True)
             
             if result.success:
                 print(f"    ✓ Step {i} added, script now {len(result.current_script.splitlines())} lines")
@@ -232,18 +235,25 @@ async def example_2_async_incremental_session():
     steps = create_step_sequence()
     
     try:
-        # Create session with async support
+        # Create session with async support and AI analysis enabled
         session = btt.create_session(
             framework="playwright",
-            ai_provider="openai",
+            ai_provider="openai", 
+            ai_model="gpt-4o-mini",
             language="python",
             include_assertions=True,
-            include_error_handling=True
+            include_error_handling=True,
+            enable_ai_analysis=True,
+            enable_final_script_analysis=True
         )
         
         # Start session asynchronously
-        result = await session.start_async(target_url="https://shop.example.com")
+        result = await session.start_async(target_url="https://debugg.ai")
         print(f"✓ Async session started: {result.success}")
+        
+        # Check AI configuration
+        ai_provider_status = "✓ Enabled" if getattr(session, 'ai_provider', None) else "✗ Disabled"
+        print(f"  AI Provider: {session.config.ai_provider} ({session.config.ai_model}) - {ai_provider_status}")
         
         if not result.success:
             print(f"✗ Startup failed: {result.validation_issues}")
@@ -255,12 +265,18 @@ async def example_2_async_incremental_session():
         # Add first few steps synchronously
         for i, step in enumerate(steps[:3], 1):
             print(f"  Adding step {i} (sync)...")
+            start_time = time.time()
             result = session.add_step(step, wait_for_completion=True)
+            step_time = time.time() - start_time
             
             if result.success:
-                print(f"    ✓ Step {i} completed")
+                print(f"    ✓ Step {i} completed in {step_time:.2f}s")
             else:
                 print(f"    ✗ Step {i} failed: {result.validation_issues}")
+            
+            # Check if AI processing is happening
+            if step_time < 0.1 and i == 1:
+                print(f"    ⚠ Step processed very quickly ({step_time:.3f}s) - AI may not be engaged")
         
         # Add remaining steps asynchronously
         async_tasks = []
@@ -317,7 +333,7 @@ async def example_3_live_monitoring_session():
         )
         
         # Start session
-        await session.start_async(target_url="https://shop.example.com")
+        await session.start_async(target_url="https://debugg.ai")
         print("✓ Monitoring session started")
         
         # Add steps with monitoring
@@ -407,7 +423,7 @@ async def example_4_error_recovery_session():
             language="python"
         )
         
-        await session.start_async(target_url="https://shop.example.com")
+        await session.start_async(target_url="https://debugg.ai")
         print("✓ Error recovery session started")
         
         successful_steps = 0
@@ -486,22 +502,24 @@ async def main():
     
     try:
         # Run examples
-        example_1_basic_incremental_session()
+        # example_1_basic_incremental_session()
+        start_time = time.time()
         await example_2_async_incremental_session()
-        await example_3_live_monitoring_session()
-        await example_4_error_recovery_session()
+        # await example_3_live_monitoring_session()
+        # await example_4_error_recovery_session()
+        execution_time = time.time() - start_time
         
         # Show generated files
         print(f"\n📁 Generated files in {OUTPUT_DIR.relative_to(Path.cwd())}:")
-        output_files = list(OUTPUT_DIR.glob("incremental_*.py")) + \
-                      list(OUTPUT_DIR.glob("async_incremental_*.py")) + \
-                      list(OUTPUT_DIR.glob("monitored_*.py")) + \
-                      list(OUTPUT_DIR.glob("error_recovery_*.py")) + \
-                      list(OUTPUT_DIR.glob("session_metadata_*.json"))
+        # output_files = list(OUTPUT_DIR.glob("incremental_*.py")) + \
+        #               list(OUTPUT_DIR.glob("async_incremental_*.py")) + \
+        #               list(OUTPUT_DIR.glob("monitored_*.py")) + \
+        #               list(OUTPUT_DIR.glob("error_recovery_*.py")) + \
+        #               list(OUTPUT_DIR.glob("session_metadata_*.json"))
         
-        for file_path in sorted(output_files):
-            size = file_path.stat().st_size
-            print(f"   • {file_path.name} ({size:,} bytes)")
+        # for file_path in sorted(output_files):
+        #     size = file_path.stat().st_size
+        #     print(f"   • {file_path.name} ({size:,} bytes)")
         
         print("\n✓ All incremental session examples completed!")
         print("\nKey benefits of incremental sessions:")
@@ -509,7 +527,9 @@ async def main():
         print("- Live script updates and monitoring")
         print("- Error recovery and graceful degradation")
         print("- Session state management and finalization")
-        print("- Perfect for browser automation tools and live testing")
+        print("- Perfect for browser automation tools and live testing\n")
+
+        print(f"Execution time: {execution_time:.2f} seconds")
         
     except Exception as e:
         print(f"\n✗ Incremental session examples failed: {e}")

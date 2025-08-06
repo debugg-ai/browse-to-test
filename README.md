@@ -1,43 +1,50 @@
 # Browse-to-Test
 
-**Transform browser recordings into production-ready test scripts instantly with AI**
+**Transform browser automation data into production-ready test scripts with AI**
 
-🚀 **30 seconds from install to your first generated test** | 🤖 **AI-powered** | 🔌 **Multi-framework** | ⚡ **Async support**
+🚀 **Simple async API** | 🤖 **AI-powered** | 🔌 **Multi-framework** | ⚡ **Parallel processing**
 
 ---
 
 ## Why Browse-to-Test?
 
-Turn this messy browser automation data:
-```json
-[{"model_output": {"action": [{"go_to_url": {"url": "https://example.com"}}]}, "state": {...}}]
+Convert your browser automation recordings into clean, maintainable test scripts in seconds:
+
+```python
+import browse_to_test as btt
+
+# One line to generate comprehensive test scripts
+script = await btt.convert_async(
+    automation_data=your_recording_data,
+    framework="playwright", 
+    language="python"
+)
 ```
 
-Into this beautiful, maintainable test code:
+Results in production-ready code:
 ```python
 import pytest
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
-def test_user_login_flow():
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
+async def test_user_workflow():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
         
-        # Navigate to login page
-        page.goto("https://example.com")
+        # Navigate to application
+        await page.goto("https://app.example.com")
         
-        # Fill login form
-        page.fill('[data-testid="email"]', 'user@example.com')
-        page.fill('[data-testid="password"]', 'secure_password')
+        # Create user flow with assertions
+        await page.click(".create-user-btn")
+        await page.fill("input[name='fullName']", "John Doe")
+        await page.fill("input[name='email']", "john.doe@company.com")
+        await page.click("button[type='submit']")
         
-        # Submit form and verify success
-        page.click('[data-testid="login-btn"]')
-        expect(page.locator('[data-testid="dashboard"]')).to_be_visible()
+        # Verify success
+        await expect(page.locator(".success-message")).to_be_visible()
         
-        browser.close()
+        await browser.close()
 ```
-
-**In just one line of code.**
 
 ---
 
@@ -62,57 +69,75 @@ pip install browse-to-test[all]
 export OPENAI_API_KEY="your_key_here"
 ```
 
-### 3. Convert automation data to tests
-```python
-import browse_to_test as btt
-
-# Your browser automation data (from tools like Playwright recorder, Selenium IDE, etc.)
-automation_data = [
-    {
-        "model_output": {"action": [{"go_to_url": {"url": "https://demo-shop.com"}}]},
-        "state": {"interacted_element": []}
-    },
-    {
-        "model_output": {"action": [{"click_element": {"index": 0}}]},
-        "state": {
-            "interacted_element": [{
-                "css_selector": "[data-testid='add-to-cart']",
-                "text_content": "Add to Cart"
-            }]
-        }
-    }
-]
-
-# Generate test script instantly
-script = btt.convert(automation_data, framework="playwright")
-print(script)
+### 3. Run the async example
+```bash
+# Try the comprehensive async example
+python examples/async_usage.py
 ```
 
-**That's it!** You now have a production-ready test script.
+Or convert automation data directly:
+```python
+import asyncio
+import browse_to_test as btt
+
+async def main():
+    # Your browser automation data
+    automation_data = [
+        {
+            "model_output": {"action": [{"go_to_url": {"url": "https://app.example.com"}}]},
+            "state": {"url": "https://app.example.com", "interacted_element": []}
+        },
+        {
+            "model_output": {"action": [{"click_element": {"index": 0}}]},
+            "state": {
+                "interacted_element": [{
+                    "css_selector": ".create-user-btn",
+                    "text_content": "Create New User"
+                }]
+            }
+        }
+    ]
+
+    # Generate test script asynchronously
+    script = await btt.convert_async(
+        automation_data=automation_data,
+        framework="playwright",
+        language="python"
+    )
+    print(script)
+
+asyncio.run(main())
+```
+
+**See [`examples/async_usage.py`](examples/async_usage.py) for comprehensive async patterns including parallel processing, error handling, and performance optimization.**
 
 ---
 
 ## 🌟 Key Features
 
+### ⚡ **Async-First Design**
+- **Non-blocking operations** for better performance
+- **Parallel processing** of multiple test conversions
+- **Timeout and retry** capabilities built-in
+- **Queue management** for efficient AI API usage
+
 ### 🤖 **AI-Powered Intelligence**
 - Converts raw browser data into clean, readable test code
-- Understands your app's patterns and generates consistent selectors
-- Adds assertions, error handling, and best practices automatically
+- Context-aware generation with quality analysis
+- Smart selector optimization and assertion generation
 
-### ⚡ **Lightning Fast**
-- **30-second setup** from install to first test
-- **Async processing** for large automation datasets
-- **Smart caching** reduces AI costs by 60%
-
-### 🔌 **Universal Compatibility**
+### 🔌 **Multi-Framework Support**
 ```python
-# Playwright (Python/TypeScript/JavaScript)
-btt.convert(data, framework="playwright", language="python")
+# Async API works with all frameworks
+await btt.convert_async(data, framework="playwright", language="python")
+await btt.convert_async(data, framework="playwright", language="typescript") 
+await btt.convert_async(data, framework="selenium", language="python")
 
-# Selenium (Python)  
-btt.convert(data, framework="selenium", language="python")
-
-# More frameworks coming soon...
+# Parallel processing for multiple frameworks
+scripts = await asyncio.gather(
+    btt.convert_async(data, framework="playwright"),
+    btt.convert_async(data, framework="selenium")
+)
 ```
 
 ### 🧠 **Context-Aware Generation**
@@ -140,70 +165,102 @@ Analyzes your existing codebase to generate tests that:
 
 ---
 
-## 🚀 Real-World Examples
+## 🚀 Async Examples from `examples/async_usage.py`
 
-### E-commerce Checkout Flow
+### Simple Async Conversion
 ```python
-# Convert 15-step checkout process into comprehensive test
-automation_data = load_checkout_recording()
-test_script = btt.convert(
-    automation_data, 
-    framework="playwright",
-    include_assertions=True,
-    sensitive_data_keys=["credit_card", "cvv"]
-)
+async def generate_test():
+    script = await btt.convert_async(
+        automation_data=your_recording,
+        framework="playwright",
+        ai_provider="openai", 
+        language="python"
+    )
+    return script
 ```
 
-### SaaS Dashboard Workflow  
+### Parallel Multi-Framework Generation
 ```python
-# Generate tests for complex dashboard interactions
-script = btt.convert(
-    dashboard_automation_data,
-    framework="selenium", 
-    language="python",
-    context_hints={"flow_type": "admin_workflow"}
-)
+async def generate_all_frameworks():
+    tasks = [
+        btt.convert_async(data, framework="playwright", language="python"),
+        btt.convert_async(data, framework="playwright", language="typescript"), 
+        btt.convert_async(data, framework="selenium", language="python")
+    ]
+    
+    # Generate all tests in parallel
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    return results
 ```
 
-### API Integration Testing
+### Quality Analysis with Async
 ```python
-# Create tests that verify both UI and API interactions
-script = btt.convert(
-    api_integration_data,
-    framework="playwright",
-    include_api_validation=True
-) 
+async def generate_with_qa():
+    # Generate script
+    script = await btt.convert_async(automation_data, framework="playwright")
+    
+    # Analyze and optimize quality
+    qa_result = await btt.perform_script_qa_async(
+        script=script,
+        automation_data=automation_data,
+        framework="playwright"
+    )
+    
+    return qa_result['optimized_script']
 ```
 
 ---
 
-## 🛠️ Advanced Usage
+## 🛠️ Advanced Async Features
 
-### Live Test Generation
+### Robust Error Handling with Retries
 ```python
-# Generate tests as you record browser actions
-session = btt.create_session(framework="playwright")
-await session.start("https://app.example.com")
-
-# Add steps in real-time
-for user_action in live_recording:
-    await session.add_step(user_action)
-
-# Get complete test script
-final_script = await session.finalize()
+async def robust_convert(automation_data):
+    """Convert with timeout and retry logic from examples/async_usage.py"""
+    max_retries = 2
+    timeout_seconds = 30
+    
+    for attempt in range(max_retries + 1):
+        try:
+            script = await asyncio.wait_for(
+                btt.convert_async(
+                    automation_data=automation_data,
+                    framework="playwright",
+                    include_assertions=True,
+                    include_error_handling=True
+                ),
+                timeout=timeout_seconds
+            )
+            return script
+        except asyncio.TimeoutError:
+            if attempt == max_retries:
+                raise
+            await asyncio.sleep(1)  # Brief delay before retry
 ```
 
-### Batch Processing
+### Performance Comparison
 ```python
-# Process multiple test scenarios efficiently  
-test_scripts = await btt.convert_batch([
-    {"name": "login_flow", "data": login_automation},
-    {"name": "checkout_flow", "data": checkout_automation},
-    {"name": "admin_flow", "data": admin_automation}
-], framework="playwright")
+async def compare_sync_vs_async(automation_data):
+    """Performance analysis from examples/async_usage.py"""
+    
+    # Sync version
+    sync_start = time.time()
+    sync_script = btt.convert(automation_data, framework="playwright")
+    sync_time = time.time() - sync_start
+    
+    # Async version
+    async_start = time.time()  
+    async_script = await btt.convert_async(automation_data, framework="playwright")
+    async_time = time.time() - async_start
+    
+    return {
+        "sync_time": sync_time,
+        "async_time": async_time,
+        "improvement": ((sync_time - async_time) / sync_time) * 100
+    }
 ```
 
-### Custom Configuration
+### Custom Configuration with Async
 ```python
 # Fine-tune generation for your specific needs
 config = btt.ConfigBuilder() \
@@ -211,20 +268,19 @@ config = btt.ConfigBuilder() \
     .language("typescript") \
     .include_assertions(True) \
     .include_error_handling(True) \
-    .context_analysis_depth("deep") \
+    .include_logging(True) \
     .build()
 
-converter = btt.UnifiedConverter(config)
-script = await converter.convert_async(automation_data)
+script = await btt.convert_async(automation_data, config=config)
 ```
 
 ---
 
 ## 📚 Documentation
 
-- **[Getting Started Guide](GETTING_STARTED.md)** - Step-by-step setup and first test
-- **[API Reference](API_REFERENCE.md)** - Complete API documentation with examples  
-- **[Examples](EXAMPLES.md)** - Real-world usage patterns and recipes
+- **[Async Usage Examples](examples/async_usage.py)** - Complete async patterns and best practices
+- **[Getting Started Guide](GETTING_STARTED.md)** - Step-by-step setup and first test  
+- **[API Reference](API_REFERENCE.md)** - Complete API documentation with examples
 - **[Advanced Usage](ADVANCED_USAGE.md)** - Power user features and customization
 - **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and solutions
 

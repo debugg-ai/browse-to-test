@@ -801,12 +801,12 @@ class ActionAnalyzer:
             ai_response = self.ai_provider.analyze_with_context(analysis_request)
             return self._parse_single_action_response(ai_response, action)
         except Exception as e:
-            if self.config.debug:
-                print(f"Warning: Single action AI analysis failed: {e}")
+            if getattr(self.config, 'debug', False):
+                logger.warning(f"Single action AI analysis failed: {e}")
             
             # Fall back to basic analysis
             return ActionAnalysisResult(
-                action_index=action.action_index,
+                action_index=getattr(action, 'action_index', 0),
                 action_type=action.action_type,
                 reliability_score=self._calculate_action_reliability(action, ""),
                 selector_quality=self._calculate_selector_quality(action),
@@ -999,6 +999,181 @@ class ActionAnalyzer:
             'ttl_seconds': self._cache_ttl.total_seconds()
         }
     
+    def _convert_step_to_analysis_format(self, step) -> Dict[str, Any]:
+        """
+        Convert a step object to a format suitable for AI analysis.
+        
+        Args:
+            step: Step object (could be ParsedStep, dict, or other format)
+            
+        Returns:
+            Dictionary representation for AI analysis
+        """
+        try:
+            # Handle ParsedStep objects
+            if hasattr(step, 'actions') and hasattr(step, 'metadata'):
+                step_dict = {
+                    'model_output': {
+                        'action': []
+                    },
+                    'state': {
+                        'interacted_element': []
+                    },
+                    'metadata': step.metadata or {}
+                }
+                
+                for action in step.actions:
+                    action_dict = {action.action_type: action.parameters}
+                    step_dict['model_output']['action'].append(action_dict)
+                    
+                    if action.selector_info:
+                        step_dict['state']['interacted_element'].append(action.selector_info)
+                        
+                return step_dict
+            
+            # Handle dictionary format
+            elif isinstance(step, dict):
+                # If it's already in the right format, return as-is
+                if 'model_output' in step or 'action' in step:
+                    return step
+                
+                # Try to extract action information
+                actions = step.get('actions', [])
+                if not actions and 'action' in step:
+                    actions = step['action'] if isinstance(step['action'], list) else [step['action']]
+                
+                step_dict = {
+                    'model_output': {
+                        'action': actions
+                    },
+                    'state': {
+                        'interacted_element': step.get('interacted_element', [])
+                    },
+                    'metadata': step.get('metadata', {})
+                }
+                
+                return step_dict
+            
+            # Fallback for unknown formats
+            else:
+                logger.warning(f"Unknown step format: {type(step)}, using minimal representation")
+                return {
+                    'model_output': {
+                        'action': [{'unknown_action': str(step)}]
+                    },
+                    'state': {
+                        'interacted_element': []
+                    },
+                    'metadata': {}
+                }
+                
+        except Exception as e:
+            logger.error(f"Failed to convert step to analysis format: {e}")
+            # Return minimal safe format
+            return {
+                'model_output': {
+                    'action': [{'error': 'conversion_failed'}]
+                },
+                'state': {
+                    'interacted_element': []
+                },
+                'metadata': {'conversion_error': str(e)}
+            }
+    
+    def _parse_step_analysis_response(self, ai_response: Any, original_step) -> Dict[str, Any]:
+        """
+        Parse AI response for single step analysis and extract actionable insights.
+        
+        Args:
+            ai_response: Response from AI provider
+            original_step: Original step that was analyzed
+            
+        Returns:
+            Dictionary with extracted insights
+        """
+        try:
+            content = ai_response.content.lower()
+            insights = {
+                'reliability_score': 0.8,  # Default baseline
+                'selector_quality': 0.8,   # Default baseline
+                'suggestions': [],
+                'potential_issues': [],
+                'improvements': []
+            }
+            
+            # Extract reliability indicators from AI response
+            if 'reliable' in content and 'very' in content:
+                insights['reliability_score'] = 0.95
+            elif 'reliable' in content:
+                insights['reliability_score'] = 0.85
+            elif 'unreliable' in content or 'brittle' in content:
+                insights['reliability_score'] = 0.6
+            elif 'flaky' in content or 'unstable' in content:
+                insights['reliability_score'] = 0.5
+            
+            # Extract selector quality indicators
+            if 'data-testid' in content or 'test id' in content:
+                insights['selector_quality'] = 0.95
+                insights['suggestions'].append("Continue using data-testid selectors for reliability")
+            elif 'id selector' in content or 'unique id' in content:
+                insights['selector_quality'] = 0.85
+                insights['suggestions'].append("ID selectors are good, consider data-testid for tests")
+            elif 'xpath' in content and ('avoid' in content or 'brittle' in content):
+                insights['selector_quality'] = 0.4
+                insights['potential_issues'].append("XPath selectors can be brittle and hard to maintain")
+                insights['improvements'].append("Consider using data-testid or CSS selectors instead")
+            elif 'class selector' in content and 'unstable' in content:
+                insights['selector_quality'] = 0.6
+                insights['potential_issues'].append("Class-based selectors may break with CSS changes")
+            
+            # Extract specific suggestions
+            if 'wait' in content and ('add' in content or 'include' in content):
+                insights['suggestions'].append("Add explicit wait conditions for better stability")
+            
+            if 'timeout' in content:
+                insights['suggestions'].append("Consider adjusting timeout values for this action")
+            
+            if 'error handling' in content or 'exception' in content:
+                insights['improvements'].append("Add error handling for this step")
+            
+            if 'screenshot' in content or 'debug' in content:
+                insights['improvements'].append("Add screenshot capture for debugging purposes")
+            
+            # Extract performance suggestions
+            if 'slow' in content or 'performance' in content:
+                insights['potential_issues'].append("This action may impact test performance")
+                insights['improvements'].append("Consider optimizing for faster execution")
+            
+            # Extract maintainability suggestions
+            if 'maintainability' in content or 'readable' in content:
+                insights['improvements'].append("Consider adding descriptive comments for this step")
+            
+            # Framework-specific suggestions
+            framework = getattr(self.config, 'framework', 'playwright')
+            if framework == 'playwright':
+                if 'page.locator' in content:
+                    insights['suggestions'].append("Using Playwright locators is recommended")
+                if 'auto-wait' in content:
+                    insights['suggestions'].append("Leverage Playwright's built-in auto-waiting")
+            elif framework == 'selenium':
+                if 'webdriverwait' in content:
+                    insights['suggestions'].append("Use WebDriverWait for explicit waits")
+                if 'expected_conditions' in content:
+                    insights['suggestions'].append("Leverage Selenium's expected conditions")
+            
+            return insights
+            
+        except Exception as e:
+            logger.error(f"Failed to parse AI step analysis response: {e}")
+            # Return safe defaults
+            return {
+                'reliability_score': 0.7,
+                'selector_quality': 0.7,
+                'suggestions': ["AI analysis parsing failed - using defaults"],
+                'potential_issues': [f"Analysis parsing error: {str(e)}"],
+                'improvements': []
+            }
+    
     def analyze_steps(self, steps):
         """Analyze steps for the executor (sync version)."""
         # Simple pass-through for now - can be enhanced later
@@ -1010,11 +1185,123 @@ class ActionAnalyzer:
         return steps
     
     def analyze_single_step(self, step):
-        """Analyze a single step (sync version)."""
-        # Simple pass-through for now - can be enhanced later
-        return step
+        """Analyze a single step with AI analysis if enabled."""
+        if not getattr(self.config, 'enable_ai_analysis', True) or not self.ai_provider:
+            # Return step unchanged if AI analysis is disabled or no AI provider
+            return step
+        
+        try:
+            start_time = time.time()
+            
+            # Convert step to analyzable format
+            step_data = self._convert_step_to_analysis_format(step)
+            
+            # Create AI analysis request for single step optimization
+            analysis_request = AIAnalysisRequest(
+                analysis_type=AnalysisType.OPTIMIZATION,
+                automation_data=[step_data],  # Single step in list format
+                target_framework=getattr(self.config, 'framework', 'playwright'),
+                current_action=step_data
+            )
+            
+            # Make real AI call
+            ai_response = self.ai_provider.analyze_with_context(analysis_request)
+            processing_time = time.time() - start_time
+            
+            # Parse AI response and extract insights
+            analysis_insights = self._parse_step_analysis_response(ai_response, step)
+            
+            # Add analysis metadata to step
+            if not hasattr(step, 'analysis_metadata'):
+                step.analysis_metadata = {}
+                
+            step.analysis_metadata.update({
+                'ai_analysis_completed': True,
+                'ai_processing_time': processing_time,
+                'reliability_score': analysis_insights.get('reliability_score', 0.8),
+                'selector_quality': analysis_insights.get('selector_quality', 0.8),
+                'suggestions': analysis_insights.get('suggestions', []),
+                'potential_issues': analysis_insights.get('potential_issues', []),
+                'recommended_improvements': analysis_insights.get('improvements', []),
+                'ai_model': ai_response.model,
+                'ai_provider': ai_response.provider,
+                'tokens_used': ai_response.tokens_used
+            })
+            
+            logger.debug(f"AI step analysis completed in {processing_time:.2f}s - "
+                        f"reliability: {analysis_insights.get('reliability_score', 'unknown')}")
+            return step
+                
+        except Exception as e:
+            logger.warning(f"Single step AI analysis failed: {e}")
+            # Add error metadata but return step to allow continuation
+            if not hasattr(step, 'analysis_metadata'):
+                step.analysis_metadata = {}
+            step.analysis_metadata.update({
+                'ai_analysis_failed': True,
+                'ai_analysis_error': str(e),
+                'ai_processing_time': time.time() - start_time if 'start_time' in locals() else 0
+            })
+            return step
     
     async def analyze_single_step_async(self, step):
-        """Analyze a single step (async version)."""
-        # Simple pass-through for now - can be enhanced later
-        return step 
+        """Analyze a single step with AI analysis if enabled (async version)."""
+        if not getattr(self.config, 'enable_ai_analysis', True) or not self.ai_provider:
+            # Return step unchanged if AI analysis is disabled or no AI provider
+            return step
+        
+        try:
+            start_time = time.time()
+            
+            # Convert step to analyzable format
+            step_data = self._convert_step_to_analysis_format(step)
+            
+            # Create AI analysis request for single step optimization
+            analysis_request = AIAnalysisRequest(
+                analysis_type=AnalysisType.OPTIMIZATION,
+                automation_data=[step_data],  # Single step in list format
+                target_framework=getattr(self.config, 'framework', 'playwright'),
+                current_action=step_data
+            )
+            
+            # Make real async AI call
+            ai_response = await self.ai_provider.analyze_with_context_async(analysis_request)
+            processing_time = time.time() - start_time
+            
+            # Parse AI response and extract insights
+            analysis_insights = self._parse_step_analysis_response(ai_response, step)
+            
+            # Add analysis metadata to step
+            if not hasattr(step, 'analysis_metadata'):
+                step.analysis_metadata = {}
+                
+            step.analysis_metadata.update({
+                'ai_analysis_completed': True,
+                'ai_processing_time': processing_time,
+                'reliability_score': analysis_insights.get('reliability_score', 0.8),
+                'selector_quality': analysis_insights.get('selector_quality', 0.8),
+                'suggestions': analysis_insights.get('suggestions', []),
+                'potential_issues': analysis_insights.get('potential_issues', []),
+                'recommended_improvements': analysis_insights.get('improvements', []),
+                'ai_model': ai_response.model,
+                'ai_provider': ai_response.provider,
+                'tokens_used': ai_response.tokens_used,
+                'async_processing': True
+            })
+            
+            logger.debug(f"Async AI step analysis completed in {processing_time:.2f}s - "
+                        f"reliability: {analysis_insights.get('reliability_score', 'unknown')}")
+            return step
+                
+        except Exception as e:
+            logger.warning(f"Async single step AI analysis failed: {e}")
+            # Add error metadata but return step to allow continuation
+            if not hasattr(step, 'analysis_metadata'):
+                step.analysis_metadata = {}
+            step.analysis_metadata.update({
+                'ai_analysis_failed': True,
+                'ai_analysis_error': str(e),
+                'ai_processing_time': time.time() - start_time if 'start_time' in locals() else 0,
+                'async_processing': True
+            })
+            return step 
