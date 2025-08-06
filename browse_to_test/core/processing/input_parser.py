@@ -531,3 +531,94 @@ class InputParser:
         
         # If none of the above, raise a helpful error
         raise ValueError(f"Unable to parse step data of type {type(step_data)}. Expected a dictionary or a pre-parsed step.")
+
+    def validate(self, parsed_data: ParsedAutomationData) -> List[str]:
+        """
+        Validate parsed automation data and return list of validation errors.
+        
+        Args:
+            parsed_data: ParsedAutomationData to validate
+            
+        Returns:
+            List of validation error messages (empty if no errors)
+        """
+        errors = []
+        
+        # Basic structure validation
+        if not isinstance(parsed_data, ParsedAutomationData):
+            errors.append(f"Expected ParsedAutomationData, got {type(parsed_data)}")
+            return errors
+        
+        # Check if we have any steps
+        if not parsed_data.steps:
+            if self.strict_mode:
+                errors.append("No steps found in automation data")
+            else:
+                # In non-strict mode, just log warning
+                self.logger.warning("No steps found in automation data")
+        
+        # Validate each step
+        for step_index, step in enumerate(parsed_data.steps):
+            if not isinstance(step, ParsedStep):
+                errors.append(f"Step {step_index} is not a ParsedStep instance")
+                continue
+            
+            # Check if step has actions
+            if not step.actions:
+                if self.strict_mode:
+                    errors.append(f"Step {step_index} has no actions")
+                else:
+                    self.logger.warning(f"Step {step_index} has no actions")
+            
+            # Validate each action
+            for action_index, action in enumerate(step.actions):
+                if not isinstance(action, ParsedAction):
+                    errors.append(f"Step {step_index}, action {action_index} is not a ParsedAction instance")
+                    continue
+                
+                # Check action type
+                if not action.action_type:
+                    errors.append(f"Step {step_index}, action {action_index} has empty action_type")
+                
+                # Check parameters
+                if action.parameters is None:
+                    if self.strict_mode:
+                        errors.append(f"Step {step_index}, action {action_index} has None parameters")
+                
+                # Validate specific action types
+                self._validate_action_type(action, step_index, action_index, errors)
+        
+        # Check total actions consistency
+        expected_total = sum(len(step.actions) for step in parsed_data.steps)
+        if parsed_data.total_actions != expected_total:
+            errors.append(f"Total actions mismatch: reported {parsed_data.total_actions}, calculated {expected_total}")
+        
+        return errors
+    
+    def _validate_action_type(self, action: ParsedAction, step_index: int, action_index: int, errors: List[str]):
+        """Validate specific action types and their required parameters."""
+        action_type = action.action_type
+        params = action.parameters or {}
+        
+        # Define required parameters for different action types
+        required_params = {
+            'go_to_url': ['url'],
+            'click_element': [],  # selector comes from selector_info
+            'input_text': ['text'],  # selector comes from selector_info
+            'scroll_down': [],
+            'scroll_up': [],
+            'wait': [],  # time is optional
+            'done': [],
+        }
+        
+        if action_type in required_params:
+            for required_param in required_params[action_type]:
+                if required_param not in params or params[required_param] is None:
+                    if self.strict_mode:
+                        errors.append(f"Step {step_index}, action {action_index} ({action_type}) missing required parameter: {required_param}")
+        
+        # Validate selector information for actions that need it
+        if action_type in ['click_element', 'input_text']:
+            if not action.selector_info:
+                if self.strict_mode:
+                    errors.append(f"Step {step_index}, action {action_index} ({action_type}) missing selector information")

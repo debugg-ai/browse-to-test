@@ -59,8 +59,8 @@ class TestIncrementalSession:
 
     @pytest.fixture
     def mock_converter(self):
-        """Mock E2eTestConverter (not actually used in IncrementalSession constructor)."""
-        with patch('browse_to_test.E2eTestConverter') as mock:
+        """Mock BTTExecutor for backward compatibility with tests."""
+        with patch('browse_to_test.core.executor.BTTExecutor') as mock:
             yield mock
 
     def test_init(self, basic_config, mock_converter):
@@ -140,13 +140,16 @@ class TestIncrementalSession:
         step_data = sample_automation_data[0]
         
         # Mock the _regenerate_script method to return simple script for testing
-        with patch.object(session, '_regenerate_script') as mock_regenerate:
+        with patch.object(session, '_regenerate_script') as mock_regenerate, \
+             patch.object(session, '_update_script_incrementally') as mock_update:
             def mock_regenerate_side_effect():
                 session._current_script = "Updated script with step"
             
             mock_regenerate.side_effect = mock_regenerate_side_effect
+            # Prevent _update_script_incrementally from overriding the mock
+            mock_update.side_effect = lambda analyzed_step: None
             
-            result = session.add_step(step_data)
+            result = session.add_step(step_data, wait_for_completion=False)
             
             assert result.success is True
             assert result.step_count == 1
@@ -208,7 +211,8 @@ class TestIncrementalSession:
         session.start()
         
         # Mock the _regenerate_script method to return simple scripts for testing
-        with patch.object(session, '_regenerate_script') as mock_regenerate:
+        with patch.object(session, '_regenerate_script') as mock_regenerate, \
+             patch.object(session, '_update_script_incrementally') as mock_update:
             def mock_regenerate_side_effect():
                 # Set simple script based on current step count
                 step_count = len(session._steps)
@@ -220,10 +224,12 @@ class TestIncrementalSession:
                     session._current_script = "Script with step 1, 2, and 3"
             
             mock_regenerate.side_effect = mock_regenerate_side_effect
+            # Prevent _update_script_incrementally from overriding the mock
+            mock_update.side_effect = lambda analyzed_step: None
             
             results = []
             for i, step in enumerate(sample_automation_data):
-                result = session.add_step(step)
+                result = session.add_step(step, wait_for_completion=False)
                 results.append(result)
                 
                 assert result.success is True

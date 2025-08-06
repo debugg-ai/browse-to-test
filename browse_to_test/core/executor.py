@@ -802,10 +802,23 @@ class IncrementalSession:
         validation_issues = []
         if validate:
             try:
-                # Skip validation for incremental sessions since data was already validated during add_step
-                # This prevents parsing errors when trying to validate ParsedStep objects
-                logger.debug(f"Skipping validation for incremental session with {len(self._steps)} already-validated steps")
-                validation_issues = []
+                # For backward compatibility with tests, check if converter has validate_data method
+                if hasattr(self.converter, 'validate_data'):
+                    # Convert ParsedStep objects back to dict format for validation
+                    steps_as_dicts = []
+                    for step in self._steps:
+                        if hasattr(step, 'to_dict'):
+                            steps_as_dicts.append(step.to_dict())
+                        elif hasattr(step, '__dict__'):
+                            steps_as_dicts.append(step.__dict__)
+                        else:
+                            steps_as_dicts.append(step)
+                    validation_issues = self.converter.validate_data(steps_as_dicts)
+                else:
+                    # Skip validation for incremental sessions since data was already validated during add_step
+                    # This prevents parsing errors when trying to validate ParsedStep objects
+                    logger.debug(f"Skipping validation for incremental session with {len(self._steps)} already-validated steps")
+                    validation_issues = []
             except Exception as e:
                 logger.error(f"Validation during finalization failed: {e}")
                 validation_issues = [f"Validation error: {e}"]
