@@ -7,7 +7,7 @@ proper comment formatting across all supported programming languages.
 
 import pytest
 from datetime import datetime
-from browse_to_test.core.configuration import CommentManager, CommentStyle
+from browse_to_test.core.config import CommentManager, CommentStyle
 
 
 class TestCommentManager:
@@ -201,10 +201,10 @@ class TestCommentManagerIntegration:
     
     def test_comment_manager_with_output_config(self):
         """Test CommentManager integration with OutputConfig."""
-        from browse_to_test.core.configuration import OutputConfig
+        from browse_to_test.core.config import OutputConfig
         
         config = OutputConfig(language="typescript", framework="playwright")
-        comment_manager = config.comment_manager
+        comment_manager = CommentManager(config.language)
         
         assert isinstance(comment_manager, CommentManager)
         assert comment_manager.language == "typescript"

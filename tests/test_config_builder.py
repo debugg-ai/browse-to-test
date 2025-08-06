@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from browse_to_test.core.configuration.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
+from browse_to_test.core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
 
 
 class TestConfigBuilder:
@@ -129,20 +129,24 @@ class TestConfigBuilder:
         config = ConfigBuilder().fast_mode().build()
         
         # Fast mode should optimize for speed
-        assert config.processing.collect_system_context is False
-        assert config.processing.use_intelligent_analysis is False
-        assert config.processing.context_analysis_depth == "shallow"
-        assert config.ai.max_tokens == 2000
+        assert config.enable_context_collection is False
+        assert config.enable_ai_analysis is False
+        assert config.ai_temperature == 0.3
+        assert config.ai_max_tokens == 2000
+        assert config.include_error_handling is False
+        assert config.add_comments is False
 
     def test_thorough_mode(self):
         """Test thorough mode configuration."""
         config = ConfigBuilder().thorough_mode().build()
         
         # Thorough mode should optimize for accuracy
-        assert config.processing.collect_system_context is True
-        assert config.processing.use_intelligent_analysis is True
-        assert config.processing.context_analysis_depth == "deep"
-        assert config.ai.max_tokens == 8000
+        assert config.enable_context_collection is True
+        assert config.enable_ai_analysis is True
+        assert config.enable_final_script_analysis is True
+        assert config.ai_temperature == 0.05
+        assert config.ai_max_tokens == 8000
+        assert config.ai_retry_attempts == 5
 
     def test_from_dict(self):
         """Test building config from dictionary."""
@@ -295,7 +299,7 @@ class TestConfigBuilderIntegration:
 
     def test_builder_creates_valid_config_for_converter(self):
         """Test that ConfigBuilder creates valid config for E2eTestConverter."""
-        from browse_to_test.core.orchestration.converter import E2eTestConverter
+        from browse_to_test.core.executor import BTTExecutor as E2eTestConverter
         
         config = ConfigBuilder() \
             .framework("playwright") \
@@ -303,16 +307,16 @@ class TestConfigBuilderIntegration:
             .build()
         
         # Should be able to create E2eTestConverter without errors
-        with patch('browse_to_test.core.orchestration.converter.InputParser'):
-            with patch('browse_to_test.core.orchestration.converter.PluginRegistry'):
-                with patch('browse_to_test.core.orchestration.converter.AIProviderFactory'):
-                    with patch('browse_to_test.core.orchestration.converter.ActionAnalyzer'):
+        with patch('browse_to_test.core.executor.converter.InputParser'):
+            with patch('browse_to_test.core.executor.converter.PluginRegistry'):
+                with patch('browse_to_test.core.executor.converter.AIProviderFactory'):
+                    with patch('browse_to_test.core.executor.converter.ActionAnalyzer'):
                         converter = E2eTestConverter(config)
                         assert converter.config == config
 
     def test_builder_creates_valid_config_for_session(self):
         """Test that ConfigBuilder creates valid config for IncrementalSession."""
-        from browse_to_test.core.orchestration.session import IncrementalSession
+        from browse_to_test.core.executor import IncrementalSession
         
         config = ConfigBuilder() \
             .framework("selenium") \
@@ -320,7 +324,7 @@ class TestConfigBuilderIntegration:
             .build()
         
         # Should be able to create IncrementalSession without errors
-        with patch('browse_to_test.core.orchestration.session.E2eTestConverter'):
+        with patch('browse_to_test.core.executor.session.E2eTestConverter'):
             session = IncrementalSession(config)
             assert session.config == config
 
@@ -330,14 +334,14 @@ class TestConfigBuilderIntegration:
         thorough_config = ConfigBuilder().thorough_mode().build()
         
         # These should be different
-        assert fast_config.processing.collect_system_context != thorough_config.processing.collect_system_context
-        assert fast_config.processing.use_intelligent_analysis != thorough_config.processing.use_intelligent_analysis
-        assert fast_config.processing.context_analysis_depth != thorough_config.processing.context_analysis_depth
-        assert fast_config.ai.max_tokens != thorough_config.ai.max_tokens
+        assert fast_config.enable_context_collection != thorough_config.enable_context_collection
+        assert fast_config.enable_ai_analysis != thorough_config.enable_ai_analysis
+        assert fast_config.ai_max_tokens != thorough_config.ai_max_tokens
+        assert fast_config.ai_temperature != thorough_config.ai_temperature
         
         # Fast should be optimized for speed
-        assert fast_config.processing.collect_system_context is False
-        assert thorough_config.processing.collect_system_context is True
+        assert fast_config.enable_context_collection is False
+        assert thorough_config.enable_context_collection is True
 
     def test_builder_preserves_method_call_order(self):
         """Test that later method calls override earlier ones."""

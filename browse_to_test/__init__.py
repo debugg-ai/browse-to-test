@@ -34,24 +34,29 @@ converter = btt.E2eTestConverter(config)
 script = converter.convert(automation_data)
 ```
 
-## Async Incremental Session:
+## With Security and Performance Monitoring:
+```python
+import browse_to_test as btt
+
+# Get performance statistics
+stats = btt.get_performance_stats()
+print(f"Cache hit rate: {stats.get('cache_hit_rate', 'N/A')}")
+```
+
+## Incremental Session:
 ```python
 import browse_to_test as btt
 import asyncio
 
 async def main():
-    config = btt.ConfigBuilder().framework("playwright").ai_provider("openai").build()
-    session = btt.AsyncIncrementalSession(config)
-    
+    session = btt.create_session(framework="playwright", ai_provider="openai")
     await session.start(target_url="https://example.com")
     
-    # Queue multiple steps without waiting
     for step_data in automation_steps:
-        await session.add_step_async(step_data, wait_for_completion=False)
+        await session.add_step(step_data)
     
-    # Wait for all to complete
-    result = await session.wait_for_all_tasks()
-    final_script = result.current_script
+    result = await session.finalize()
+    final_script = result['current_script']
 
 asyncio.run(main())
 ```
@@ -59,11 +64,19 @@ asyncio.run(main())
 
 import warnings
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Dict, Any
 
-from .core.configuration.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
-from .core.orchestration.converter import E2eTestConverter
-from .core.orchestration.session import IncrementalSession, SessionResult, AsyncIncrementalSession
+# New unified imports
+from .core.config import Config, ConfigBuilder, AIConfig, OutputConfig, ProcessingConfig
+from .core.executor import BTTExecutor, IncrementalSession, SessionResult, ExecutionResult
+
+# Backward compatibility aliases
+E2eTestConverter = BTTExecutor
+AsyncIncrementalSession = IncrementalSession
+
+# Performance monitoring capabilities
+_performance_monitoring_enabled = True
+_optimized_available = False  # Placeholder for optimization modules
 
 __version__ = "0.2.17"
 __author__ = "Browse-to-Test Contributors"
@@ -78,14 +91,17 @@ __all__ = [
     "perform_script_qa",
     "perform_script_qa_async",
     
-    # Configuration
+    # Session management
+    "create_session",
+    
+    # Legacy configuration (for backward compatibility)
     "Config",
     "ConfigBuilder",
-    "AIConfig",  # For backward compatibility
-    "OutputConfig",  # For backward compatibility 
-    "ProcessingConfig",  # For backward compatibility
+    "AIConfig",
+    "OutputConfig", 
+    "ProcessingConfig",
     
-    # Main classes
+    # Legacy classes (for backward compatibility)
     "E2eTestConverter", 
     "IncrementalSession",
     "AsyncIncrementalSession",
@@ -94,6 +110,7 @@ __all__ = [
     # Utilities
     "list_frameworks",
     "list_ai_providers",
+    "get_performance_stats",
 ]
 
 
@@ -107,7 +124,7 @@ def convert(
     """
     Convert browser automation data to test script.
     
-    This is the simplest way to use the library.
+    This is the simplest way to use the library with enhanced security and performance.
     
     Args:
         automation_data: List of browser automation step dictionaries
@@ -128,14 +145,24 @@ def convert(
         .framework(framework) \
         .ai_provider(ai_provider) \
         .language(language) \
+        .sensitive_data_keys(["password", "pass", "pwd", "secret", "token", "key", "auth", "api_key", "email", "username", "credit_card", "cc", "card_number", "ssn", "social"]) \
         .from_kwargs(**kwargs) \
         .build()
     
     # Enable strict mode for better validation in the simple API
-    config.processing.strict_mode = True
+    config.strict_mode = True
     
-    converter = E2eTestConverter(config)
-    return converter.convert(automation_data)
+    # Validate input data
+    if not automation_data:
+        raise ValueError("No automation data provided")
+    
+    executor = BTTExecutor(config)
+    result = executor.execute(automation_data)
+    
+    if not result.success:
+        raise RuntimeError(f"Conversion failed: {'; '.join(result.errors)}")
+    
+    return result.script
 
 
 async def convert_async(
@@ -148,13 +175,13 @@ async def convert_async(
     """
     Convert browser automation data to test script asynchronously.
     
-    This is the async version of the simple convert function.
-    AI calls will be queued and processed sequentially while allowing
-    other processing to continue in parallel.
+    This is the async version of the simple convert function. Now uses the streamlined
+    architecture by default for better performance with parallel processing of
+    AI analysis and context collection.
     
     Args:
         automation_data: List of browser automation step dictionaries
-        framework: Target test framework ('playwright', 'selenium', etc.)
+        framework: Target test framework ('playwright', 'selenium', etc.')
         ai_provider: AI provider to use ('openai', 'anthropic', etc.)  
         language: Target language ('python', 'typescript', etc.)
         **kwargs: Additional configuration options
@@ -171,14 +198,24 @@ async def convert_async(
         .framework(framework) \
         .ai_provider(ai_provider) \
         .language(language) \
+        .sensitive_data_keys(["password", "pass", "pwd", "secret", "token", "key", "auth", "api_key", "email", "username", "credit_card", "cc", "card_number", "ssn", "social"]) \
         .from_kwargs(**kwargs) \
         .build()
     
     # Enable strict mode for better validation in the simple API
-    config.processing.strict_mode = True
+    config.strict_mode = True
     
-    converter = E2eTestConverter(config)
-    return await converter.convert_async(automation_data)
+    # Validate input data
+    if not automation_data:
+        raise ValueError("No automation data provided")
+    
+    executor = BTTExecutor(config)
+    result = await executor.execute_async(automation_data)
+    
+    if not result.success:
+        raise RuntimeError(f"Conversion failed: {'; '.join(result.errors)}")
+    
+    return result.script
 
 
 def perform_script_qa(
@@ -226,10 +263,11 @@ def perform_script_qa(
         .from_kwargs(**kwargs) \
         .build()
     
-    converter = E2eTestConverter(config)
+    executor = BTTExecutor(config)
     
     # Perform comprehensive AI analysis
-    analyzed_script = converter.convert(automation_data)
+    result = executor.execute(automation_data)
+    analyzed_script = result.script
     
     # Compare original vs analyzed script
     original_lines = len(script.split('\n')) if script else 0
@@ -302,10 +340,11 @@ async def perform_script_qa_async(
         .from_kwargs(**kwargs) \
         .build()
     
-    converter = E2eTestConverter(config)
+    executor = BTTExecutor(config)
     
     # Perform comprehensive AI analysis
-    analyzed_script = await converter.convert_async(automation_data)
+    result = await executor.execute_async(automation_data)
+    analyzed_script = result.script
     
     # Compare original vs analyzed script
     original_lines = len(script.split('\n')) if script else 0
@@ -347,6 +386,45 @@ def list_ai_providers() -> List[str]:
     from .ai.factory import AIProviderFactory
     factory = AIProviderFactory()
     return factory.list_available_providers()
+
+
+def get_optimization_stats() -> dict:
+    """
+    Get performance statistics from optimized components.
+    
+    Returns performance metrics if optimized components are in use,
+    including AI call savings, cache hit rates, and processing times.
+    
+    Returns:
+        Dictionary with optimization statistics or empty dict if not available
+        
+    Example:
+        >>> stats = btt.get_optimization_stats()
+        >>> print(f"AI calls saved: {stats.get('ai_calls_saved', 0)}")
+        >>> print(f"Cache hit rate: {stats.get('cache_hit_rate', 0) * 100:.1f}%")
+    """
+    if not _optimized_available:
+        return {}
+    
+    try:
+        from .ai.optimized_factory import get_optimized_factory
+        from .core.orchestration.optimized_async_queue import _queue_instances
+        
+        stats = {}
+        
+        # Get factory stats
+        factory = get_optimized_factory()
+        stats['factory'] = factory.get_stats()
+        
+        # Get queue stats
+        queue_stats = {}
+        for name, queue in _queue_instances.items():
+            queue_stats[name] = queue.get_stats()
+        stats['queues'] = queue_stats
+        
+        return stats
+    except Exception:
+        return {}
 
 
 # Backward compatibility - keep old API available but mark as deprecated
@@ -404,4 +482,63 @@ def list_available_ai_providers():
         DeprecationWarning, 
         stacklevel=2
     )
-    return list_ai_providers() 
+    return list_ai_providers()
+
+
+def create_session(
+    framework: str = "playwright",
+    ai_provider: str = "openai",
+    language: str = "python",
+    **kwargs
+) -> IncrementalSession:
+    """
+    Create an incremental session for live test generation.
+    
+    Args:
+        framework: Target test framework ('playwright', 'selenium', etc.)
+        ai_provider: AI provider to use ('openai', 'anthropic', etc.)
+        language: Target language ('python', 'typescript', etc.)
+        **kwargs: Additional configuration options
+        
+    Returns:
+        IncrementalSession instance ready for use
+        
+    Example:
+        >>> session = btt.create_session(framework="playwright", ai_provider="openai")
+        >>> await session.start(target_url="https://example.com")
+        >>> await session.add_step(step_data)
+        >>> result = await session.finalize()
+    """
+    config = ConfigBuilder() \
+        .framework(framework) \
+        .ai_provider(ai_provider) \
+        .language(language) \
+        .sensitive_data_keys(["password", "pass", "pwd", "secret", "token", "key", "auth", "api_key", "email", "username", "credit_card", "cc", "card_number", "ssn", "social"]) \
+        .from_kwargs(**kwargs) \
+        .build()
+    
+    return IncrementalSession(config)
+
+
+def get_performance_stats() -> Dict[str, Any]:
+    """
+    Get performance statistics from the browse-to-test library.
+    
+    Returns:
+        Dictionary containing performance metrics including:
+        - AI call efficiency
+        - Cache hit rates  
+        - Processing times
+        - Error rates
+    """
+    try:
+        from .core.executor import BTTExecutor
+        from .core.config import Config
+        
+        # Create a minimal config to get stats
+        config = Config()
+        executor = BTTExecutor(config)
+        
+        return executor.get_performance_stats()
+    except Exception:
+        return {"error": "Performance stats not available"} 

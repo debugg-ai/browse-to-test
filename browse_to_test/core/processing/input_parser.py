@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..configuration.config import Config
+from ..config import Config
 
 
 logger = logging.getLogger(__name__)
@@ -138,7 +138,11 @@ class InputParser:
             config: Configuration object containing parsing settings.
         """
         self.config = config
-        self.strict_mode = config.processing.strict_mode
+        # Check for strict_mode in different possible locations
+        if hasattr(config, 'processing') and hasattr(config.processing, 'strict_mode'):
+            self.strict_mode = config.processing.strict_mode
+        else:
+            self.strict_mode = getattr(config, 'strict_mode', False)
         self.logger = logging.getLogger(__name__)
     
     def parse(self, automation_data: Union[List[Dict], str, Path]) -> ParsedAutomationData:
@@ -242,12 +246,32 @@ class InputParser:
         if not isinstance(step_data, dict):
             raise ValueError(f"Step {step_index} is not a dictionary")
         
-        # Check for required fields - model_output is required for valid automation data
+        # Handle different data formats - be flexible with legacy formats
+        # Check if this is a legacy format with direct action data
         if 'model_output' not in step_data:
-            if self.strict_mode:
+            # Check if it has direct action data (legacy format)
+            if 'action' in step_data:
+                # Convert legacy format to model_output format
+                step_data = {
+                    'model_output': {'action': step_data['action']},
+                    'state': step_data.get('state', {}),
+                    'metadata': step_data.get('metadata', {})
+                }
+            elif any(key in step_data for key in ['go_to_url', 'click_element', 'input_text', 'scroll_down', 'scroll_up', 'wait', 'done']):
+                # Single action format - wrap in action array
+                action_data = {k: v for k, v in step_data.items() if k not in ['state', 'metadata']}
+                step_data = {
+                    'model_output': {'action': [action_data]},
+                    'state': step_data.get('state', {}),
+                    'metadata': step_data.get('metadata', {})
+                }
+            elif self.strict_mode:
+                # Only error in strict mode if we can't convert the format
                 raise ValueError(f"Step {step_index} is missing required 'model_output' field")
-            self.logger.warning(f"Step {step_index} is missing required 'model_output' field")
-            return ParsedStep(step_index=step_index, actions=[], metadata={}, timing_info={})
+            else:
+                # In non-strict mode, create empty step but log warning
+                self.logger.warning(f"Step {step_index} is missing required 'model_output' field")
+                return ParsedStep(step_index=step_index, actions=[], metadata={}, timing_info={})
         
         # Extract step metadata - use the metadata field directly if available
         step_metadata = None
@@ -356,6 +380,9 @@ class InputParser:
         selector_info = None
         if action_index < len(interacted_elements) and interacted_elements[action_index]:
             selector_info = self._extract_selector_info(interacted_elements[action_index])
+        elif 'selector' in parameters and parameters['selector']:
+            # Fallback: extract selector directly from action parameters
+            selector_info = {'css_selector': parameters['selector']}
         
         # Create action metadata
         action_metadata = {
@@ -405,7 +432,9 @@ class InputParser:
         """Determine if an action type requires element interaction."""
         element_actions = {
             'click_element', 'click_element_by_index', 'input_text', 
-            'click_download_button', 'drag_drop', 'hover_element'
+            'click_download_button', 'drag_drop', 'hover_element',
+            # Also support simplified action names used in tests
+            'click', 'fill', 'hover'
         }
         return action_type in element_actions
     
@@ -479,4 +508,26 @@ class InputParser:
                         matches = secret_pattern.findall(param_value)
                         sensitive_keys.update(matches)
         
-        return sorted(sensitive_keys) 
+        return sorted(sensitive_keys)
+    
+    def parse_single_step(self, step_data):
+        """Parse a single step for incremental sessions."""
+        # If it's already a ParsedStep, return it
+        if hasattr(step_data, 'step_index') and hasattr(step_data, 'actions'):
+            return step_data
+        
+        # If it's a dictionary, parse it
+        if isinstance(step_data, dict):
+            # Parse as a single step with index 0
+            return self._parse_step(step_data, 0)
+        
+        # Check if it's a dictionary-like object with standard automation data keys
+        try:
+            # Check for required keys to identify the data structure
+            if all(key in step_data for key in ['model_output', 'state', 'metadata']):
+                return self._parse_step(dict(step_data), 0)
+        except Exception:
+            pass
+        
+        # If none of the above, raise a helpful error
+        raise ValueError(f"Unable to parse step data of type {type(step_data)}. Expected a dictionary or a pre-parsed step.")

@@ -8,7 +8,7 @@ that were fixed in the OutputPlugin base class.
 import pytest
 from unittest.mock import Mock
 
-from browse_to_test.core.configuration.config import Config
+from browse_to_test.core.config import Config
 from browse_to_test.plugins.base import OutputPlugin
 
 

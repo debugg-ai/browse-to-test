@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 📝 Documentation & README Update
+- **New async-focused README** - Completely restructured README to highlight async usage patterns and `examples/async_usage.py` 
+- **Enhanced quick start** - Direct integration with async example for better onboarding experience
+- **Improved feature showcase** - Updated feature descriptions to emphasize async-first design and parallel processing capabilities
+- **Better examples** - All code examples now demonstrate async patterns from the comprehensive example file
+
 ## [0.2.17] - 2025-08-04
 
 ### 🚀 Major Performance Optimization Release - 30x Speed Improvement

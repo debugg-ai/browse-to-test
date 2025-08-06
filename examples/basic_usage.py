@@ -1,382 +1,272 @@
 #!/usr/bin/env python3
 """
-Basic usage example for browse-to-test library.
+Basic Usage Example for Browse-to-Test
 
-This example demonstrates how to convert browser automation data
-into test scripts using the library.
+This example demonstrates the simplest way to use browse-to-test to convert 
+browser automation data into test scripts using the new unified API.
+
+Key features demonstrated:
+- Simple convert() function
+- Multiple frameworks (Playwright, Selenium)
+- Different output languages (Python, TypeScript)
+- Basic configuration options
+
+Requirements:
+- Set OPENAI_API_KEY environment variable
+- Or use: export OPENAI_API_KEY="your-key-here"
 """
 
-import json
 import os
-from pathlib import Path
-
-# Import the main library
 import browse_to_test as btt
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 load_dotenv()
+
+# Create output directory
+OUTPUT_DIR = Path(__file__).parent / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
+
 
 def create_sample_automation_data():
     """Create sample browser automation data for demonstration."""
     return [
         {
             "model_output": {
-                "action": [
-                    {
-                        "go_to_url": {
-                            "url": "https://example.com"
-                        }
-                    }
-                ]
+                "action": [{"go_to_url": {"url": "https://example.com"}}]
             },
             "state": {
+                "url": "https://example.com",
+                "title": "Example Domain",
                 "interacted_element": []
             },
             "metadata": {
                 "step_start_time": 1640995200.0,
                 "step_end_time": 1640995203.5,
-                "elapsed_time": 3.5
+                "step_number": 1
             }
         },
         {
             "model_output": {
-                "action": [
-                    {
-                        "input_text": {
-                            "index": 0,
-                            "text": "<secret>username</secret>"
-                        }
-                    }
-                ]
+                "action": [{"input_text": {"index": 0, "text": "demo@example.com"}}]
             },
             "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//input[@name='username']",
-                        "css_selector": "input[name='username']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "name": "username",
-                            "type": "text",
-                            "id": "username-field"
-                        }
+                "url": "https://example.com/login",
+                "title": "Login - Example Domain",
+                "interacted_element": [{
+                    "xpath": "//input[@name='email']",
+                    "css_selector": "input[name='email']",
+                    "highlight_index": 0,
+                    "attributes": {
+                        "name": "email",
+                        "type": "email",
+                        "id": "email-field"
                     }
-                ]
+                }]
+            },
+            "metadata": {
+                "step_start_time": 1640995203.5,
+                "step_end_time": 1640995205.0,
+                "step_number": 2
             }
         },
         {
             "model_output": {
-                "action": [
-                    {
-                        "input_text": {
-                            "index": 0,
-                            "text": "<secret>password</secret>"
-                        }
-                    }
-                ]
+                "action": [{"click_element": {"index": 0}}]
             },
             "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//input[@name='password']",
-                        "css_selector": "input[name='password']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "name": "password",
-                            "type": "password",
-                            "id": "password-field"
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "model_output": {
-                "action": [
-                    {
-                        "click_element": {
-                            "index": 0
-                        }
-                    }
-                ]
+                "url": "https://example.com/login",
+                "title": "Login - Example Domain",
+                "interacted_element": [{
+                    "xpath": "//button[@type='submit']",
+                    "css_selector": "button[type='submit']",
+                    "highlight_index": 0,
+                    "attributes": {
+                        "type": "submit",
+                        "class": "btn btn-primary",
+                        "id": "login-button"
+                    },
+                    "text_content": "Sign In"
+                }]
             },
-            "state": {
-                "interacted_element": [
-                    {
-                        "xpath": "//button[@type='submit']",
-                        "css_selector": "button[type='submit']",
-                        "highlight_index": 0,
-                        "attributes": {
-                            "type": "submit",
-                            "class": "btn btn-primary",
-                            "id": "login-button"
-                        },
-                        "text_content": "Login"
-                    }
-                ]
-            }
-        },
-        {
-            "model_output": {
-                "action": [
-                    {
-                        "done": {
-                            "text": "Successfully completed login process",
-                            "success": True
-                        }
-                    }
-                ]
-            },
-            "state": {
-                "interacted_element": []
+            "metadata": {
+                "step_start_time": 1640995205.0,
+                "step_end_time": 1640995207.0,
+                "step_number": 3
             }
         }
     ]
 
 
-def basic_example():
-    """Demonstrate basic usage of the library."""
-    print("=== Basic Browse-to-Test Example ===\n")
+def example_1_simple_conversion():
+    """Example 1: Simplest possible usage."""
+    print("=== Example 1: Simple Conversion ===")
     
-    # Create sample automation data
     automation_data = create_sample_automation_data()
-    print(f"Created sample automation data with {len(automation_data)} steps")
     
-    # Method 1: Simple conversion using the new convert function
-    print("\n--- Method 1: Simple Conversion ---")
     try:
-        playwright_script = btt.convert(
+        # One-line conversion using the new convert() function
+        script = btt.convert(
             automation_data=automation_data,
             framework="playwright",
-            language="typescript",
             ai_provider="openai"
         )
-        
-        # Save the generated script
-        output_file = "example_outputs/generated_playwright_test.ts"
-        with open(output_file, 'w') as f:
-            f.write(playwright_script)
-        
-        print(f"✓ Generated Playwright script: {output_file}")
-        print(f"  Script length: {len(playwright_script.splitlines())} lines")
-        
-    except Exception as e:
-        print(f"✗ Failed to generate Playwright script: {e}")
-    
-    # Method 2: Generate Selenium script for comparison
-    print("\n--- Method 2: Different Framework ---")
-    try:
-        selenium_script = btt.convert(
-            automation_data=automation_data,
-            framework="selenium",
-            ai_provider="openai"
-        )
-        
-        # Save the generated script
-        output_file = "example_outputs/generated_selenium_test.py"
-        with open(output_file, 'w') as f:
-            f.write(selenium_script)
-        
-        print(f"✓ Generated Selenium script: {output_file}")
-        print(f"  Script length: {len(selenium_script.splitlines())} lines")
-        
-    except Exception as e:
-        print(f"✗ Failed to generate Selenium script: {e}")
-
-
-def advanced_example():
-    """Demonstrate advanced usage with custom configuration."""
-    print("\n=== Advanced Browse-to-Test Example ===\n")
-    
-    # Create custom configuration using ConfigBuilder
-    config = btt.ConfigBuilder() \
-        .framework("playwright") \
-        .ai_provider("openai", model="gpt-4.1-mini") \
-        .language("python") \
-        .include_assertions(True) \
-        .include_error_handling(True) \
-        .temperature(0.1) \
-        .sensitive_data_keys(["username", "password"]) \
-        .enable_ai_analysis(True) \
-        .debug(True) \
-        .build()
-    
-    print("✓ Configuration built successfully")
-    
-    # Create converter with custom configuration
-    converter = btt.E2eTestConverter(config)
-    
-    # Get available options
-    print("\nAvailable options:")
-    try:
-        ai_providers = btt.list_ai_providers()
-        frameworks = btt.list_frameworks()
-        print(f"  AI Providers: {', '.join(ai_providers)}")
-        print(f"  Frameworks: {', '.join(frameworks)}")
-    except Exception as e:
-        print(f"  Unable to list options: {e}")
-    
-    # Create automation data
-    automation_data = create_sample_automation_data()
-    
-    # Generate test script with full analysis
-    print("\n--- Generating Test Script with Custom Configuration ---")
-    try:
-        generated_script = converter.convert(automation_data)
         
         # Save the script
-        output_file = "example_outputs/generated_advanced_test.py"
+        output_file = OUTPUT_DIR / "simple_playwright_test.py"
         with open(output_file, 'w') as f:
-            f.write(generated_script)
+            f.write(script)
         
-        print(f"✓ Generated advanced test script: {output_file}")
-        print(f"  Script length: {len(generated_script.splitlines())} lines")
+        print(f"✓ Generated Playwright test: {output_file}")
+        print(f"  Script length: {len(script.splitlines())} lines")
         
     except Exception as e:
-        print(f"✗ Failed to generate script: {e}")
-        if config.debug:
-            import traceback
-            traceback.print_exc()
+        print(f"✗ Error: {e}")
+        print("  Make sure you have OPENAI_API_KEY set in your environment")
 
 
-def multi_framework_example():
-    """Demonstrate generating scripts for multiple frameworks."""
-    print("\n=== Multi-Framework Example ===\n")
+def example_2_multiple_frameworks():
+    """Example 2: Generate tests for multiple frameworks."""
+    print("\n=== Example 2: Multiple Frameworks ===")
     
     automation_data = create_sample_automation_data()
     frameworks = ["playwright", "selenium"]
-    
-    print("Generating scripts for multiple frameworks...")
     
     for framework in frameworks:
         try:
             script = btt.convert(
                 automation_data=automation_data,
                 framework=framework,
-                ai_provider="openai"
+                ai_provider="openai",
+                language="python"
             )
             
-            output_file = f"example_outputs/generated_{framework}_multi.py"
+            output_file = OUTPUT_DIR / f"{framework}_test.py"
             with open(output_file, 'w') as f:
                 f.write(script)
-                
-            print(f"✓ {framework}: {output_file} ({len(script.splitlines())} lines)")
+            
+            print(f"✓ {framework.capitalize()}: {output_file}")
             
         except Exception as e:
-            print(f"✗ {framework}: Failed - {e}")
+            print(f"✗ {framework.capitalize()}: {e}")
 
 
-def load_from_file_example():
-    """Demonstrate loading automation data from file."""
-    print("\n=== Load from File Example ===\n")
+def example_3_different_languages():
+    """Example 3: Generate tests in different languages."""
+    print("\n=== Example 3: Different Languages ===")
     
-    # Save sample data to file
     automation_data = create_sample_automation_data()
-    data_file = "example_outputs/sample_automation_data.json"
+    languages = [
+        ("python", ".py"),
+        ("typescript", ".ts")
+    ]
     
-    with open(data_file, 'w') as f:
-        json.dump(automation_data, f, indent=2)
+    for language, extension in languages:
+        try:
+            script = btt.convert(
+                automation_data=automation_data,
+                framework="playwright",
+                ai_provider="openai",
+                language=language,
+                include_assertions=True,
+                include_error_handling=True
+            )
+            
+            output_file = OUTPUT_DIR / f"playwright_test_{language}{extension}"
+            with open(output_file, 'w') as f:
+                f.write(script)
+            
+            print(f"✓ {language.capitalize()}: {output_file}")
+            
+        except Exception as e:
+            print(f"✗ {language.capitalize()}: {e}")
+
+
+def example_4_with_options():
+    """Example 4: Using additional options."""
+    print("\n=== Example 4: With Custom Options ===")
     
-    print(f"Saved sample data to: {data_file}")
+    automation_data = create_sample_automation_data()
     
-    # Load and convert from file (read data manually for now)
     try:
-        with open(data_file, 'r') as f:
-            loaded_data = json.load(f)
-        
         script = btt.convert(
-            automation_data=loaded_data,
+            automation_data=automation_data,
             framework="playwright",
+            ai_provider="openai",
+            language="python",
+            # Additional options
             include_assertions=True,
-            add_comments=True
+            include_error_handling=True,
+            include_logging=True,
+            add_comments=True,
+            test_timeout=60000,  # 60 seconds
+            sensitive_data_keys=["email", "password", "token"]
         )
         
-        output_file = "example_outputs/generated_from_file.py"
+        output_file = OUTPUT_DIR / "enhanced_playwright_test.py"
         with open(output_file, 'w') as f:
             f.write(script)
         
-        print(f"✓ Generated script from file: {output_file}")
+        print(f"✓ Enhanced test: {output_file}")
+        print(f"  Features: assertions, error handling, logging, comments")
         
     except Exception as e:
-        print(f"✗ Failed to generate from file: {e}")
-    
-    # Clean up
-    if os.path.exists(data_file):
-        os.remove(data_file)
+        print(f"✗ Error: {e}")
 
 
-def incremental_session_example():
-    """Demonstrate incremental session usage."""
-    print("\n=== Incremental Session Example ===\n")
+def example_5_list_available_options():
+    """Example 5: Discover available frameworks and AI providers."""
+    print("\n=== Example 5: Available Options ===")
     
     try:
-        # Create configuration for incremental session
-        config = btt.ConfigBuilder() \
-            .framework("playwright") \
-            .ai_provider("openai") \
-            .language("python") \
-            .build()
+        frameworks = btt.list_frameworks()
+        ai_providers = btt.list_ai_providers()
         
-        # Start incremental session
-        session = btt.IncrementalSession(config)
+        print(f"Available frameworks: {', '.join(frameworks)}")
+        print(f"Available AI providers: {', '.join(ai_providers)}")
         
-        # Start the session
-        result = session.start(target_url="https://example.com")
-        print(f"✓ Session started: {result.success}")
-        
-        # Add steps incrementally
-        automation_data = create_sample_automation_data()
-        for i, step in enumerate(automation_data[:3]):  # Just first 3 steps
-            result = session.add_step(step)
-            print(f"✓ Added step {i+1}: {len(result.current_script.splitlines())} lines")
-        
-        # Finalize the session
-        final_result = session.finalize()
-        if final_result.success:
-            output_file = "example_outputs/generated_incremental_test.py"
-            with open(output_file, 'w') as f:
-                f.write(final_result.current_script)
-            print(f"✓ Finalized incremental test: {output_file}")
-        else:
-            print(f"✗ Failed to finalize session: {final_result.error}")
-            
     except Exception as e:
-        print(f"✗ Incremental session failed: {e}")
+        print(f"✗ Error listing options: {e}")
 
 
 def main():
-    """Run all examples."""
-    print("Browse-to-Test Library Examples")
-    print("=" * 40)
+    """Run all basic examples."""
+    print("Browse-to-Test Basic Usage Examples")
+    print("=" * 50)
     
-    # Set up environment (you would normally set these in your environment)
+    # Check environment
     if not os.getenv("OPENAI_API_KEY"):
-        print("Note: OPENAI_API_KEY not set. AI features will be limited.")
-        print("Set the environment variable to enable full AI analysis.\n")
+        print("⚠ Warning: OPENAI_API_KEY not found in environment")
+        print("Set it with: export OPENAI_API_KEY='your-key-here'")
+        print("Some examples may fail without it.\n")
     
     try:
         # Run examples
-        basic_example()
-        advanced_example()
-        multi_framework_example()
-        load_from_file_example()
-        incremental_session_example()
+        example_1_simple_conversion()
+        example_2_multiple_frameworks()
+        example_3_different_languages()
+        example_4_with_options()
+        example_5_list_available_options()
         
-        print("\n" + "=" * 40)
-        print("Examples completed! Check the generated files:")
+        # Show generated files
+        print(f"\n📁 Generated files in {OUTPUT_DIR.relative_to(Path.cwd())}:")
+        output_files = list(OUTPUT_DIR.glob("*.py")) + list(OUTPUT_DIR.glob("*.ts"))
+        for file_path in sorted(output_files):
+            size = file_path.stat().st_size
+            print(f"   • {file_path.name} ({size:,} bytes)")
         
-        # List generated files
-        for file in Path("example_outputs").glob("generated_*.py"):
-            size = file.stat().st_size
-            print(f"  - {file.name} ({size} bytes)")
+        print("\n✓ All examples completed successfully!")
+        print("\nNext steps:")
+        print("- Try the async_usage.py example for better performance")
+        print("- Try the incremental_session.py example for live test generation")
+        print("- Try the configuration_builder.py example for advanced settings")
         
     except Exception as e:
-        print(f"\nExample execution failed: {e}")
+        print(f"\n✗ Examples failed: {e}")
         import traceback
         traceback.print_exc()
 
 
 if __name__ == "__main__":
-    main() 
+    main()

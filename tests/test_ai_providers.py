@@ -3,13 +3,18 @@
 from unittest.mock import Mock, patch, MagicMock
 import pytest
 
-from browse_to_test.ai.base import AIProvider, AIResponse, AIProviderError, AnalysisType, AIAnalysisRequest
+from browse_to_test.ai.unified import AIProvider, AIResponse, AIProviderError, AnalysisType, AIAnalysisRequest
 from browse_to_test.ai.factory import AIProviderFactory
-from browse_to_test.core.configuration.config import AIConfig
+from browse_to_test.core.config import AIConfig
 
 
 class MockAIProvider(AIProvider):
     """Mock AI provider for testing."""
+    
+    @property
+    def provider_name(self) -> str:
+        """Return provider name."""
+        return "mock"
     
     def generate(self, prompt: str, system_prompt: str = None, **kwargs) -> AIResponse:
         return AIResponse(
@@ -32,6 +37,20 @@ class MockAIProvider(AIProvider):
     
     def get_model_info(self) -> dict:
         return {"name": "mock-model", "provider": "mock"}
+
+    def analyze_with_context(self, request: AIAnalysisRequest) -> AIResponse:
+        """Analyze request with context."""
+        return AIResponse(
+            content=f"Mock analysis response for {request.target_framework}",
+            model="mock-model",
+            provider="mock",
+            tokens_used=150,
+            metadata={
+                "analysis_type": request.analysis_type.value,
+                "target_framework": request.target_framework,
+                "has_context": request.system_context is not None
+            }
+        )
 
 
 class TestAIProvider:
@@ -336,7 +355,7 @@ class TestRealAIProviders:
     def test_openai_provider_available(self):
         """Test if OpenAI provider can be imported."""
         try:
-            from browse_to_test.ai.providers.openai_provider import OpenAIProvider
+            from browse_to_test.ai.unified import OpenAIProvider
             provider = OpenAIProvider(api_key="fake-key")
             assert provider is not None
         except ImportError:
@@ -345,7 +364,7 @@ class TestRealAIProviders:
     def test_anthropic_provider_available(self):
         """Test if Anthropic provider can be imported."""
         try:
-            from browse_to_test.ai.providers.anthropic_provider import AnthropicProvider
+            from browse_to_test.ai.unified import AnthropicProvider
             provider = AnthropicProvider(api_key="fake-key")
             assert provider is not None
         except ImportError:

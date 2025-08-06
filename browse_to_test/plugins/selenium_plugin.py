@@ -8,8 +8,9 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from .base import OutputPlugin, GeneratedTestScript, PluginError
-from ..core.configuration.config import OutputConfig
+from ..core.config import Config as OutputConfig
 from ..core.processing.input_parser import ParsedAutomationData, ParsedAction, ParsedStep
+from ..security.url_validator import sanitize_url_for_testing, is_safe_url
 
 
 logger = logging.getLogger(__name__)
@@ -139,7 +140,7 @@ class SeleniumPlugin(OutputPlugin):
         
         return "\n".join(script_lines)
     
-    def _generate_imports(self) -> List[str]:
+    def _generate_imports(self, include_test_framework: bool = True) -> List[str]:
         """Generate import statements."""
         imports = [
             "import os",
@@ -156,11 +157,21 @@ class SeleniumPlugin(OutputPlugin):
             "from selenium.webdriver.edge.service import Service as EdgeService",
             "from selenium.common.exceptions import TimeoutException, NoSuchElementException",
             "from dotenv import load_dotenv",
+        ]
+        
+        # Add test framework imports for initial script generation
+        if include_test_framework:
+            imports.extend([
+                "import pytest",
+                "",
+            ])
+        
+        imports.extend([
             "",
             "# Load environment variables",
             "load_dotenv(override=True)",
             "",
-        ]
+        ])
         
         if self.config.include_error_handling:
             imports.extend([
@@ -353,16 +364,27 @@ class SeleniumPlugin(OutputPlugin):
             return [f"{indent}# Unsupported action: {action.action_type} ({step_info})"]
     
     def _generate_go_to_url(self, action: ParsedAction, step_info: str, indent: str) -> List[str]:
-        """Generate go_to_url action code."""
+        """Generate go_to_url action code with security validation."""
         url = action.parameters.get("url", "")
         if not url:
             return [f"{indent}# Skipping go_to_url: missing URL ({step_info})"]
         
-        lines = []
-        if self.config.include_logging:
-            lines.append(f"{indent}print(f'Navigating to: {url} ({step_info})')")
+        # Security: Validate and sanitize URL to prevent JavaScript injection
+        if not is_safe_url(url):
+            self.logger.warning(f"Unsafe URL detected and sanitized: {url}")
+            sanitized_url = sanitize_url_for_testing(url)
+            lines = [
+                f"{indent}# Original URL was unsafe and has been sanitized for security",
+                f"{indent}# Using safe placeholder URL instead",
+            ]
+        else:
+            sanitized_url = url
+            lines = []
         
-        lines.append(f"{indent}self.driver.get({repr(url)})")
+        if self.config.include_logging:
+            lines.append(f"{indent}print(f'Navigating to: {sanitized_url} ({step_info})')")
+        
+        lines.append(f"{indent}self.driver.get({repr(sanitized_url)})")
         
         if self.config.include_waits:
             lines.append(f"{indent}time.sleep(1)")
@@ -370,7 +392,7 @@ class SeleniumPlugin(OutputPlugin):
         if self.config.include_assertions:
             lines.extend([
                 f"{indent}# Verify navigation",
-                f"{indent}self.assertIn({repr(url)}, self.driver.current_url, 'Navigation failed')",
+                f"{indent}self.assertIn({repr(sanitized_url)}, self.driver.current_url, 'Navigation failed')",
             ])
         
         return lines
@@ -468,6 +490,160 @@ class SeleniumPlugin(OutputPlugin):
         if message:
             clean_message = self._handle_sensitive_data(str(message))
             lines.append(f"{indent}print(f'Message: {clean_message}')")
+        
+        return lines
+    
+    def generate_initial_script(self, target_url=None, config=None):
+        """
+        Generate initial script for incremental session.
+        """
+        lines = []
+        
+        # Add imports
+        lines.extend(self._generate_imports())
+        
+        # Add sensitive data configuration
+        lines.extend(self._generate_sensitive_data_config())
+        
+        # Add helper functions
+        lines.extend(self._generate_helper_functions())
+        
+        # Add test class beginning
+        template_vars = self.get_template_variables()
+        lines.extend([
+            "class BrowseToTestSelenium(unittest.TestCase):",
+            "    \"\"\"Generated Selenium test class.\"\"\"",
+            "",
+            "    def setUp(self):",
+            "        \"\"\"Set up the test browser.\"\"\"",
+            f"        self.setup_driver('{template_vars['browser_type']}')",
+            "",
+            "    def tearDown(self):",
+            "        \"\"\"Clean up after test.\"\"\"",
+            "        if hasattr(self, 'driver'):",
+            "            self.driver.quit()",
+            "",
+        ])
+        
+        # Add setup_driver method
+        lines.extend(self._generate_setup_driver_method())
+        
+        # Add test method start
+        lines.extend([
+            "    def test_automation_flow(self):",
+            "        \"\"\"Main test method containing all automation steps.\"\"\"",
+        ])
+        
+        if self.config.include_logging:
+            lines.append("        print('Starting Selenium test execution')")
+        
+        if self.config.include_error_handling:
+            lines.extend([
+                "        try:",
+                "            test_start_time = time.time()",
+            ])
+        
+        # Navigate to target URL if provided
+        if target_url:
+            indent = "            " if self.config.include_error_handling else "        "
+            if self.config.include_logging:
+                lines.append(f"{indent}print(f'Navigating to: {target_url}')") 
+            lines.append(f"{indent}self.driver.get({repr(target_url)})")
+            if self.config.include_waits:
+                lines.append(f"{indent}time.sleep(1)")
+        
+        return "\n".join(lines)
+    
+    def append_step_to_script(self, current_script, step, config=None):
+        """
+        Append a step to existing script for incremental session.
+        """
+        indent = "            " if self.config.include_error_handling else "        "
+        
+        # Generate step actions
+        step_lines = []
+        step_lines.append(f"{indent}# Step {step.step_index + 1}")
+        
+        for action in step.actions:
+            step_lines.extend(self._generate_action_code(action, step.step_index, indent))
+        
+        step_lines.append(f"{indent}")
+        
+        # Insert before the closing of try block or method
+        step_code = "\n".join(step_lines)
+        return current_script + "\n" + step_code
+    
+    def finalize_script(self, script, config=None):
+        """
+        Finalize the complete script for incremental session.
+        """
+        lines = [script]
+        
+        # Add error handling closing and entry point
+        if self.config.include_error_handling:
+            lines.extend([
+                "            elapsed_time = time.time() - test_start_time",
+                "            print(f'Test completed successfully in {elapsed_time:.2f} seconds')",
+                "",
+                "        except Exception as e:",
+                "            print(f'Test failed: {e}', file=sys.stderr)",
+                "            if hasattr(self, 'driver'):",
+                "                # Take screenshot on failure",
+                "                try:",
+                "                    screenshot_path = f'test_failure_{int(time.time())}.png'",
+                "                    self.driver.save_screenshot(screenshot_path)",
+                "                    print(f'Screenshot saved: {screenshot_path}')",
+                "                except Exception:",
+                "                    pass",
+                "            raise",
+            ])
+        
+        # Add entry point
+        lines.extend(self._generate_entry_point())
+        
+        final_content = "\n".join(lines)
+        return self._add_header_comment(self._format_code(final_content))
+    
+    def _generate_setup_driver_method(self) -> List[str]:
+        """
+        Generate the setup_driver method.
+        """
+        template_vars = self.get_template_variables()
+        
+        lines = [
+            "    def setup_driver(self, browser_type: str):",
+            "        \"\"\"Set up the WebDriver.\"\"\"",
+            "        if browser_type.lower() == 'chrome':",
+            "            options = webdriver.ChromeOptions()",
+        ]
+        
+        if template_vars['headless']:
+            lines.append("            options.add_argument('--headless')")
+        
+        lines.extend([
+            "            options.add_argument('--no-sandbox')",
+            "            options.add_argument('--disable-dev-shm-usage')",
+            f"            options.add_argument('--window-size={template_vars['window_width']},{template_vars['window_height']}')",
+            "            self.driver = webdriver.Chrome(options=options)",
+            "",
+            "        elif browser_type.lower() == 'firefox':",
+            "            options = webdriver.FirefoxOptions()",
+        ])
+        
+        if template_vars['headless']:
+            lines.append("            options.add_argument('--headless')")
+        
+        lines.extend([
+            "            self.driver = webdriver.Firefox(options=options)",
+            "",
+            "        else:",
+            "            raise ValueError(f'Unsupported browser: {browser_type}')",
+            "",
+            f"        self.driver.implicitly_wait({template_vars['implicit_wait']})",
+            f"        self.driver.set_page_load_timeout({template_vars['page_load_timeout']})",
+            f"        self.wait = WebDriverWait(self.driver, {template_vars['implicit_wait']})",
+            "",
+        ])
         
         return lines
     

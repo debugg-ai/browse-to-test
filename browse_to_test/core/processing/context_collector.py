@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Any, Union, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from ..configuration.config import Config
+from ..config import Config
 
 
 @dataclass
@@ -292,4 +292,9 @@ class ContextCollector:
         
         summary.append(f"\n## Existing Tests: {len(context.existing_tests)} files")
         
-        return '\n'.join(summary) 
+        return '\n'.join(summary)
+    
+    async def collect_context_async(self):
+        """Collect context for the executor (async version)."""
+        # Use the main context collection method
+        return self.collect_context() 

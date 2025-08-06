@@ -91,7 +91,6 @@ setup(
         "browse_to_test.output_langs.typescript.templates": ["*.txt"],
         "browse_to_test.output_langs.javascript": ["metadata.json"],
         "browse_to_test.output_langs.javascript.templates": ["*.txt"],
-        "browse_to_test.core.configuration.templates": ["*.txt", "*.py", "*.js", "*.ts"],
         "browse_to_test": [
             "output_langs/common/*.json",
             "output_langs/*/metadata.json",

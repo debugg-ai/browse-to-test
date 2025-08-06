@@ -10,7 +10,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 from ...exceptions import TemplateGenerationError, CodeGenerationError
-from browse_to_test.core.configuration import CommentManager
+from browse_to_test.core.config import CommentManager
 
 
 class SeleniumPythonGenerator:
