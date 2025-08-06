@@ -78,7 +78,7 @@ AsyncIncrementalSession = IncrementalSession
 _performance_monitoring_enabled = True
 _optimized_available = False  # Placeholder for optimization modules
 
-__version__ = "0.2.18"
+__version__ = "0.2.19"
 __author__ = "Browse-to-Test Contributors"
 
 # Simple API - the main entry points most users need
